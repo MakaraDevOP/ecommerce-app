@@ -5641,6 +5641,263 @@ function parse(template, options = {}) {
 
 /***/ }),
 
+/***/ "./node_modules/@vue/devtools-api/lib/esm/const.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@vue/devtools-api/lib/esm/const.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "HOOK_PLUGIN_SETTINGS_SET": () => (/* binding */ HOOK_PLUGIN_SETTINGS_SET),
+/* harmony export */   "HOOK_SETUP": () => (/* binding */ HOOK_SETUP)
+/* harmony export */ });
+const HOOK_SETUP = 'devtools-plugin:setup';
+const HOOK_PLUGIN_SETTINGS_SET = 'plugin:settings:set';
+
+
+/***/ }),
+
+/***/ "./node_modules/@vue/devtools-api/lib/esm/env.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@vue/devtools-api/lib/esm/env.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "getDevtoolsGlobalHook": () => (/* binding */ getDevtoolsGlobalHook),
+/* harmony export */   "getTarget": () => (/* binding */ getTarget),
+/* harmony export */   "isProxyAvailable": () => (/* binding */ isProxyAvailable)
+/* harmony export */ });
+function getDevtoolsGlobalHook() {
+    return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
+}
+function getTarget() {
+    // @ts-ignore
+    return (typeof navigator !== 'undefined' && typeof window !== 'undefined')
+        ? window
+        : typeof __webpack_require__.g !== 'undefined'
+            ? __webpack_require__.g
+            : {};
+}
+const isProxyAvailable = typeof Proxy === 'function';
+
+
+/***/ }),
+
+/***/ "./node_modules/@vue/devtools-api/lib/esm/index.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@vue/devtools-api/lib/esm/index.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "isPerformanceSupported": () => (/* reexport safe */ _time_js__WEBPACK_IMPORTED_MODULE_0__.isPerformanceSupported),
+/* harmony export */   "now": () => (/* reexport safe */ _time_js__WEBPACK_IMPORTED_MODULE_0__.now),
+/* harmony export */   "setupDevtoolsPlugin": () => (/* binding */ setupDevtoolsPlugin)
+/* harmony export */ });
+/* harmony import */ var _env_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./env.js */ "./node_modules/@vue/devtools-api/lib/esm/env.js");
+/* harmony import */ var _const_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./const.js */ "./node_modules/@vue/devtools-api/lib/esm/const.js");
+/* harmony import */ var _proxy_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./proxy.js */ "./node_modules/@vue/devtools-api/lib/esm/proxy.js");
+/* harmony import */ var _time_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./time.js */ "./node_modules/@vue/devtools-api/lib/esm/time.js");
+
+
+
+
+
+
+function setupDevtoolsPlugin(pluginDescriptor, setupFn) {
+    const descriptor = pluginDescriptor;
+    const target = (0,_env_js__WEBPACK_IMPORTED_MODULE_1__.getTarget)();
+    const hook = (0,_env_js__WEBPACK_IMPORTED_MODULE_1__.getDevtoolsGlobalHook)();
+    const enableProxy = _env_js__WEBPACK_IMPORTED_MODULE_1__.isProxyAvailable && descriptor.enableEarlyProxy;
+    if (hook && (target.__VUE_DEVTOOLS_PLUGIN_API_AVAILABLE__ || !enableProxy)) {
+        hook.emit(_const_js__WEBPACK_IMPORTED_MODULE_2__.HOOK_SETUP, pluginDescriptor, setupFn);
+    }
+    else {
+        const proxy = enableProxy ? new _proxy_js__WEBPACK_IMPORTED_MODULE_3__.ApiProxy(descriptor, hook) : null;
+        const list = target.__VUE_DEVTOOLS_PLUGINS__ = target.__VUE_DEVTOOLS_PLUGINS__ || [];
+        list.push({
+            pluginDescriptor: descriptor,
+            setupFn,
+            proxy,
+        });
+        if (proxy)
+            setupFn(proxy.proxiedTarget);
+    }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@vue/devtools-api/lib/esm/proxy.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@vue/devtools-api/lib/esm/proxy.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ApiProxy": () => (/* binding */ ApiProxy)
+/* harmony export */ });
+/* harmony import */ var _const_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./const.js */ "./node_modules/@vue/devtools-api/lib/esm/const.js");
+/* harmony import */ var _time_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./time.js */ "./node_modules/@vue/devtools-api/lib/esm/time.js");
+
+
+class ApiProxy {
+    constructor(plugin, hook) {
+        this.target = null;
+        this.targetQueue = [];
+        this.onQueue = [];
+        this.plugin = plugin;
+        this.hook = hook;
+        const defaultSettings = {};
+        if (plugin.settings) {
+            for (const id in plugin.settings) {
+                const item = plugin.settings[id];
+                defaultSettings[id] = item.defaultValue;
+            }
+        }
+        const localSettingsSaveId = `__vue-devtools-plugin-settings__${plugin.id}`;
+        let currentSettings = Object.assign({}, defaultSettings);
+        try {
+            const raw = localStorage.getItem(localSettingsSaveId);
+            const data = JSON.parse(raw);
+            Object.assign(currentSettings, data);
+        }
+        catch (e) {
+            // noop
+        }
+        this.fallbacks = {
+            getSettings() {
+                return currentSettings;
+            },
+            setSettings(value) {
+                try {
+                    localStorage.setItem(localSettingsSaveId, JSON.stringify(value));
+                }
+                catch (e) {
+                    // noop
+                }
+                currentSettings = value;
+            },
+            now() {
+                return (0,_time_js__WEBPACK_IMPORTED_MODULE_0__.now)();
+            },
+        };
+        if (hook) {
+            hook.on(_const_js__WEBPACK_IMPORTED_MODULE_1__.HOOK_PLUGIN_SETTINGS_SET, (pluginId, value) => {
+                if (pluginId === this.plugin.id) {
+                    this.fallbacks.setSettings(value);
+                }
+            });
+        }
+        this.proxiedOn = new Proxy({}, {
+            get: (_target, prop) => {
+                if (this.target) {
+                    return this.target.on[prop];
+                }
+                else {
+                    return (...args) => {
+                        this.onQueue.push({
+                            method: prop,
+                            args,
+                        });
+                    };
+                }
+            },
+        });
+        this.proxiedTarget = new Proxy({}, {
+            get: (_target, prop) => {
+                if (this.target) {
+                    return this.target[prop];
+                }
+                else if (prop === 'on') {
+                    return this.proxiedOn;
+                }
+                else if (Object.keys(this.fallbacks).includes(prop)) {
+                    return (...args) => {
+                        this.targetQueue.push({
+                            method: prop,
+                            args,
+                            resolve: () => { },
+                        });
+                        return this.fallbacks[prop](...args);
+                    };
+                }
+                else {
+                    return (...args) => {
+                        return new Promise(resolve => {
+                            this.targetQueue.push({
+                                method: prop,
+                                args,
+                                resolve,
+                            });
+                        });
+                    };
+                }
+            },
+        });
+    }
+    async setRealTarget(target) {
+        this.target = target;
+        for (const item of this.onQueue) {
+            this.target.on[item.method](...item.args);
+        }
+        for (const item of this.targetQueue) {
+            item.resolve(await this.target[item.method](...item.args));
+        }
+    }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@vue/devtools-api/lib/esm/time.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@vue/devtools-api/lib/esm/time.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "isPerformanceSupported": () => (/* binding */ isPerformanceSupported),
+/* harmony export */   "now": () => (/* binding */ now)
+/* harmony export */ });
+let supported;
+let perf;
+function isPerformanceSupported() {
+    var _a;
+    if (supported !== undefined) {
+        return supported;
+    }
+    if (typeof window !== 'undefined' && window.performance) {
+        supported = true;
+        perf = window.performance;
+    }
+    else if (typeof __webpack_require__.g !== 'undefined' && ((_a = __webpack_require__.g.perf_hooks) === null || _a === void 0 ? void 0 : _a.performance)) {
+        supported = true;
+        perf = __webpack_require__.g.perf_hooks.performance;
+    }
+    else {
+        supported = false;
+    }
+    return supported;
+}
+function now() {
+    return isPerformanceSupported() ? perf.now() : Date.now();
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js":
 /*!*********************************************************************!*\
   !*** ./node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js ***!
@@ -17414,6 +17671,24 @@ function genPropsAccessExp(name) {
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=script&lang=js":
+/*!**********************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=script&lang=js ***!
+  \**********************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  name: "App",
+  components: {}
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/welcome.vue?vue&type=script&lang=js":
 /*!*************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/welcome.vue?vue&type=script&lang=js ***!
@@ -17426,6 +17701,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=template&id=f348271a":
+/*!**************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=template&id=f348271a ***!
+  \**************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+var _hoisted_1 = {
+  style: {
+    "height": "100vh",
+    "width": "100vw"
+  }
+};
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  var _component_router_view = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("router-view");
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_view)]);
+}
 
 /***/ }),
 
@@ -17461,12 +17762,28 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _bootstrap__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
-/* harmony import */ var _components_welcome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/welcome */ "./resources/js/components/welcome.vue");
+/* harmony import */ var _App_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./App.vue */ "./resources/js/App.vue");
+/* harmony import */ var _components_welcome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/welcome */ "./resources/js/components/welcome.vue");
+/* harmony import */ var _dist_app_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./dist/app.css */ "./resources/js/dist/app.css");
+/* harmony import */ var primevue_config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! primevue/config */ "./node_modules/primevue/config/config.esm.js");
+/* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./router */ "./resources/js/router/index.js");
+/* harmony import */ var primevue_resources_themes_tailwind_light_theme_css__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! primevue/resources/themes/tailwind-light/theme.css */ "./node_modules/primevue/resources/themes/tailwind-light/theme.css");
+/* harmony import */ var primevue_resources_primevue_min_css__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! primevue/resources/primevue.min.css */ "./node_modules/primevue/resources/primevue.min.css");
+/* harmony import */ var primeicons_primeicons_css__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! primeicons/primeicons.css */ "./node_modules/primeicons/primeicons.css");
 
 
 
-var app = (0,vue__WEBPACK_IMPORTED_MODULE_1__.createApp)({});
-app.component('wellcome', _components_welcome__WEBPACK_IMPORTED_MODULE_2__["default"]);
+
+
+
+
+
+
+
+var app = (0,vue__WEBPACK_IMPORTED_MODULE_1__.createApp)(_App_vue__WEBPACK_IMPORTED_MODULE_2__["default"]);
+app.component('wellcome', _components_welcome__WEBPACK_IMPORTED_MODULE_3__["default"]);
+app.use(primevue_config__WEBPACK_IMPORTED_MODULE_5__["default"]);
+app.use(_router__WEBPACK_IMPORTED_MODULE_6__["default"]);
 app.mount('#app');
 
 /***/ }),
@@ -17515,6 +17832,58 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
 //     enabledTransports: ['ws', 'wss'],
 // });
+
+/***/ }),
+
+/***/ "./resources/js/router/index.js":
+/*!**************************************!*\
+  !*** ./resources/js/router/index.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.mjs");
+/* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./routes */ "./resources/js/router/routes.js");
+
+
+var router = Router();
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (router);
+function Router() {
+  var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__.createRouter({
+    history: (0,vue_router__WEBPACK_IMPORTED_MODULE_1__.createWebHistory)(),
+    routes: _routes__WEBPACK_IMPORTED_MODULE_0__["default"]
+  });
+  return router;
+}
+
+/***/ }),
+
+/***/ "./resources/js/router/routes.js":
+/*!***************************************!*\
+  !*** ./resources/js/router/routes.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ([{
+  name: "Master",
+  component: __webpack_require__.e(/*! import() */ "resources_js_pages_layout_master_vue").then(__webpack_require__.bind(__webpack_require__, /*! ./../pages/layout/master.vue */ "./resources/js/pages/layout/master.vue")),
+  path: "/",
+  redirect: "/home",
+  children: [{
+    name: "Home",
+    component: __webpack_require__.e(/*! import() */ "resources_js_pages_home_index_vue").then(__webpack_require__.bind(__webpack_require__, /*! ./../pages/home */ "./resources/js/pages/home/index.vue")),
+    path: "/home"
+  }]
+}]);
 
 /***/ }),
 
@@ -19476,6 +19845,545 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primeicons/primeicons.css":
+/*!********************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primeicons/primeicons.css ***!
+  \********************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../css-loader/dist/runtime/getUrl.js */ "./node_modules/css-loader/dist/runtime/getUrl.js");
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fonts_primeicons_eot__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fonts/primeicons.eot */ "./node_modules/primeicons/fonts/primeicons.eot");
+/* harmony import */ var _fonts_primeicons_ttf__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fonts/primeicons.ttf */ "./node_modules/primeicons/fonts/primeicons.ttf");
+/* harmony import */ var _fonts_primeicons_woff__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./fonts/primeicons.woff */ "./node_modules/primeicons/fonts/primeicons.woff");
+/* harmony import */ var _fonts_primeicons_svg__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./fonts/primeicons.svg */ "./node_modules/primeicons/fonts/primeicons.svg");
+// Imports
+
+
+
+
+
+
+var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+var ___CSS_LOADER_URL_REPLACEMENT_0___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_primeicons_eot__WEBPACK_IMPORTED_MODULE_2__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_1___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_primeicons_eot__WEBPACK_IMPORTED_MODULE_2__["default"], { hash: "?#iefix" });
+var ___CSS_LOADER_URL_REPLACEMENT_2___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_primeicons_ttf__WEBPACK_IMPORTED_MODULE_3__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_3___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_primeicons_woff__WEBPACK_IMPORTED_MODULE_4__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_4___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_primeicons_svg__WEBPACK_IMPORTED_MODULE_5__["default"], { hash: "?#primeicons" });
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "@font-face {\n    font-family: 'primeicons';\n    font-display: block;\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ");\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ") format('embedded-opentype'), url(" + ___CSS_LOADER_URL_REPLACEMENT_2___ + ") format('truetype'), url(" + ___CSS_LOADER_URL_REPLACEMENT_3___ + ") format('woff'), url(" + ___CSS_LOADER_URL_REPLACEMENT_4___ + ") format('svg');\n    font-weight: normal;\n    font-style: normal;\n}\n\n.pi {\n    font-family: 'primeicons';\n    speak: none;\n    font-style: normal;\n    font-weight: normal;\n    font-variant: normal;\n    text-transform: none;\n    line-height: 1;\n    display: inline-block;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n}\n\n.pi:before {\n    --webkit-backface-visibility:hidden;\n    -webkit-backface-visibility: hidden;\n            backface-visibility: hidden;\n}\n\n.pi-fw {\n    width: 1.28571429em;\n    text-align: center;\n}\n\n.pi-spin {\n    animation: fa-spin 2s infinite linear;\n}\n\n@keyframes fa-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.pi-sort-alt-slash:before {\n    content: \"\\e9ee\";\n}\n\n.pi-arrows-h:before {\n    content: \"\\e9ec\";\n}\n\n.pi-arrows-v:before {\n    content: \"\\e9ed\";\n}\n\n.pi-pound:before {\n    content: \"\\e9eb\";\n}\n\n.pi-prime:before {\n    content: \"\\e9ea\";\n}\n\n.pi-chart-pie:before {\n    content: \"\\e9e9\";\n}\n\n.pi-reddit:before {\n    content: \"\\e9e8\";\n}\n\n.pi-code:before {\n    content: \"\\e9e7\";\n}\n\n.pi-sync:before {\n    content: \"\\e9e6\";\n}\n\n.pi-shopping-bag:before {\n    content: \"\\e9e5\";\n}\n\n.pi-server:before {\n    content: \"\\e9e4\";\n}\n\n.pi-database:before {\n    content: \"\\e9e3\";\n}\n\n.pi-hashtag:before {\n    content: \"\\e9e2\";\n}\n\n.pi-bookmark-fill:before {\n    content: \"\\e9df\";\n}\n\n.pi-filter-fill:before {\n    content: \"\\e9e0\";\n}\n\n.pi-heart-fill:before {\n    content: \"\\e9e1\";\n}\n\n.pi-flag-fill:before {\n    content: \"\\e9de\";\n}\n\n.pi-circle:before {\n    content: \"\\e9dc\";\n}\n\n.pi-circle-fill:before {\n    content: \"\\e9dd\";\n}\n\n.pi-bolt:before {\n    content: \"\\e9db\";\n}\n\n.pi-history:before {\n    content: \"\\e9da\";\n}\n\n.pi-box:before {\n    content: \"\\e9d9\";\n}\n\n.pi-at:before {\n    content: \"\\e9d8\";\n}\n\n.pi-arrow-up-right:before {\n    content: \"\\e9d4\";\n}\n\n.pi-arrow-up-left:before {\n    content: \"\\e9d5\";\n}\n\n.pi-arrow-down-left:before {\n    content: \"\\e9d6\";\n}\n\n.pi-arrow-down-right:before {\n    content: \"\\e9d7\";\n}\n\n.pi-telegram:before {\n    content: \"\\e9d3\";\n}\n\n.pi-stop-circle:before {\n    content: \"\\e9d2\";\n}\n\n.pi-stop:before {\n    content: \"\\e9d1\";\n}\n\n.pi-whatsapp:before {\n    content: \"\\e9d0\";\n}\n\n.pi-building:before {\n    content: \"\\e9cf\";\n}\n\n.pi-qrcode:before {\n    content: \"\\e9ce\";\n}\n\n.pi-car:before {\n    content: \"\\e9cd\";\n}\n\n.pi-instagram:before {\n    content: \"\\e9cc\";\n}\n\n.pi-linkedin:before {\n    content: \"\\e9cb\";\n}\n\n.pi-send:before {\n    content: \"\\e9ca\";\n}\n\n.pi-slack:before {\n    content: \"\\e9c9\";\n}\n\n.pi-sun:before {\n    content: \"\\e9c8\";\n}\n\n.pi-moon:before {\n    content: \"\\e9c7\";\n}\n\n.pi-vimeo:before {\n    content: \"\\e9c6\";\n}\n\n.pi-youtube:before {\n    content: \"\\e9c5\";\n}\n\n.pi-flag:before {\n    content: \"\\e9c4\";\n}\n\n.pi-wallet:before {\n    content: \"\\e9c3\";\n}\n\n.pi-map:before {\n    content: \"\\e9c2\";\n}\n\n.pi-link:before {\n    content: \"\\e9c1\";\n}\n\n.pi-credit-card:before {\n    content: \"\\e9bf\";\n}\n\n.pi-discord:before {\n    content: \"\\e9c0\";\n}\n\n.pi-percentage:before {\n    content: \"\\e9be\";\n}\n\n.pi-euro:before {\n    content: \"\\e9bd\";\n}\n\n.pi-book:before {\n    content: \"\\e9ba\";\n}\n\n.pi-shield:before {\n    content: \"\\e9b9\";\n}\n\n.pi-paypal:before {\n    content: \"\\e9bb\";\n}\n\n.pi-amazon:before {\n    content: \"\\e9bc\";\n}\n\n.pi-phone:before {\n    content: \"\\e9b8\";\n}\n\n.pi-filter-slash:before {\n    content: \"\\e9b7\";\n}\n\n.pi-facebook:before {\n    content: \"\\e9b4\";\n}\n\n.pi-github:before {\n    content: \"\\e9b5\";\n}\n\n.pi-twitter:before {\n    content: \"\\e9b6\";\n}\n\n.pi-step-backward-alt:before {\n    content: \"\\e9ac\";\n}\n\n.pi-step-forward-alt:before {\n    content: \"\\e9ad\";\n}\n\n.pi-forward:before {\n    content: \"\\e9ae\";\n}\n\n.pi-backward:before {\n    content: \"\\e9af\";\n}\n\n.pi-fast-backward:before {\n    content: \"\\e9b0\";\n}\n\n.pi-fast-forward:before {\n    content: \"\\e9b1\";\n}\n\n.pi-pause:before {\n    content: \"\\e9b2\";\n}\n\n.pi-play:before {\n    content: \"\\e9b3\";\n}\n\n.pi-compass:before {\n    content: \"\\e9ab\";\n}\n\n.pi-id-card:before {\n    content: \"\\e9aa\";\n}\n\n.pi-ticket:before {\n    content: \"\\e9a9\";\n}\n\n.pi-file-o:before {\n    content: \"\\e9a8\";\n}\n\n.pi-reply:before {\n    content: \"\\e9a7\";\n}\n\n.pi-directions-alt:before {\n    content: \"\\e9a5\";\n}\n\n.pi-directions:before {\n    content: \"\\e9a6\";\n}\n\n.pi-thumbs-up:before {\n    content: \"\\e9a3\";\n}\n\n.pi-thumbs-down:before {\n    content: \"\\e9a4\";\n}\n\n.pi-sort-numeric-down-alt:before {\n    content: \"\\e996\";\n}\n\n.pi-sort-numeric-up-alt:before {\n    content: \"\\e997\";\n}\n\n.pi-sort-alpha-down-alt:before {\n    content: \"\\e998\";\n}\n\n.pi-sort-alpha-up-alt:before {\n    content: \"\\e999\";\n}\n\n.pi-sort-numeric-down:before {\n    content: \"\\e99a\";\n}\n\n.pi-sort-numeric-up:before {\n    content: \"\\e99b\";\n}\n\n.pi-sort-alpha-down:before {\n    content: \"\\e99c\";\n}\n\n.pi-sort-alpha-up:before {\n    content: \"\\e99d\";\n}\n\n.pi-sort-alt:before {\n    content: \"\\e99e\";\n}\n\n.pi-sort-amount-up:before {\n    content: \"\\e99f\";\n}\n\n.pi-sort-amount-down:before {\n    content: \"\\e9a0\";\n}\n\n.pi-sort-amount-down-alt:before {\n    content: \"\\e9a1\";\n}\n\n.pi-sort-amount-up-alt:before {\n    content: \"\\e9a2\";\n}\n\n.pi-palette:before {\n    content: \"\\e995\";\n}\n\n.pi-undo:before {\n    content: \"\\e994\";\n}\n\n.pi-desktop:before {\n    content: \"\\e993\";\n}\n\n.pi-sliders-v:before {\n    content: \"\\e991\";\n}\n\n.pi-sliders-h:before {\n    content: \"\\e992\";\n}\n\n.pi-search-plus:before {\n    content: \"\\e98f\";\n}\n\n.pi-search-minus:before {\n    content: \"\\e990\";\n}\n\n.pi-file-excel:before {\n    content: \"\\e98e\";\n}\n\n.pi-file-pdf:before {\n    content: \"\\e98d\";\n}\n\n.pi-check-square:before {\n    content: \"\\e98c\";\n}\n\n.pi-chart-line:before {\n    content: \"\\e98b\";\n}\n\n.pi-user-edit:before {\n    content: \"\\e98a\";\n}\n\n.pi-exclamation-circle:before {\n    content: \"\\e989\";\n}\n\n.pi-android:before {\n    content: \"\\e985\";\n}\n\n.pi-google:before {\n    content: \"\\e986\";\n}\n\n.pi-apple:before {\n    content: \"\\e987\";\n}\n\n.pi-microsoft:before {\n    content: \"\\e988\";\n}\n\n.pi-heart:before {\n    content: \"\\e984\";\n}\n\n.pi-mobile:before {\n    content: \"\\e982\";\n}\n\n.pi-tablet:before {\n    content: \"\\e983\";\n}\n\n.pi-key:before {\n    content: \"\\e981\";\n}\n\n.pi-shopping-cart:before {\n    content: \"\\e980\";\n}\n\n.pi-comments:before {\n    content: \"\\e97e\";\n}\n\n.pi-comment:before {\n    content: \"\\e97f\";\n}\n\n.pi-briefcase:before {\n    content: \"\\e97d\";\n}\n\n.pi-bell:before {\n    content: \"\\e97c\";\n}\n\n.pi-paperclip:before {\n    content: \"\\e97b\";\n}\n\n.pi-share-alt:before {\n    content: \"\\e97a\";\n}\n\n.pi-envelope:before {\n    content: \"\\e979\";\n}\n\n.pi-volume-down:before {\n    content: \"\\e976\";\n}\n\n.pi-volume-up:before {\n    content: \"\\e977\";\n}\n\n.pi-volume-off:before {\n    content: \"\\e978\";\n}\n\n.pi-eject:before {\n    content: \"\\e975\";\n}\n\n.pi-money-bill:before {\n    content: \"\\e974\";\n}\n\n.pi-images:before {\n    content: \"\\e973\";\n}\n\n.pi-image:before {\n    content: \"\\e972\";\n}\n\n.pi-sign-in:before {\n    content: \"\\e970\";\n}\n\n.pi-sign-out:before {\n    content: \"\\e971\";\n}\n\n.pi-wifi:before {\n    content: \"\\e96f\";\n}\n\n.pi-sitemap:before {\n    content: \"\\e96e\";\n}\n\n.pi-chart-bar:before {\n    content: \"\\e96d\";\n}\n\n.pi-camera:before {\n    content: \"\\e96c\";\n}\n\n.pi-dollar:before {\n    content: \"\\e96b\";\n}\n\n.pi-lock-open:before {\n    content: \"\\e96a\";\n}\n\n.pi-table:before {\n    content: \"\\e969\";\n}\n\n.pi-map-marker:before {\n    content: \"\\e968\";\n}\n\n.pi-list:before {\n    content: \"\\e967\";\n}\n\n.pi-eye-slash:before {\n    content: \"\\e965\";\n}\n\n.pi-eye:before {\n    content: \"\\e966\";\n}\n\n.pi-folder-open:before {\n    content: \"\\e964\";\n}\n\n.pi-folder:before {\n    content: \"\\e963\";\n}\n\n.pi-video:before {\n    content: \"\\e962\";\n}\n\n.pi-inbox:before {\n    content: \"\\e961\";\n}\n\n.pi-lock:before {\n    content: \"\\e95f\";\n}\n\n.pi-unlock:before {\n    content: \"\\e960\";\n}\n\n.pi-tags:before {\n    content: \"\\e95d\";\n}\n\n.pi-tag:before {\n    content: \"\\e95e\";\n}\n\n.pi-power-off:before {\n    content: \"\\e95c\";\n}\n\n.pi-save:before {\n    content: \"\\e95b\";\n}\n\n.pi-question-circle:before {\n    content: \"\\e959\";\n}\n\n.pi-question:before {\n    content: \"\\e95a\";\n}\n\n.pi-copy:before {\n    content: \"\\e957\";\n}\n\n.pi-file:before {\n    content: \"\\e958\";\n}\n\n.pi-clone:before {\n    content: \"\\e955\";\n}\n\n.pi-calendar-times:before {\n    content: \"\\e952\";\n}\n\n.pi-calendar-minus:before {\n    content: \"\\e953\";\n}\n\n.pi-calendar-plus:before {\n    content: \"\\e954\";\n}\n\n.pi-ellipsis-v:before {\n    content: \"\\e950\";\n}\n\n.pi-ellipsis-h:before {\n    content: \"\\e951\";\n}\n\n.pi-bookmark:before {\n    content: \"\\e94e\";\n}\n\n.pi-globe:before {\n    content: \"\\e94f\";\n}\n\n.pi-replay:before {\n    content: \"\\e94d\";\n}\n\n.pi-filter:before {\n    content: \"\\e94c\";\n}\n\n.pi-print:before {\n    content: \"\\e94b\";\n}\n\n.pi-align-right:before {\n    content: \"\\e946\";\n}\n\n.pi-align-left:before {\n    content: \"\\e947\";\n}\n\n.pi-align-center:before {\n    content: \"\\e948\";\n}\n\n.pi-align-justify:before {\n    content: \"\\e949\";\n}\n\n.pi-cog:before {\n    content: \"\\e94a\";\n}\n\n.pi-cloud-download:before {\n    content: \"\\e943\";\n}\n\n.pi-cloud-upload:before {\n    content: \"\\e944\";\n}\n\n.pi-cloud:before {\n    content: \"\\e945\";\n}\n\n.pi-pencil:before {\n    content: \"\\e942\";\n}\n\n.pi-users:before {\n    content: \"\\e941\";\n}\n\n.pi-clock:before {\n    content: \"\\e940\";\n}\n\n.pi-user-minus:before {\n    content: \"\\e93e\";\n}\n\n.pi-user-plus:before {\n    content: \"\\e93f\";\n}\n\n.pi-trash:before {\n    content: \"\\e93d\";\n}\n\n.pi-external-link:before {\n    content: \"\\e93c\";\n}\n\n.pi-window-maximize:before {\n    content: \"\\e93b\";\n}\n\n.pi-window-minimize:before {\n    content: \"\\e93a\";\n}\n\n.pi-refresh:before {\n    content: \"\\e938\";\n}\n  \n.pi-user:before {\n    content: \"\\e939\";\n}\n\n.pi-exclamation-triangle:before {\n    content: \"\\e922\";\n}\n\n.pi-calendar:before {\n    content: \"\\e927\";\n}\n\n.pi-chevron-circle-left:before {\n    content: \"\\e928\";\n}\n\n.pi-chevron-circle-down:before {\n    content: \"\\e929\";\n}\n\n.pi-chevron-circle-right:before {\n    content: \"\\e92a\";\n}\n\n.pi-chevron-circle-up:before {\n    content: \"\\e92b\";\n}\n\n.pi-angle-double-down:before {\n    content: \"\\e92c\";\n}\n\n.pi-angle-double-left:before {\n    content: \"\\e92d\";\n}\n\n.pi-angle-double-right:before {\n    content: \"\\e92e\";\n}\n\n.pi-angle-double-up:before {\n    content: \"\\e92f\";\n}\n\n.pi-angle-down:before {\n    content: \"\\e930\";\n}\n\n.pi-angle-left:before {\n    content: \"\\e931\";\n}\n\n.pi-angle-right:before {\n    content: \"\\e932\";\n}\n\n.pi-angle-up:before {\n    content: \"\\e933\";\n}\n\n.pi-upload:before {\n    content: \"\\e934\";\n}\n\n.pi-download:before {\n    content: \"\\e956\";\n}\n\n.pi-ban:before {\n    content: \"\\e935\";\n}\n\n.pi-star-fill:before {\n    content: \"\\e936\";\n}\n\n.pi-star:before {\n    content: \"\\e937\";\n}\n\n.pi-chevron-left:before {\n    content: \"\\e900\";\n}\n\n.pi-chevron-right:before {\n    content: \"\\e901\";\n}\n\n.pi-chevron-down:before {\n    content: \"\\e902\";\n}\n\n.pi-chevron-up:before {\n    content: \"\\e903\";\n}\n\n.pi-caret-left:before {\n    content: \"\\e904\";\n}\n\n.pi-caret-right:before {\n    content: \"\\e905\";\n}\n\n.pi-caret-down:before {\n    content: \"\\e906\";\n}\n\n.pi-caret-up:before {\n    content: \"\\e907\";\n}\n\n.pi-search:before {\n    content: \"\\e908\";\n}\n\n.pi-check:before {\n    content: \"\\e909\";\n}\n\n.pi-check-circle:before {\n    content: \"\\e90a\";\n}\n\n.pi-times:before {\n    content: \"\\e90b\";\n}\n\n.pi-times-circle:before {\n    content: \"\\e90c\";\n}\n\n.pi-plus:before {\n    content: \"\\e90d\";\n}\n\n.pi-plus-circle:before {\n    content: \"\\e90e\";\n}\n\n.pi-minus:before {\n    content: \"\\e90f\";\n}\n\n.pi-minus-circle:before {\n    content: \"\\e910\";\n}\n\n.pi-circle-on:before {\n    content: \"\\e911\";\n}\n\n.pi-circle-off:before {\n    content: \"\\e912\";\n}\n\n.pi-sort-down:before {\n    content: \"\\e913\";\n}\n\n.pi-sort-up:before {\n    content: \"\\e914\";\n}\n\n.pi-sort:before {\n    content: \"\\e915\";\n}\n\n.pi-step-backward:before {\n    content: \"\\e916\";\n}\n\n.pi-step-forward:before {\n    content: \"\\e917\";\n}\n\n.pi-th-large:before {\n    content: \"\\e918\";\n}\n\n.pi-arrow-down:before {\n    content: \"\\e919\";\n}\n\n.pi-arrow-left:before {\n    content: \"\\e91a\";\n}\n\n.pi-arrow-right:before {\n    content: \"\\e91b\";\n}\n\n.pi-arrow-up:before {\n    content: \"\\e91c\";\n}\n\n.pi-bars:before {\n    content: \"\\e91d\";\n}\n\n.pi-arrow-circle-down:before {\n    content: \"\\e91e\";\n}\n\n.pi-arrow-circle-left:before {\n    content: \"\\e91f\";\n}\n\n.pi-arrow-circle-right:before {\n    content: \"\\e920\";\n}\n\n.pi-arrow-circle-up:before {\n    content: \"\\e921\";\n}\n\n.pi-info:before {\n    content: \"\\e923\";\n}\n\n.pi-info-circle:before {\n    content: \"\\e924\";\n}\n\n.pi-home:before {\n    content: \"\\e925\";\n}\n\n.pi-spinner:before {\n    content: \"\\e926\";\n}\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/primevue.min.css":
+/*!******************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/primevue.min.css ***!
+  \******************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../css-loader/dist/runtime/getUrl.js */ "./node_modules/css-loader/dist/runtime/getUrl.js");
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _images_color_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./images/color.png */ "./node_modules/primevue/resources/images/color.png");
+/* harmony import */ var _images_hue_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./images/hue.png */ "./node_modules/primevue/resources/images/hue.png");
+// Imports
+
+
+
+
+var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+var ___CSS_LOADER_URL_REPLACEMENT_0___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_images_color_png__WEBPACK_IMPORTED_MODULE_2__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_1___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_images_hue_png__WEBPACK_IMPORTED_MODULE_3__["default"]);
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".p-component,.p-component *{box-sizing:border-box}.p-hidden{display:none}.p-hidden-space{visibility:hidden}.p-hidden-accessible{border:0;clip:rect(0 0 0 0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;top:0;left:0;width:1px}.p-hidden-accessible input,.p-hidden-accessible select{transform:scale(0)}.p-reset{margin:0;padding:0;border:0;outline:0;text-decoration:none;font-size:100%;list-style:none}.p-disabled,.p-disabled *{cursor:default !important;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.p-component-overlay{position:fixed;top:0;left:0;width:100%;height:100%}.p-overflow-hidden{overflow:hidden}.p-unselectable-text{-webkit-user-select:none;-moz-user-select:none;user-select:none}.p-scrollbar-measure{width:100px;height:100px;overflow:scroll;position:absolute;top:-9999px}@keyframes p-fadein{0%{opacity:0}100%{opacity:1}}input[type=\"button\"],input[type=\"submit\"],input[type=\"reset\"],input[type=\"file\"]::-webkit-file-upload-button,button{border-radius:0}.p-link{text-align:left;background-color:transparent;margin:0;padding:0;border:0;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none}.p-link:disabled{cursor:default}.p-connected-overlay{opacity:0;transform:scaleY(0.8);transition:transform .12s cubic-bezier(0,0,0.2,1),opacity .12s cubic-bezier(0,0,0.2,1)}.p-connected-overlay-visible{opacity:1;transform:scaleY(1)}.p-connected-overlay-hidden{opacity:0;transform:scaleY(1);transition:opacity .1s linear}.p-connected-overlay-enter-from{opacity:0;transform:scaleY(0.8)}.p-connected-overlay-leave-to{opacity:0}.p-connected-overlay-enter-active{transition:transform .12s cubic-bezier(0,0,0.2,1),opacity .12s cubic-bezier(0,0,0.2,1)}.p-connected-overlay-leave-active{transition:opacity .1s linear}.p-toggleable-content-enter-from,.p-toggleable-content-leave-to{max-height:0}.p-toggleable-content-enter-to,.p-toggleable-content-leave-from{max-height:1000px}.p-toggleable-content-leave-active{overflow:hidden;transition:max-height .45s cubic-bezier(0,1,0,1)}.p-toggleable-content-enter-active{overflow:hidden;transition:max-height 1s ease-in-out}.p-sr-only{border:0;clip:rect(1px,1px,1px,1px);-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-wrap:normal !important}.p-badge{display:inline-block;border-radius:10px;text-align:center;padding:0 .5rem}.p-overlay-badge{position:relative}.p-overlay-badge .p-badge{position:absolute;top:0;right:0;transform:translate(50%,-50%);transform-origin:100% 0;margin:0}.p-badge-dot{width:.5rem;min-width:.5rem;height:.5rem;border-radius:50%;padding:0}.p-badge-no-gutter{padding:0;border-radius:50%}.p-button{margin:0;display:inline-flex;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none;align-items:center;vertical-align:bottom;text-align:center;overflow:hidden;position:relative}.p-button-label{flex:1 1 auto}.p-button-icon-right{order:1}.p-button:disabled{cursor:default}.p-button-icon-only{justify-content:center}.p-button-icon-only .p-button-label{visibility:hidden;width:0;flex:0 0 auto}.p-button-vertical{flex-direction:column}.p-button-icon-bottom{order:2}.p-buttonset .p-button{margin:0}.p-buttonset .p-button:not(:last-child){border-right:0 none}.p-buttonset .p-button:not(:first-of-type):not(:last-of-type){border-radius:0}.p-buttonset .p-button:first-of-type{border-top-right-radius:0;border-bottom-right-radius:0}.p-buttonset .p-button:last-of-type{border-top-left-radius:0;border-bottom-left-radius:0}.p-buttonset .p-button:focus{position:relative;z-index:1}.p-checkbox{display:inline-flex;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none;vertical-align:bottom;position:relative}.p-checkbox.p-checkbox-disabled{cursor:default}.p-checkbox-box{display:flex;justify-content:center;align-items:center}.p-colorpicker-panel .p-colorpicker-color{background:transparent url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") no-repeat left top}.p-colorpicker-panel .p-colorpicker-hue{background:transparent url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ") no-repeat left top}.p-inputtext{margin:0}.p-fluid .p-inputtext{width:100%}.p-inputgroup{display:flex;align-items:stretch;width:100%}.p-inputgroup-addon{display:flex;align-items:center;justify-content:center}.p-inputgroup .p-float-label{display:flex;align-items:stretch;width:100%}.p-inputgroup .p-inputtext,.p-fluid .p-inputgroup .p-inputtext,.p-inputgroup .p-inputwrapper,.p-fluid .p-inputgroup .p-input{flex:1 1 auto;width:1%}.p-float-label{display:block;position:relative}.p-float-label label{position:absolute;pointer-events:none;top:50%;margin-top:-.5rem;transition-property:all;transition-timing-function:ease;line-height:1}.p-float-label textarea ~ label{top:1rem}.p-float-label input:focus ~ label,.p-float-label input.p-filled ~ label,.p-float-label textarea:focus ~ label,.p-float-label textarea.p-filled ~ label,.p-float-label .p-inputwrapper-focus ~ label,.p-float-label .p-inputwrapper-filled ~ label{top:-.75rem;font-size:12px}.p-float-label .input:-webkit-autofill ~ label{top:-20px;font-size:12px}.p-float-label input::-moz-placeholder, .p-float-label .p-inputtext::-moz-placeholder{opacity:0;-moz-transition-property:all;transition-property:all;transition-timing-function:ease}.p-float-label .p-placeholder,.p-float-label input::placeholder,.p-float-label .p-inputtext::placeholder{opacity:0;transition-property:all;transition-timing-function:ease}.p-float-label input:focus::-moz-placeholder, .p-float-label .p-inputtext:focus::-moz-placeholder{opacity:1;-moz-transition-property:all;transition-property:all;transition-timing-function:ease}.p-float-label .p-focus .p-placeholder,.p-float-label input:focus::placeholder,.p-float-label .p-inputtext:focus::placeholder{opacity:1;transition-property:all;transition-timing-function:ease}.p-input-icon-left,.p-input-icon-right{position:relative;display:inline-block}.p-input-icon-left>i,.p-input-icon-right>i{position:absolute;top:50%;margin-top:-.5rem}.p-fluid .p-input-icon-left,.p-fluid .p-input-icon-right{display:block;width:100%}.p-radiobutton{display:inline-flex;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;user-select:none;vertical-align:bottom}.p-radiobutton.p-radiobutton-disabled{cursor:default}.p-radiobutton-box{display:flex;justify-content:center;align-items:center}.p-radiobutton-icon{-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0) scale(.1);border-radius:50%;visibility:hidden}.p-radiobutton-box.p-highlight .p-radiobutton-icon{transform:translateZ(0) scale(1.0,1.0);visibility:visible}.p-ripple{overflow:hidden;position:relative}.p-ink{display:block;position:absolute;background:rgba(255,255,255,0.5);border-radius:100%;transform:scale(0);pointer-events:none}.p-ink-active{animation:ripple .4s linear}.p-ripple-disabled .p-ink{display:none !important}@keyframes ripple{100%{opacity:0;transform:scale(2.5)}}.p-tooltip{position:absolute;display:none;padding:.25em .5rem;max-width:12.5rem}.p-tooltip.p-tooltip-right,.p-tooltip.p-tooltip-left{padding:0 .25rem}.p-tooltip.p-tooltip-top,.p-tooltip.p-tooltip-bottom{padding:.25em 0}.p-tooltip .p-tooltip-text{white-space:pre-line;word-break:break-word}.p-tooltip-arrow{position:absolute;width:0;height:0;border-color:transparent;border-style:solid}.p-tooltip-right .p-tooltip-arrow{top:50%;left:0;margin-top:-.25rem;border-width:.25em .25em .25em 0}.p-tooltip-left .p-tooltip-arrow{top:50%;right:0;margin-top:-.25rem;border-width:.25em 0 .25em .25rem}.p-tooltip.p-tooltip-top{padding:.25em 0}.p-tooltip-top .p-tooltip-arrow{bottom:0;left:50%;margin-left:-.25rem;border-width:.25em .25em 0}.p-tooltip-bottom .p-tooltip-arrow{top:0;left:50%;margin-left:-.25rem;border-width:0 .25em .25rem}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/themes/tailwind-light/theme.css":
+/*!*********************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/themes/tailwind-light/theme.css ***!
+  \*********************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../css-loader/dist/runtime/getUrl.js */ "./node_modules/css-loader/dist/runtime/getUrl.js");
+/* harmony import */ var _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fonts_Inter_Light_woff2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fonts/Inter-Light.woff2 */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff2");
+/* harmony import */ var _fonts_Inter_Light_woff__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./fonts/Inter-Light.woff */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff");
+/* harmony import */ var _fonts_Inter_Regular_woff2__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./fonts/Inter-Regular.woff2 */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff2");
+/* harmony import */ var _fonts_Inter_Regular_woff__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./fonts/Inter-Regular.woff */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff");
+/* harmony import */ var _fonts_Inter_Medium_woff2__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./fonts/Inter-Medium.woff2 */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff2");
+/* harmony import */ var _fonts_Inter_Medium_woff__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./fonts/Inter-Medium.woff */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff");
+/* harmony import */ var _fonts_Inter_SemiBold_woff2__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./fonts/Inter-SemiBold.woff2 */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff2");
+/* harmony import */ var _fonts_Inter_SemiBold_woff__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./fonts/Inter-SemiBold.woff */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff");
+/* harmony import */ var _fonts_Inter_Bold_woff2__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./fonts/Inter-Bold.woff2 */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff2");
+/* harmony import */ var _fonts_Inter_Bold_woff__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./fonts/Inter-Bold.woff */ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff");
+// Imports
+
+
+
+
+
+
+
+
+
+
+
+
+var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+var ___CSS_LOADER_URL_REPLACEMENT_0___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Light_woff2__WEBPACK_IMPORTED_MODULE_2__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_1___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Light_woff__WEBPACK_IMPORTED_MODULE_3__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_2___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Regular_woff2__WEBPACK_IMPORTED_MODULE_4__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_3___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Regular_woff__WEBPACK_IMPORTED_MODULE_5__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_4___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Medium_woff2__WEBPACK_IMPORTED_MODULE_6__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_5___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Medium_woff__WEBPACK_IMPORTED_MODULE_7__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_6___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_SemiBold_woff2__WEBPACK_IMPORTED_MODULE_8__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_7___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_SemiBold_woff__WEBPACK_IMPORTED_MODULE_9__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_8___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Bold_woff2__WEBPACK_IMPORTED_MODULE_10__["default"]);
+var ___CSS_LOADER_URL_REPLACEMENT_9___ = _css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_1___default()(_fonts_Inter_Bold_woff__WEBPACK_IMPORTED_MODULE_11__["default"]);
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ":root {\n  --surface-a:#ffffff;\n  --surface-b:#fafafa;\n  --surface-c:#f4f4f5;\n  --surface-d:#e5e7eb;\n  --surface-e:#ffffff;\n  --surface-f:#ffffff;\n  --text-color:#3f3f46;\n  --text-color-secondary:#71717A;\n  --primary-color:#4F46E5;\n  --primary-color-text:#ffffff;\n  --font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;\n  --surface-0: #ffffff;\n  --surface-50: #FAFAFA;\n  --surface-100: #F4F4F5;\n  --surface-200: #E4E4E7;\n  --surface-300: #D4D4D8;\n  --surface-400: #A1A1AA;\n  --surface-500: #71717A;\n  --surface-600: #52525B;\n  --surface-700: #3F3F46;\n  --surface-800: #27272A;\n  --surface-900: #18181B;\n  --gray-50: #FAFAFA;\n  --gray-100: #F4F4F5;\n  --gray-200: #E4E4E7;\n  --gray-300: #D4D4D8;\n  --gray-400: #A1A1AA;\n  --gray-500: #71717A;\n  --gray-600: #52525B;\n  --gray-700: #3F3F46;\n  --gray-800: #27272A;\n  --gray-900: #18181B;\n  --content-padding:1.25rem;\n  --inline-spacing:0.5rem;\n  --border-radius:0.375rem;\n  --surface-ground:#FAFAFA;\n  --surface-section:#ffffff;\n  --surface-card:#ffffff;\n  --surface-overlay:#ffffff;\n  --surface-border:#e5e7eb;\n  --surface-hover: #f4f4f5;\n  --focus-ring: 0 0 0 1px #6366F1;\n  --maskbg: rgba(0, 0, 0, 0.4);\n  color-scheme: light;\n}\n\n@font-face {\n  font-family: \"Inter\";\n  font-style: normal;\n  font-weight: 300;\n  src: local(\"\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ") format(\"woff\");\n  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */\n}\n@font-face {\n  font-family: \"Inter\";\n  font-style: normal;\n  font-weight: 400;\n  src: local(\"\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_2___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_3___ + ") format(\"woff\");\n  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */\n}\n@font-face {\n  font-family: \"Inter\";\n  font-style: normal;\n  font-weight: 500;\n  src: local(\"\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_4___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ") format(\"woff\");\n  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */\n}\n@font-face {\n  font-family: \"Inter\";\n  font-style: normal;\n  font-weight: 600;\n  src: local(\"\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_6___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_7___ + ") format(\"woff\");\n  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */\n}\n@font-face {\n  font-family: \"Inter\";\n  font-style: normal;\n  font-weight: 700;\n  src: local(\"\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_8___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_9___ + ") format(\"woff\");\n  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */\n}\n* {\n  box-sizing: border-box;\n}\n\n.p-component {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 1rem;\n  font-weight: normal;\n}\n\n.p-component-overlay {\n  background-color: rgba(0, 0, 0, 0.4);\n  transition-duration: 0.2s;\n}\n\n.p-disabled, .p-component:disabled {\n  opacity: 0.6;\n}\n\n.p-error {\n  color: #e24c4c;\n}\n\n.p-text-secondary {\n  color: #71717A;\n}\n\n.pi {\n  font-size: 1rem;\n}\n\n.p-link {\n  font-size: 1rem;\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  border-radius: 0.375rem;\n}\n.p-link:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-component-overlay-enter {\n  animation: p-component-overlay-enter-animation 150ms forwards;\n}\n\n.p-component-overlay-leave {\n  animation: p-component-overlay-leave-animation 150ms forwards;\n}\n\n@keyframes p-component-overlay-enter-animation {\n  from {\n    background-color: transparent;\n  }\n  to {\n    background-color: var(--maskbg);\n  }\n}\n@keyframes p-component-overlay-leave-animation {\n  from {\n    background-color: var(--maskbg);\n  }\n  to {\n    background-color: transparent;\n  }\n}\n\n:root {\n  --blue-50:#f5f9ff;\n  --blue-100:#d0e1fd;\n  --blue-200:#abc9fb;\n  --blue-300:#85b2f9;\n  --blue-400:#609af8;\n  --blue-500:#3b82f6;\n  --blue-600:#326fd1;\n  --blue-700:#295bac;\n  --blue-800:#204887;\n  --blue-900:#183462;\n  --green-50:#f4fcf7;\n  --green-100:#caf1d8;\n  --green-200:#a0e6ba;\n  --green-300:#76db9b;\n  --green-400:#4cd07d;\n  --green-500:#22c55e;\n  --green-600:#1da750;\n  --green-700:#188a42;\n  --green-800:#136c34;\n  --green-900:#0e4f26;\n  --yellow-50:#fefbf3;\n  --yellow-100:#faedc4;\n  --yellow-200:#f6de95;\n  --yellow-300:#f2d066;\n  --yellow-400:#eec137;\n  --yellow-500:#eab308;\n  --yellow-600:#c79807;\n  --yellow-700:#a47d06;\n  --yellow-800:#816204;\n  --yellow-900:#5e4803;\n  --cyan-50:#f3fbfd;\n  --cyan-100:#c3edf5;\n  --cyan-200:#94e0ed;\n  --cyan-300:#65d2e4;\n  --cyan-400:#35c4dc;\n  --cyan-500:#06b6d4;\n  --cyan-600:#059bb4;\n  --cyan-700:#047f94;\n  --cyan-800:#036475;\n  --cyan-900:#024955;\n  --pink-50:#fef6fa;\n  --pink-100:#fad3e7;\n  --pink-200:#f7b0d3;\n  --pink-300:#f38ec0;\n  --pink-400:#f06bac;\n  --pink-500:#ec4899;\n  --pink-600:#c93d82;\n  --pink-700:#a5326b;\n  --pink-800:#822854;\n  --pink-900:#5e1d3d;\n  --indigo-50:#f7f7fe;\n  --indigo-100:#dadafc;\n  --indigo-200:#bcbdf9;\n  --indigo-300:#9ea0f6;\n  --indigo-400:#8183f4;\n  --indigo-500:#6366f1;\n  --indigo-600:#5457cd;\n  --indigo-700:#4547a9;\n  --indigo-800:#363885;\n  --indigo-900:#282960;\n  --teal-50:#f3fbfb;\n  --teal-100:#c7eeea;\n  --teal-200:#9ae0d9;\n  --teal-300:#6dd3c8;\n  --teal-400:#41c5b7;\n  --teal-500:#14b8a6;\n  --teal-600:#119c8d;\n  --teal-700:#0e8174;\n  --teal-800:#0b655b;\n  --teal-900:#084a42;\n  --orange-50:#fff8f3;\n  --orange-100:#feddc7;\n  --orange-200:#fcc39b;\n  --orange-300:#fba86f;\n  --orange-400:#fa8e42;\n  --orange-500:#f97316;\n  --orange-600:#d46213;\n  --orange-700:#ae510f;\n  --orange-800:#893f0c;\n  --orange-900:#642e09;\n  --bluegray-50:#f7f8f9;\n  --bluegray-100:#dadee3;\n  --bluegray-200:#bcc3cd;\n  --bluegray-300:#9fa9b7;\n  --bluegray-400:#818ea1;\n  --bluegray-500:#64748b;\n  --bluegray-600:#556376;\n  --bluegray-700:#465161;\n  --bluegray-800:#37404c;\n  --bluegray-900:#282e38;\n  --purple-50:#fbf7ff;\n  --purple-100:#ead6fd;\n  --purple-200:#dab6fc;\n  --purple-300:#c996fa;\n  --purple-400:#b975f9;\n  --purple-500:#a855f7;\n  --purple-600:#8f48d2;\n  --purple-700:#763cad;\n  --purple-800:#5c2f88;\n  --purple-900:#432263;\n  --red-50:#fef6f6;\n  --red-100:#fbd2d2;\n  --red-200:#f8afaf;\n  --red-300:#f58b8b;\n  --red-400:#f26868;\n  --red-500:#ef4444;\n  --red-600:#cb3a3a;\n  --red-700:#a73030;\n  --red-800:#832525;\n  --red-900:#601b1b;\n  --primary-50:#f6f6fe;\n  --primary-100:#d5d3f9;\n  --primary-200:#b3aff4;\n  --primary-300:#928cef;\n  --primary-400:#7069ea;\n  --primary-500:#4f46e5;\n  --primary-600:#433cc3;\n  --primary-700:#3731a0;\n  --primary-800:#2b277e;\n  --primary-900:#201c5c;\n}\n\n.p-autocomplete .p-autocomplete-loader {\n  right: 0.75rem;\n}\n.p-autocomplete.p-autocomplete-dd .p-autocomplete-loader {\n  right: 3.75rem;\n}\n.p-autocomplete:not(.p-disabled):hover .p-autocomplete-multiple-container {\n  border-color: #d4d4d8;\n}\n.p-autocomplete:not(.p-disabled).p-focus .p-autocomplete-multiple-container {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-autocomplete .p-autocomplete-multiple-container {\n  padding: 0.375rem 0.75rem;\n  gap: 0.5rem;\n}\n.p-autocomplete .p-autocomplete-multiple-container .p-autocomplete-input-token {\n  padding: 0.375rem 0;\n}\n.p-autocomplete .p-autocomplete-multiple-container .p-autocomplete-input-token input {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 1rem;\n  color: #3f3f46;\n  padding: 0;\n  margin: 0;\n}\n.p-autocomplete .p-autocomplete-multiple-container .p-autocomplete-token {\n  padding: 0.375rem 0.75rem;\n  background: #e5e7eb;\n  color: #3f3f46;\n  border-radius: 16px;\n}\n.p-autocomplete .p-autocomplete-multiple-container .p-autocomplete-token .p-autocomplete-token-icon {\n  margin-left: 0.5rem;\n}\n.p-autocomplete .p-autocomplete-multiple-container .p-autocomplete-token.p-focus {\n  background: #d4d4d8;\n  color: #3f3f46;\n}\n.p-autocomplete.p-invalid.p-component > .p-inputtext {\n  border-color: #f0a9a7;\n}\n\n.p-autocomplete-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-autocomplete-panel .p-autocomplete-items {\n  padding: 0.25rem 0;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: none;\n  border-radius: 0;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item.p-highlight.p-focus {\n  background: #E0E7FF;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item:not(.p-highlight):not(.p-disabled).p-focus {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item-group {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n}\n\n.p-calendar.p-invalid.p-component > .p-inputtext {\n  border-color: #f0a9a7;\n}\n\n.p-datepicker {\n  padding: 0.5rem;\n  background: #ffffff;\n  color: #3f3f46;\n  border: 1px solid #d4d4d8;\n  border-radius: 0.375rem;\n}\n.p-datepicker:not(.p-datepicker-inline) {\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-datepicker:not(.p-datepicker-inline) .p-datepicker-header {\n  background: #ffffff;\n}\n.p-datepicker .p-datepicker-header {\n  padding: 0.5rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n  margin: 0;\n  border-bottom: 1px solid #e5e7eb;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-prev,\n.p-datepicker .p-datepicker-header .p-datepicker-next {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-prev:enabled:hover,\n.p-datepicker .p-datepicker-header .p-datepicker-next:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-prev:focus,\n.p-datepicker .p-datepicker-header .p-datepicker-next:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-title {\n  line-height: 2rem;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-year,\n.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month {\n  color: #3f3f46;\n  transition: none;\n  font-weight: 600;\n  padding: 0.5rem;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-year:enabled:hover,\n.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month:enabled:hover {\n  color: #4F46E5;\n}\n.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month {\n  margin-right: 0.5rem;\n}\n.p-datepicker table {\n  font-size: 1rem;\n  margin: 0.5rem 0;\n}\n.p-datepicker table th {\n  padding: 0.5rem;\n}\n.p-datepicker table th > span {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.p-datepicker table td {\n  padding: 0.5rem;\n}\n.p-datepicker table td > span {\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 50%;\n  transition: none;\n  border: 1px solid transparent;\n}\n.p-datepicker table td > span.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-datepicker table td > span:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datepicker table td.p-datepicker-today > span {\n  background: #d4d4d8;\n  color: #3f3f46;\n  border-color: transparent;\n}\n.p-datepicker table td.p-datepicker-today > span.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-datepicker .p-datepicker-buttonbar {\n  padding: 1rem 0;\n  border-top: 1px solid #f3f4f6;\n}\n.p-datepicker .p-datepicker-buttonbar .p-button {\n  width: auto;\n}\n.p-datepicker .p-timepicker {\n  border-top: 1px solid #f3f4f6;\n  padding: 0.5rem;\n}\n.p-datepicker .p-timepicker button {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-datepicker .p-timepicker button:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-datepicker .p-timepicker button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datepicker .p-timepicker button:last-child {\n  margin-top: 0.2em;\n}\n.p-datepicker .p-timepicker span {\n  font-size: 1.25rem;\n}\n.p-datepicker .p-timepicker > div {\n  padding: 0 0.5rem;\n}\n.p-datepicker.p-datepicker-timeonly .p-timepicker {\n  border-top: 0 none;\n}\n.p-datepicker .p-monthpicker {\n  margin: 0.5rem 0;\n}\n.p-datepicker .p-monthpicker .p-monthpicker-month {\n  padding: 0.5rem;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-datepicker .p-monthpicker .p-monthpicker-month.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-datepicker .p-yearpicker {\n  margin: 0.5rem 0;\n}\n.p-datepicker .p-yearpicker .p-yearpicker-year {\n  padding: 0.5rem;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-datepicker .p-yearpicker .p-yearpicker-year.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-datepicker.p-datepicker-multiple-month .p-datepicker-group {\n  border-left: 1px solid #f3f4f6;\n  padding-right: 0.5rem;\n  padding-left: 0.5rem;\n  padding-top: 0;\n  padding-bottom: 0;\n}\n.p-datepicker.p-datepicker-multiple-month .p-datepicker-group:first-child {\n  padding-left: 0;\n  border-left: 0 none;\n}\n.p-datepicker.p-datepicker-multiple-month .p-datepicker-group:last-child {\n  padding-right: 0;\n}\n.p-datepicker:not(.p-disabled) table td span:not(.p-highlight):not(.p-disabled):hover {\n  background: #f4f4f5;\n}\n.p-datepicker:not(.p-disabled) table td span:not(.p-highlight):not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datepicker:not(.p-disabled) .p-monthpicker .p-monthpicker-month:not(.p-disabled):not(.p-highlight):hover {\n  background: #f4f4f5;\n}\n.p-datepicker:not(.p-disabled) .p-monthpicker .p-monthpicker-month:not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datepicker:not(.p-disabled) .p-yearpicker .p-yearpicker-year:not(.p-disabled):not(.p-highlight):hover {\n  background: #f4f4f5;\n}\n.p-datepicker:not(.p-disabled) .p-yearpicker .p-yearpicker-year:not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n@media screen and (max-width: 769px) {\n  .p-datepicker table th, .p-datepicker table td {\n    padding: 0;\n  }\n}\n.p-cascadeselect {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-cascadeselect:not(.p-disabled):hover {\n  border-color: #d4d4d8;\n}\n.p-cascadeselect:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-cascadeselect .p-cascadeselect-label {\n  background: transparent;\n  border: 0 none;\n  padding: 0.75rem 0.75rem;\n}\n.p-cascadeselect .p-cascadeselect-label.p-placeholder {\n  color: #71717A;\n}\n.p-cascadeselect .p-cascadeselect-label:enabled:focus {\n  outline: 0 none;\n  box-shadow: none;\n}\n.p-cascadeselect .p-cascadeselect-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 3rem;\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.p-cascadeselect.p-invalid.p-component {\n  border-color: #f0a9a7;\n}\n\n.p-cascadeselect-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-cascadeselect-panel .p-cascadeselect-items {\n  padding: 0.25rem 0;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item {\n  margin: 0;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: none;\n  border-radius: 0;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item.p-highlight.p-focus {\n  background: #E0E7FF;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item:not(.p-highlight):not(.p-disabled).p-focus {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item .p-cascadeselect-item-content {\n  padding: 0.75rem 1rem;\n}\n.p-cascadeselect-panel .p-cascadeselect-items .p-cascadeselect-item .p-cascadeselect-group-icon {\n  font-size: 0.875rem;\n}\n\n.p-input-filled .p-cascadeselect {\n  background: #fafafa;\n}\n.p-input-filled .p-cascadeselect:not(.p-disabled):hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-cascadeselect:not(.p-disabled).p-focus {\n  background-color: #ffffff;\n}\n\n.p-checkbox {\n  width: 16px;\n  height: 16px;\n}\n.p-checkbox .p-checkbox-box {\n  border: 2px solid #d4d4d8;\n  background: #ffffff;\n  width: 16px;\n  height: 16px;\n  color: #3f3f46;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-checkbox .p-checkbox-box .p-checkbox-icon {\n  transition-duration: 0.2s;\n  color: #ffffff;\n  font-size: 10px;\n}\n.p-checkbox .p-checkbox-box.p-highlight {\n  border-color: #4F46E5;\n  background: #4F46E5;\n}\n.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {\n  border-color: #d4d4d8;\n}\n.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover {\n  border-color: #4F46E5;\n  background: #4F46E5;\n  color: #ffffff;\n}\n.p-checkbox.p-invalid > .p-checkbox-box {\n  border-color: #f0a9a7;\n}\n\n.p-input-filled .p-checkbox .p-checkbox-box {\n  background-color: #fafafa;\n}\n.p-input-filled .p-checkbox .p-checkbox-box.p-highlight {\n  background: #4F46E5;\n}\n.p-input-filled .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover {\n  background: #4F46E5;\n}\n\n.p-chips:not(.p-disabled):hover .p-chips-multiple-container {\n  border-color: #d4d4d8;\n}\n.p-chips:not(.p-disabled).p-focus .p-chips-multiple-container {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-chips .p-chips-multiple-container {\n  padding: 0.375rem 0.75rem;\n}\n.p-chips .p-chips-multiple-container .p-chips-token {\n  padding: 0.375rem 0.75rem;\n  margin-right: 0.5rem;\n  background: #e5e7eb;\n  color: #3f3f46;\n  border-radius: 16px;\n}\n.p-chips .p-chips-multiple-container .p-chips-token.p-focus {\n  background: #d4d4d8;\n  color: #3f3f46;\n}\n.p-chips .p-chips-multiple-container .p-chips-token .p-chips-token-icon {\n  margin-left: 0.5rem;\n}\n.p-chips .p-chips-multiple-container .p-chips-input-token {\n  padding: 0.375rem 0;\n}\n.p-chips .p-chips-multiple-container .p-chips-input-token input {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 1rem;\n  color: #3f3f46;\n  padding: 0;\n  margin: 0;\n}\n.p-chips.p-invalid.p-component > .p-inputtext {\n  border-color: #f0a9a7;\n}\n\n.p-colorpicker-preview {\n  width: 2rem;\n  height: 2rem;\n}\n\n.p-colorpicker-panel {\n  background: #27272A;\n  border: 1px solid #18181B;\n}\n.p-colorpicker-panel .p-colorpicker-color-handle,\n.p-colorpicker-panel .p-colorpicker-hue-handle {\n  border-color: #ffffff;\n}\n\n.p-colorpicker-overlay-panel {\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n\n.p-dropdown {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-dropdown:not(.p-disabled):hover {\n  border-color: #d4d4d8;\n}\n.p-dropdown:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-dropdown.p-dropdown-clearable .p-dropdown-label {\n  padding-right: 1.75rem;\n}\n.p-dropdown .p-dropdown-label {\n  background: transparent;\n  border: 0 none;\n}\n.p-dropdown .p-dropdown-label.p-placeholder {\n  color: #71717A;\n}\n.p-dropdown .p-dropdown-label:focus, .p-dropdown .p-dropdown-label:enabled:focus {\n  outline: 0 none;\n  box-shadow: none;\n}\n.p-dropdown .p-dropdown-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 3rem;\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.p-dropdown .p-dropdown-clear-icon {\n  color: #71717A;\n  right: 3rem;\n}\n.p-dropdown.p-invalid.p-component {\n  border-color: #f0a9a7;\n}\n\n.p-dropdown-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-dropdown-panel .p-dropdown-header {\n  padding: 0.5rem 0.75rem;\n  border-bottom: 0 none;\n  color: #3f3f46;\n  background: #fafafa;\n  margin: 0;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-dropdown-panel .p-dropdown-header .p-dropdown-filter {\n  padding-right: 1.75rem;\n  margin-right: -1.75rem;\n}\n.p-dropdown-panel .p-dropdown-header .p-dropdown-filter-icon {\n  right: 0.75rem;\n  color: #71717A;\n}\n.p-dropdown-panel .p-dropdown-items {\n  padding: 0.25rem 0;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: none;\n  border-radius: 0;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight.p-focus {\n  background: #E0E7FF;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n}\n.p-dropdown-panel .p-dropdown-items .p-dropdown-empty-message {\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: transparent;\n}\n\n.p-input-filled .p-dropdown {\n  background: #fafafa;\n}\n.p-input-filled .p-dropdown:not(.p-disabled):hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-dropdown:not(.p-disabled).p-focus {\n  background-color: #ffffff;\n}\n.p-input-filled .p-dropdown:not(.p-disabled).p-focus .p-inputtext {\n  background-color: transparent;\n}\n\n.p-editor-container .p-editor-toolbar {\n  background: #fafafa;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-editor-container .p-editor-toolbar.ql-snow {\n  border: 1px solid #e5e7eb;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-stroke {\n  stroke: #71717A;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-fill {\n  fill: #71717A;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker .ql-picker-label {\n  border: 0 none;\n  color: #71717A;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker .ql-picker-label:hover {\n  color: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker .ql-picker-label:hover .ql-stroke {\n  stroke: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker .ql-picker-label:hover .ql-fill {\n  fill: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {\n  color: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {\n  stroke: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {\n  fill: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options {\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  border-radius: 0.375rem;\n  padding: 0.25rem 0;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item {\n  color: #3f3f46;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options .ql-picker-item:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-editor-container .p-editor-toolbar.ql-snow .ql-picker.ql-expanded:not(.ql-icon-picker) .ql-picker-item {\n  padding: 0.75rem 1rem;\n}\n.p-editor-container .p-editor-content {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-editor-container .p-editor-content.ql-snow {\n  border: 1px solid #e5e7eb;\n}\n.p-editor-container .p-editor-content .ql-editor {\n  background: #ffffff;\n  color: #3f3f46;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-editor-container .ql-snow.ql-toolbar button:hover,\n.p-editor-container .ql-snow.ql-toolbar button:focus {\n  color: #3f3f46;\n}\n.p-editor-container .ql-snow.ql-toolbar button:hover .ql-stroke,\n.p-editor-container .ql-snow.ql-toolbar button:focus .ql-stroke {\n  stroke: #3f3f46;\n}\n.p-editor-container .ql-snow.ql-toolbar button:hover .ql-fill,\n.p-editor-container .ql-snow.ql-toolbar button:focus .ql-fill {\n  fill: #3f3f46;\n}\n.p-editor-container .ql-snow.ql-toolbar button.ql-active,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-label.ql-active,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-item.ql-selected {\n  color: #4F46E5;\n}\n.p-editor-container .ql-snow.ql-toolbar button.ql-active .ql-stroke,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke {\n  stroke: #4F46E5;\n}\n.p-editor-container .ql-snow.ql-toolbar button.ql-active .ql-fill,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill {\n  fill: #4F46E5;\n}\n.p-editor-container .ql-snow.ql-toolbar button.ql-active .ql-picker-label,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-picker-label,\n.p-editor-container .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-picker-label {\n  color: #4F46E5;\n}\n\n.p-inputgroup-addon {\n  background: #fafafa;\n  color: #71717A;\n  border-top: 1px solid #d4d4d8;\n  border-left: 1px solid #d4d4d8;\n  border-bottom: 1px solid #d4d4d8;\n  padding: 0.75rem 0.75rem;\n  min-width: 3rem;\n}\n.p-inputgroup-addon:last-child {\n  border-right: 1px solid #d4d4d8;\n}\n\n.p-inputgroup > .p-component,\n.p-inputgroup > .p-inputwrapper > .p-inputtext,\n.p-inputgroup > .p-float-label > .p-component {\n  border-radius: 0;\n  margin: 0;\n}\n.p-inputgroup > .p-component + .p-inputgroup-addon,\n.p-inputgroup > .p-inputwrapper > .p-inputtext + .p-inputgroup-addon,\n.p-inputgroup > .p-float-label > .p-component + .p-inputgroup-addon {\n  border-left: 0 none;\n}\n.p-inputgroup > .p-component:focus,\n.p-inputgroup > .p-inputwrapper > .p-inputtext:focus,\n.p-inputgroup > .p-float-label > .p-component:focus {\n  z-index: 1;\n}\n.p-inputgroup > .p-component:focus ~ label,\n.p-inputgroup > .p-inputwrapper > .p-inputtext:focus ~ label,\n.p-inputgroup > .p-float-label > .p-component:focus ~ label {\n  z-index: 1;\n}\n\n.p-inputgroup-addon:first-child,\n.p-inputgroup button:first-child,\n.p-inputgroup input:first-child,\n.p-inputgroup > .p-inputwrapper:first-child,\n.p-inputgroup > .p-inputwrapper:first-child > .p-inputtext {\n  border-top-left-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.p-inputgroup .p-float-label:first-child input {\n  border-top-left-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.p-inputgroup-addon:last-child,\n.p-inputgroup button:last-child,\n.p-inputgroup input:last-child,\n.p-inputgroup > .p-inputwrapper:last-child,\n.p-inputgroup > .p-inputwrapper:last-child > .p-inputtext {\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n\n.p-inputgroup .p-float-label:last-child input {\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n\n.p-fluid .p-inputgroup .p-button {\n  width: auto;\n}\n.p-fluid .p-inputgroup .p-button.p-button-icon-only {\n  width: 3rem;\n}\n\n.p-inputnumber.p-invalid.p-component > .p-inputtext {\n  border-color: #f0a9a7;\n}\n\n.p-inputswitch {\n  width: 3rem;\n  height: 1.75rem;\n}\n.p-inputswitch .p-inputswitch-slider {\n  background: #d4d4d8;\n  transition: none;\n  border-radius: 30px;\n}\n.p-inputswitch .p-inputswitch-slider:before {\n  background: #ffffff;\n  width: 1.25rem;\n  height: 1.25rem;\n  left: 0.25rem;\n  margin-top: -0.625rem;\n  border-radius: 50%;\n  transition-duration: 0.2s;\n}\n.p-inputswitch.p-inputswitch-checked .p-inputswitch-slider:before {\n  transform: translateX(1.25rem);\n}\n.p-inputswitch.p-focus .p-inputswitch-slider {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-inputswitch:not(.p-disabled):hover .p-inputswitch-slider {\n  background: #bebec4;\n}\n.p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {\n  background: #4F46E5;\n}\n.p-inputswitch.p-inputswitch-checked .p-inputswitch-slider:before {\n  background: #ffffff;\n}\n.p-inputswitch.p-inputswitch-checked:not(.p-disabled):hover .p-inputswitch-slider {\n  background: #4338CA;\n}\n.p-inputswitch.p-invalid {\n  border-color: #f0a9a7;\n}\n\n.p-inputtext {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  padding: 0.75rem 0.75rem;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  -webkit-appearance: none;\n     -moz-appearance: none;\n          appearance: none;\n  border-radius: 0.375rem;\n}\n.p-inputtext:enabled:hover {\n  border-color: #d4d4d8;\n}\n.p-inputtext:enabled:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-inputtext.p-invalid.p-component {\n  border-color: #f0a9a7;\n}\n.p-inputtext.p-inputtext-sm {\n  font-size: 0.875rem;\n  padding: 0.65625rem 0.65625rem;\n}\n.p-inputtext.p-inputtext-lg {\n  font-size: 1.25rem;\n  padding: 0.9375rem 0.9375rem;\n}\n\n.p-float-label > label {\n  left: 0.75rem;\n  color: #71717A;\n  transition-duration: 0.2s;\n}\n\n.p-float-label > .p-invalid + label {\n  color: #f0a9a7;\n}\n\n.p-input-icon-left > i:first-of-type {\n  left: 0.75rem;\n  color: #71717A;\n}\n\n.p-input-icon-left > .p-inputtext {\n  padding-left: 2.5rem;\n}\n\n.p-input-icon-left.p-float-label > label {\n  left: 2.5rem;\n}\n\n.p-input-icon-right > i:last-of-type {\n  right: 0.75rem;\n  color: #71717A;\n}\n\n.p-input-icon-right > .p-inputtext {\n  padding-right: 2.5rem;\n}\n\n::-webkit-input-placeholder {\n  color: #71717A;\n}\n\n:-moz-placeholder {\n  color: #71717A;\n}\n\n::-moz-placeholder {\n  color: #71717A;\n}\n\n:-ms-input-placeholder {\n  color: #71717A;\n}\n\n.p-input-filled .p-inputtext {\n  background-color: #fafafa;\n}\n.p-input-filled .p-inputtext:enabled:hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-inputtext:enabled:focus {\n  background-color: #ffffff;\n}\n\n.p-inputtext-sm .p-inputtext {\n  font-size: 0.875rem;\n  padding: 0.65625rem 0.65625rem;\n}\n\n.p-inputtext-lg .p-inputtext {\n  font-size: 1.25rem;\n  padding: 0.9375rem 0.9375rem;\n}\n\n.p-listbox {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 1px solid #d4d4d8;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-listbox .p-listbox-header {\n  padding: 0.5rem 0.75rem;\n  border-bottom: 0 none;\n  color: #3f3f46;\n  background: #fafafa;\n  margin: 0;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-listbox .p-listbox-header .p-listbox-filter {\n  padding-right: 1.75rem;\n}\n.p-listbox .p-listbox-header .p-listbox-filter-icon {\n  right: 0.75rem;\n  color: #71717A;\n}\n.p-listbox .p-listbox-list {\n  padding: 0.25rem 0;\n  outline: 0 none;\n}\n.p-listbox .p-listbox-list .p-listbox-item {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  border: 0 none;\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-listbox .p-listbox-list .p-listbox-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-listbox .p-listbox-list .p-listbox-item-group {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n}\n.p-listbox .p-listbox-list .p-listbox-empty-message {\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: transparent;\n}\n.p-listbox:not(.p-disabled) .p-listbox-item.p-highlight.p-focus {\n  background: #E0E7FF;\n}\n.p-listbox:not(.p-disabled) .p-listbox-item:not(.p-highlight):not(.p-disabled).p-focus {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-listbox:not(.p-disabled) .p-listbox-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-listbox.p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-listbox.p-invalid {\n  border-color: #f0a9a7;\n}\n\n.p-multiselect {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-multiselect:not(.p-disabled):hover {\n  border-color: #d4d4d8;\n}\n.p-multiselect:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-multiselect .p-multiselect-label {\n  padding: 0.75rem 0.75rem;\n  transition: none;\n}\n.p-multiselect .p-multiselect-label.p-placeholder {\n  color: #71717A;\n}\n.p-multiselect.p-multiselect-chip .p-multiselect-token {\n  padding: 0.375rem 0.75rem;\n  margin-right: 0.5rem;\n  background: #e5e7eb;\n  color: #3f3f46;\n  border-radius: 16px;\n}\n.p-multiselect.p-multiselect-chip .p-multiselect-token .p-multiselect-token-icon {\n  margin-left: 0.5rem;\n}\n.p-multiselect .p-multiselect-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 3rem;\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.p-multiselect.p-invalid.p-component {\n  border-color: #f0a9a7;\n}\n\n.p-inputwrapper-filled.p-multiselect.p-multiselect-chip .p-multiselect-label {\n  padding: 0.375rem 0.75rem;\n}\n\n.p-multiselect-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-multiselect-panel .p-multiselect-header {\n  padding: 0.5rem 0.75rem;\n  border-bottom: 0 none;\n  color: #3f3f46;\n  background: #fafafa;\n  margin: 0;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-inputtext {\n  padding-right: 1.75rem;\n}\n.p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-multiselect-filter-icon {\n  right: 0.75rem;\n  color: #71717A;\n}\n.p-multiselect-panel .p-multiselect-header .p-checkbox {\n  margin-right: 0.5rem;\n}\n.p-multiselect-panel .p-multiselect-header .p-multiselect-close {\n  margin-left: 0.5rem;\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-multiselect-panel .p-multiselect-header .p-multiselect-close:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-multiselect-panel .p-multiselect-header .p-multiselect-close:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-multiselect-panel .p-multiselect-items {\n  padding: 0.25rem 0;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: none;\n  border-radius: 0;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight.p-focus {\n  background: #E0E7FF;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled).p-focus {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item .p-checkbox {\n  margin-right: 0.5rem;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-item-group {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n}\n.p-multiselect-panel .p-multiselect-items .p-multiselect-empty-message {\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: transparent;\n}\n\n.p-input-filled .p-multiselect {\n  background: #fafafa;\n}\n.p-input-filled .p-multiselect:not(.p-disabled):hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-multiselect:not(.p-disabled).p-focus {\n  background-color: #ffffff;\n}\n\n.p-password.p-invalid.p-component > .p-inputtext {\n  border-color: #f0a9a7;\n}\n\n.p-password-panel {\n  padding: 1.25rem;\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  border-radius: 0.375rem;\n}\n.p-password-panel .p-password-meter {\n  margin-bottom: 0.5rem;\n  background: #e5e7eb;\n}\n.p-password-panel .p-password-meter .p-password-strength.weak {\n  background: #EF4444;\n}\n.p-password-panel .p-password-meter .p-password-strength.medium {\n  background: #F59E0B;\n}\n.p-password-panel .p-password-meter .p-password-strength.strong {\n  background: #22C55E;\n}\n\n.p-radiobutton {\n  width: 16px;\n  height: 16px;\n}\n.p-radiobutton .p-radiobutton-box {\n  border: 2px solid #d4d4d8;\n  background: #ffffff;\n  width: 16px;\n  height: 16px;\n  color: #3f3f46;\n  border-radius: 50%;\n  transition: none;\n}\n.p-radiobutton .p-radiobutton-box:not(.p-disabled):not(.p-highlight):hover {\n  border-color: #d4d4d8;\n}\n.p-radiobutton .p-radiobutton-box:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-radiobutton .p-radiobutton-box .p-radiobutton-icon {\n  width: 6px;\n  height: 6px;\n  transition-duration: 0.2s;\n  background-color: #ffffff;\n}\n.p-radiobutton .p-radiobutton-box.p-highlight {\n  border-color: #4F46E5;\n  background: #4F46E5;\n}\n.p-radiobutton .p-radiobutton-box.p-highlight:not(.p-disabled):hover {\n  border-color: #4F46E5;\n  background: #4F46E5;\n  color: #ffffff;\n}\n.p-radiobutton.p-invalid > .p-radiobutton-box {\n  border-color: #f0a9a7;\n}\n.p-radiobutton:focus {\n  outline: 0 none;\n}\n\n.p-input-filled .p-radiobutton .p-radiobutton-box {\n  background-color: #fafafa;\n}\n.p-input-filled .p-radiobutton .p-radiobutton-box:not(.p-disabled):hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-radiobutton .p-radiobutton-box.p-highlight {\n  background: #4F46E5;\n}\n.p-input-filled .p-radiobutton .p-radiobutton-box.p-highlight:not(.p-disabled):hover {\n  background: #4F46E5;\n}\n\n.p-rating {\n  gap: 0.5rem;\n}\n.p-rating .p-rating-item .p-rating-icon {\n  color: #3f3f46;\n  transition: none;\n  font-size: 1.143rem;\n}\n.p-rating .p-rating-item .p-rating-icon.p-rating-cancel {\n  color: #EF4444;\n}\n.p-rating .p-rating-item.p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-rating .p-rating-item.p-rating-item-active .p-rating-icon {\n  color: #4F46E5;\n}\n.p-rating:not(.p-disabled):not(.p-readonly) .p-rating-item:hover .p-rating-icon {\n  color: #4F46E5;\n}\n.p-rating:not(.p-disabled):not(.p-readonly) .p-rating-item:hover .p-rating-icon.p-rating-cancel {\n  color: #DC2626;\n}\n\n.p-selectbutton .p-button {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  color: #3f3f46;\n  transition: none;\n}\n.p-selectbutton .p-button .p-button-icon-left,\n.p-selectbutton .p-button .p-button-icon-right {\n  color: #71717A;\n}\n.p-selectbutton .p-button:not(.p-disabled):not(.p-highlight):hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n.p-selectbutton .p-button:not(.p-disabled):not(.p-highlight):hover .p-button-icon-left,\n.p-selectbutton .p-button:not(.p-disabled):not(.p-highlight):hover .p-button-icon-right {\n  color: #71717A;\n}\n.p-selectbutton .p-button.p-highlight {\n  background: #4F46E5;\n  border-color: #4F46E5;\n  color: #ffffff;\n}\n.p-selectbutton .p-button.p-highlight .p-button-icon-left,\n.p-selectbutton .p-button.p-highlight .p-button-icon-right {\n  color: #ffffff;\n}\n.p-selectbutton .p-button.p-highlight:hover {\n  background: #4338CA;\n  border-color: #4338CA;\n  color: #ffffff;\n}\n.p-selectbutton .p-button.p-highlight:hover .p-button-icon-left,\n.p-selectbutton .p-button.p-highlight:hover .p-button-icon-right {\n  color: #ffffff;\n}\n.p-selectbutton.p-invalid > .p-button {\n  border-color: #f0a9a7;\n}\n\n.p-slider {\n  background: #e5e7eb;\n  border: 0 none;\n  border-radius: 0.375rem;\n}\n.p-slider.p-slider-horizontal {\n  height: 0.286rem;\n}\n.p-slider.p-slider-horizontal .p-slider-handle {\n  margin-top: -0.5715rem;\n  margin-left: -0.5715rem;\n}\n.p-slider.p-slider-vertical {\n  width: 0.286rem;\n}\n.p-slider.p-slider-vertical .p-slider-handle {\n  margin-left: -0.5715rem;\n  margin-bottom: -0.5715rem;\n}\n.p-slider .p-slider-handle {\n  height: 1.143rem;\n  width: 1.143rem;\n  background: #ffffff;\n  border: 2px solid #4F46E5;\n  border-radius: 50%;\n  transition: none;\n}\n.p-slider .p-slider-handle:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-slider .p-slider-range {\n  background: #4F46E5;\n}\n.p-slider:not(.p-disabled) .p-slider-handle:hover {\n  background: #4F46E5;\n  border-color: #4F46E5;\n}\n\n.p-treeselect {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-treeselect:not(.p-disabled):hover {\n  border-color: #d4d4d8;\n}\n.p-treeselect:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-treeselect .p-treeselect-label {\n  padding: 0.75rem 0.75rem;\n  transition: none;\n}\n.p-treeselect .p-treeselect-label.p-placeholder {\n  color: #71717A;\n}\n.p-treeselect.p-treeselect-chip .p-treeselect-token {\n  padding: 0.375rem 0.75rem;\n  margin-right: 0.5rem;\n  background: #e5e7eb;\n  color: #3f3f46;\n  border-radius: 16px;\n}\n.p-treeselect .p-treeselect-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 3rem;\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.p-treeselect.p-invalid.p-component {\n  border-color: #f0a9a7;\n}\n\n.p-inputwrapper-filled.p-treeselect.p-treeselect-chip .p-treeselect-label {\n  padding: 0.375rem 0.75rem;\n}\n\n.p-treeselect-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-treeselect-panel .p-treeselect-items-wrapper .p-tree {\n  border: 0 none;\n}\n.p-treeselect-panel .p-treeselect-items-wrapper .p-treeselect-empty-message {\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: transparent;\n}\n\n.p-input-filled .p-treeselect {\n  background: #fafafa;\n}\n.p-input-filled .p-treeselect:not(.p-disabled):hover {\n  background-color: #fafafa;\n}\n.p-input-filled .p-treeselect:not(.p-disabled).p-focus {\n  background-color: #ffffff;\n}\n\n.p-togglebutton.p-button {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  color: #3f3f46;\n  transition: none;\n}\n.p-togglebutton.p-button .p-button-icon-left,\n.p-togglebutton.p-button .p-button-icon-right {\n  color: #71717A;\n}\n.p-togglebutton.p-button:not(.p-disabled).p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  border-color: #4F46E5;\n}\n.p-togglebutton.p-button:not(.p-disabled):not(.p-highlight):hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n.p-togglebutton.p-button:not(.p-disabled):not(.p-highlight):hover .p-button-icon-left,\n.p-togglebutton.p-button:not(.p-disabled):not(.p-highlight):hover .p-button-icon-right {\n  color: #71717A;\n}\n.p-togglebutton.p-button.p-highlight {\n  background: #4F46E5;\n  border-color: #4F46E5;\n  color: #ffffff;\n}\n.p-togglebutton.p-button.p-highlight .p-button-icon-left,\n.p-togglebutton.p-button.p-highlight .p-button-icon-right {\n  color: #ffffff;\n}\n.p-togglebutton.p-button.p-highlight:hover {\n  background: #4338CA;\n  border-color: #4338CA;\n  color: #ffffff;\n}\n.p-togglebutton.p-button.p-highlight:hover .p-button-icon-left,\n.p-togglebutton.p-button.p-highlight:hover .p-button-icon-right {\n  color: #ffffff;\n}\n.p-togglebutton.p-button.p-invalid > .p-button {\n  border-color: #f0a9a7;\n}\n\n.p-button {\n  color: #ffffff;\n  background: #4F46E5;\n  border: 1px solid #4F46E5;\n  padding: 0.75rem 1rem;\n  font-size: 1rem;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-button:enabled:hover {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.p-button:enabled:active {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.p-button.p-button-outlined {\n  background-color: transparent;\n  color: #4F46E5;\n  border: 1px solid;\n}\n.p-button.p-button-outlined:enabled:hover {\n  background: rgba(79, 70, 229, 0.04);\n  color: #4F46E5;\n  border: 1px solid;\n}\n.p-button.p-button-outlined:enabled:active {\n  background: rgba(79, 70, 229, 0.16);\n  color: #4F46E5;\n  border: 1px solid;\n}\n.p-button.p-button-outlined.p-button-plain {\n  color: #71717A;\n  border-color: #71717A;\n}\n.p-button.p-button-outlined.p-button-plain:enabled:hover {\n  background: #f4f4f5;\n  color: #71717A;\n}\n.p-button.p-button-outlined.p-button-plain:enabled:active {\n  background: #e5e7eb;\n  color: #71717A;\n}\n.p-button.p-button-text {\n  background-color: transparent;\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-button.p-button-text:enabled:hover {\n  background: rgba(79, 70, 229, 0.04);\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-button.p-button-text:enabled:active {\n  background: rgba(79, 70, 229, 0.16);\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-button.p-button-text.p-button-plain {\n  color: #71717A;\n}\n.p-button.p-button-text.p-button-plain:enabled:hover {\n  background: #f4f4f5;\n  color: #71717A;\n}\n.p-button.p-button-text.p-button-plain:enabled:active {\n  background: #e5e7eb;\n  color: #71717A;\n}\n.p-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-button .p-button-label {\n  transition-duration: 0.2s;\n}\n.p-button .p-button-icon-left {\n  margin-right: 0.5rem;\n}\n.p-button .p-button-icon-right {\n  margin-left: 0.5rem;\n}\n.p-button .p-button-icon-bottom {\n  margin-top: 0.5rem;\n}\n.p-button .p-button-icon-top {\n  margin-bottom: 0.5rem;\n}\n.p-button .p-badge {\n  margin-left: 0.5rem;\n  min-width: 1rem;\n  height: 1rem;\n  line-height: 1rem;\n  color: #4F46E5;\n  background-color: #ffffff;\n}\n.p-button.p-button-raised {\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n}\n.p-button.p-button-rounded {\n  border-radius: 2rem;\n}\n.p-button.p-button-icon-only {\n  width: 3rem;\n  padding: 0.75rem 0;\n}\n.p-button.p-button-icon-only .p-button-icon-left,\n.p-button.p-button-icon-only .p-button-icon-right {\n  margin: 0;\n}\n.p-button.p-button-icon-only.p-button-rounded {\n  border-radius: 50%;\n  height: 3rem;\n}\n.p-button.p-button-sm {\n  font-size: 0.875rem;\n  padding: 0.65625rem 0.875rem;\n}\n.p-button.p-button-sm .p-button-icon {\n  font-size: 0.875rem;\n}\n.p-button.p-button-lg {\n  font-size: 1.25rem;\n  padding: 0.9375rem 1.25rem;\n}\n.p-button.p-button-lg .p-button-icon {\n  font-size: 1.25rem;\n}\n.p-button.p-button-loading-label-only .p-button-label {\n  margin-left: 0.5rem;\n}\n.p-button.p-button-loading-label-only .p-button-loading-icon {\n  margin-right: 0;\n}\n\n.p-fluid .p-button {\n  width: 100%;\n}\n.p-fluid .p-button-icon-only {\n  width: 3rem;\n}\n.p-fluid .p-buttonset {\n  display: flex;\n}\n.p-fluid .p-buttonset .p-button {\n  flex: 1;\n}\n\n.p-button.p-button-secondary, .p-buttonset.p-button-secondary > .p-button, .p-splitbutton.p-button-secondary > .p-button {\n  color: #ffffff;\n  background: #64748B;\n  border: 1px solid #64748B;\n}\n.p-button.p-button-secondary:enabled:hover, .p-buttonset.p-button-secondary > .p-button:enabled:hover, .p-splitbutton.p-button-secondary > .p-button:enabled:hover {\n  background: #475569;\n  color: #ffffff;\n  border-color: #475569;\n}\n.p-button.p-button-secondary:enabled:focus, .p-buttonset.p-button-secondary > .p-button:enabled:focus, .p-splitbutton.p-button-secondary > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #c0c7d2;\n}\n.p-button.p-button-secondary:enabled:active, .p-buttonset.p-button-secondary > .p-button:enabled:active, .p-splitbutton.p-button-secondary > .p-button:enabled:active {\n  background: #475569;\n  color: #ffffff;\n  border-color: #475569;\n}\n.p-button.p-button-secondary.p-button-outlined, .p-buttonset.p-button-secondary > .p-button.p-button-outlined, .p-splitbutton.p-button-secondary > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #64748B;\n  border: 1px solid;\n}\n.p-button.p-button-secondary.p-button-outlined:enabled:hover, .p-buttonset.p-button-secondary > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-secondary > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(100, 116, 139, 0.04);\n  color: #64748B;\n  border: 1px solid;\n}\n.p-button.p-button-secondary.p-button-outlined:enabled:active, .p-buttonset.p-button-secondary > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-secondary > .p-button.p-button-outlined:enabled:active {\n  background: rgba(100, 116, 139, 0.16);\n  color: #64748B;\n  border: 1px solid;\n}\n.p-button.p-button-secondary.p-button-text, .p-buttonset.p-button-secondary > .p-button.p-button-text, .p-splitbutton.p-button-secondary > .p-button.p-button-text {\n  background-color: transparent;\n  color: #64748B;\n  border-color: transparent;\n}\n.p-button.p-button-secondary.p-button-text:enabled:hover, .p-buttonset.p-button-secondary > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-secondary > .p-button.p-button-text:enabled:hover {\n  background: rgba(100, 116, 139, 0.04);\n  border-color: transparent;\n  color: #64748B;\n}\n.p-button.p-button-secondary.p-button-text:enabled:active, .p-buttonset.p-button-secondary > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-secondary > .p-button.p-button-text:enabled:active {\n  background: rgba(100, 116, 139, 0.16);\n  border-color: transparent;\n  color: #64748B;\n}\n\n.p-button.p-button-info, .p-buttonset.p-button-info > .p-button, .p-splitbutton.p-button-info > .p-button {\n  color: #ffffff;\n  background: #3B82F6;\n  border: 1px solid #3B82F6;\n}\n.p-button.p-button-info:enabled:hover, .p-buttonset.p-button-info > .p-button:enabled:hover, .p-splitbutton.p-button-info > .p-button:enabled:hover {\n  background: #2563EB;\n  color: #ffffff;\n  border-color: #2563EB;\n}\n.p-button.p-button-info:enabled:focus, .p-buttonset.p-button-info > .p-button:enabled:focus, .p-splitbutton.p-button-info > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #b1cdfb;\n}\n.p-button.p-button-info:enabled:active, .p-buttonset.p-button-info > .p-button:enabled:active, .p-splitbutton.p-button-info > .p-button:enabled:active {\n  background: #2563EB;\n  color: #ffffff;\n  border-color: #2563EB;\n}\n.p-button.p-button-info.p-button-outlined, .p-buttonset.p-button-info > .p-button.p-button-outlined, .p-splitbutton.p-button-info > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #3B82F6;\n  border: 1px solid;\n}\n.p-button.p-button-info.p-button-outlined:enabled:hover, .p-buttonset.p-button-info > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-info > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(59, 130, 246, 0.04);\n  color: #3B82F6;\n  border: 1px solid;\n}\n.p-button.p-button-info.p-button-outlined:enabled:active, .p-buttonset.p-button-info > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-info > .p-button.p-button-outlined:enabled:active {\n  background: rgba(59, 130, 246, 0.16);\n  color: #3B82F6;\n  border: 1px solid;\n}\n.p-button.p-button-info.p-button-text, .p-buttonset.p-button-info > .p-button.p-button-text, .p-splitbutton.p-button-info > .p-button.p-button-text {\n  background-color: transparent;\n  color: #3B82F6;\n  border-color: transparent;\n}\n.p-button.p-button-info.p-button-text:enabled:hover, .p-buttonset.p-button-info > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-info > .p-button.p-button-text:enabled:hover {\n  background: rgba(59, 130, 246, 0.04);\n  border-color: transparent;\n  color: #3B82F6;\n}\n.p-button.p-button-info.p-button-text:enabled:active, .p-buttonset.p-button-info > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-info > .p-button.p-button-text:enabled:active {\n  background: rgba(59, 130, 246, 0.16);\n  border-color: transparent;\n  color: #3B82F6;\n}\n\n.p-button.p-button-success, .p-buttonset.p-button-success > .p-button, .p-splitbutton.p-button-success > .p-button {\n  color: #ffffff;\n  background: #22C55E;\n  border: 1px solid #22C55E;\n}\n.p-button.p-button-success:enabled:hover, .p-buttonset.p-button-success > .p-button:enabled:hover, .p-splitbutton.p-button-success > .p-button:enabled:hover {\n  background: #16A34A;\n  color: #ffffff;\n  border-color: #16A34A;\n}\n.p-button.p-button-success:enabled:focus, .p-buttonset.p-button-success > .p-button:enabled:focus, .p-splitbutton.p-button-success > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #a0efbd;\n}\n.p-button.p-button-success:enabled:active, .p-buttonset.p-button-success > .p-button:enabled:active, .p-splitbutton.p-button-success > .p-button:enabled:active {\n  background: #16A34A;\n  color: #ffffff;\n  border-color: #16A34A;\n}\n.p-button.p-button-success.p-button-outlined, .p-buttonset.p-button-success > .p-button.p-button-outlined, .p-splitbutton.p-button-success > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #22C55E;\n  border: 1px solid;\n}\n.p-button.p-button-success.p-button-outlined:enabled:hover, .p-buttonset.p-button-success > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-success > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(34, 197, 94, 0.04);\n  color: #22C55E;\n  border: 1px solid;\n}\n.p-button.p-button-success.p-button-outlined:enabled:active, .p-buttonset.p-button-success > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-success > .p-button.p-button-outlined:enabled:active {\n  background: rgba(34, 197, 94, 0.16);\n  color: #22C55E;\n  border: 1px solid;\n}\n.p-button.p-button-success.p-button-text, .p-buttonset.p-button-success > .p-button.p-button-text, .p-splitbutton.p-button-success > .p-button.p-button-text {\n  background-color: transparent;\n  color: #22C55E;\n  border-color: transparent;\n}\n.p-button.p-button-success.p-button-text:enabled:hover, .p-buttonset.p-button-success > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-success > .p-button.p-button-text:enabled:hover {\n  background: rgba(34, 197, 94, 0.04);\n  border-color: transparent;\n  color: #22C55E;\n}\n.p-button.p-button-success.p-button-text:enabled:active, .p-buttonset.p-button-success > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-success > .p-button.p-button-text:enabled:active {\n  background: rgba(34, 197, 94, 0.16);\n  border-color: transparent;\n  color: #22C55E;\n}\n\n.p-button.p-button-warning, .p-buttonset.p-button-warning > .p-button, .p-splitbutton.p-button-warning > .p-button {\n  color: #ffffff;\n  background: #F59E0B;\n  border: 1px solid #F59E0B;\n}\n.p-button.p-button-warning:enabled:hover, .p-buttonset.p-button-warning > .p-button:enabled:hover, .p-splitbutton.p-button-warning > .p-button:enabled:hover {\n  background: #D97706;\n  color: #ffffff;\n  border-color: #D97706;\n}\n.p-button.p-button-warning:enabled:focus, .p-buttonset.p-button-warning > .p-button:enabled:focus, .p-splitbutton.p-button-warning > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #fbd89d;\n}\n.p-button.p-button-warning:enabled:active, .p-buttonset.p-button-warning > .p-button:enabled:active, .p-splitbutton.p-button-warning > .p-button:enabled:active {\n  background: #D97706;\n  color: #ffffff;\n  border-color: #D97706;\n}\n.p-button.p-button-warning.p-button-outlined, .p-buttonset.p-button-warning > .p-button.p-button-outlined, .p-splitbutton.p-button-warning > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #F59E0B;\n  border: 1px solid;\n}\n.p-button.p-button-warning.p-button-outlined:enabled:hover, .p-buttonset.p-button-warning > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-warning > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(245, 158, 11, 0.04);\n  color: #F59E0B;\n  border: 1px solid;\n}\n.p-button.p-button-warning.p-button-outlined:enabled:active, .p-buttonset.p-button-warning > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-warning > .p-button.p-button-outlined:enabled:active {\n  background: rgba(245, 158, 11, 0.16);\n  color: #F59E0B;\n  border: 1px solid;\n}\n.p-button.p-button-warning.p-button-text, .p-buttonset.p-button-warning > .p-button.p-button-text, .p-splitbutton.p-button-warning > .p-button.p-button-text {\n  background-color: transparent;\n  color: #F59E0B;\n  border-color: transparent;\n}\n.p-button.p-button-warning.p-button-text:enabled:hover, .p-buttonset.p-button-warning > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-warning > .p-button.p-button-text:enabled:hover {\n  background: rgba(245, 158, 11, 0.04);\n  border-color: transparent;\n  color: #F59E0B;\n}\n.p-button.p-button-warning.p-button-text:enabled:active, .p-buttonset.p-button-warning > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-warning > .p-button.p-button-text:enabled:active {\n  background: rgba(245, 158, 11, 0.16);\n  border-color: transparent;\n  color: #F59E0B;\n}\n\n.p-button.p-button-help, .p-buttonset.p-button-help > .p-button, .p-splitbutton.p-button-help > .p-button {\n  color: #ffffff;\n  background: #A855F7;\n  border: 1px solid #A855F7;\n}\n.p-button.p-button-help:enabled:hover, .p-buttonset.p-button-help > .p-button:enabled:hover, .p-splitbutton.p-button-help > .p-button:enabled:hover {\n  background: #9333EA;\n  color: #ffffff;\n  border-color: #9333EA;\n}\n.p-button.p-button-help:enabled:focus, .p-buttonset.p-button-help > .p-button:enabled:focus, .p-splitbutton.p-button-help > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #dcbbfc;\n}\n.p-button.p-button-help:enabled:active, .p-buttonset.p-button-help > .p-button:enabled:active, .p-splitbutton.p-button-help > .p-button:enabled:active {\n  background: #9333EA;\n  color: #ffffff;\n  border-color: #9333EA;\n}\n.p-button.p-button-help.p-button-outlined, .p-buttonset.p-button-help > .p-button.p-button-outlined, .p-splitbutton.p-button-help > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #A855F7;\n  border: 1px solid;\n}\n.p-button.p-button-help.p-button-outlined:enabled:hover, .p-buttonset.p-button-help > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-help > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(168, 85, 247, 0.04);\n  color: #A855F7;\n  border: 1px solid;\n}\n.p-button.p-button-help.p-button-outlined:enabled:active, .p-buttonset.p-button-help > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-help > .p-button.p-button-outlined:enabled:active {\n  background: rgba(168, 85, 247, 0.16);\n  color: #A855F7;\n  border: 1px solid;\n}\n.p-button.p-button-help.p-button-text, .p-buttonset.p-button-help > .p-button.p-button-text, .p-splitbutton.p-button-help > .p-button.p-button-text {\n  background-color: transparent;\n  color: #A855F7;\n  border-color: transparent;\n}\n.p-button.p-button-help.p-button-text:enabled:hover, .p-buttonset.p-button-help > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-help > .p-button.p-button-text:enabled:hover {\n  background: rgba(168, 85, 247, 0.04);\n  border-color: transparent;\n  color: #A855F7;\n}\n.p-button.p-button-help.p-button-text:enabled:active, .p-buttonset.p-button-help > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-help > .p-button.p-button-text:enabled:active {\n  background: rgba(168, 85, 247, 0.16);\n  border-color: transparent;\n  color: #A855F7;\n}\n\n.p-button.p-button-danger, .p-buttonset.p-button-danger > .p-button, .p-splitbutton.p-button-danger > .p-button {\n  color: #ffffff;\n  background: #EF4444;\n  border: 1px solid #EF4444;\n}\n.p-button.p-button-danger:enabled:hover, .p-buttonset.p-button-danger > .p-button:enabled:hover, .p-splitbutton.p-button-danger > .p-button:enabled:hover {\n  background: #DC2626;\n  color: #ffffff;\n  border-color: #DC2626;\n}\n.p-button.p-button-danger:enabled:focus, .p-buttonset.p-button-danger > .p-button:enabled:focus, .p-splitbutton.p-button-danger > .p-button:enabled:focus {\n  box-shadow: 0 0 0 0.2rem #f9b4b4;\n}\n.p-button.p-button-danger:enabled:active, .p-buttonset.p-button-danger > .p-button:enabled:active, .p-splitbutton.p-button-danger > .p-button:enabled:active {\n  background: #DC2626;\n  color: #ffffff;\n  border-color: #DC2626;\n}\n.p-button.p-button-danger.p-button-outlined, .p-buttonset.p-button-danger > .p-button.p-button-outlined, .p-splitbutton.p-button-danger > .p-button.p-button-outlined {\n  background-color: transparent;\n  color: #EF4444;\n  border: 1px solid;\n}\n.p-button.p-button-danger.p-button-outlined:enabled:hover, .p-buttonset.p-button-danger > .p-button.p-button-outlined:enabled:hover, .p-splitbutton.p-button-danger > .p-button.p-button-outlined:enabled:hover {\n  background: rgba(239, 68, 68, 0.04);\n  color: #EF4444;\n  border: 1px solid;\n}\n.p-button.p-button-danger.p-button-outlined:enabled:active, .p-buttonset.p-button-danger > .p-button.p-button-outlined:enabled:active, .p-splitbutton.p-button-danger > .p-button.p-button-outlined:enabled:active {\n  background: rgba(239, 68, 68, 0.16);\n  color: #EF4444;\n  border: 1px solid;\n}\n.p-button.p-button-danger.p-button-text, .p-buttonset.p-button-danger > .p-button.p-button-text, .p-splitbutton.p-button-danger > .p-button.p-button-text {\n  background-color: transparent;\n  color: #EF4444;\n  border-color: transparent;\n}\n.p-button.p-button-danger.p-button-text:enabled:hover, .p-buttonset.p-button-danger > .p-button.p-button-text:enabled:hover, .p-splitbutton.p-button-danger > .p-button.p-button-text:enabled:hover {\n  background: rgba(239, 68, 68, 0.04);\n  border-color: transparent;\n  color: #EF4444;\n}\n.p-button.p-button-danger.p-button-text:enabled:active, .p-buttonset.p-button-danger > .p-button.p-button-text:enabled:active, .p-splitbutton.p-button-danger > .p-button.p-button-text:enabled:active {\n  background: rgba(239, 68, 68, 0.16);\n  border-color: transparent;\n  color: #EF4444;\n}\n\n.p-button.p-button-link {\n  color: #4F46E5;\n  background: transparent;\n  border: transparent;\n}\n.p-button.p-button-link:enabled:hover {\n  background: transparent;\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-button.p-button-link:enabled:hover .p-button-label {\n  text-decoration: underline;\n}\n.p-button.p-button-link:enabled:focus {\n  background: transparent;\n  box-shadow: 0 0 0 0.2rem #6366F1;\n  border-color: transparent;\n}\n.p-button.p-button-link:enabled:active {\n  background: transparent;\n  color: #4F46E5;\n  border-color: transparent;\n}\n\n.p-speeddial-button.p-button.p-button-icon-only {\n  width: 4rem;\n  height: 4rem;\n}\n.p-speeddial-button.p-button.p-button-icon-only .p-button-icon {\n  font-size: 1.3rem;\n}\n\n.p-speeddial-action {\n  width: 3rem;\n  height: 3rem;\n  background: #3f3f46;\n  color: #fff;\n}\n.p-speeddial-action:hover {\n  background: #27272A;\n  color: #fff;\n}\n\n.p-speeddial-direction-up .p-speeddial-item {\n  margin: 0.25rem 0;\n}\n.p-speeddial-direction-up .p-speeddial-item:first-child {\n  margin-bottom: 0.5rem;\n}\n\n.p-speeddial-direction-down .p-speeddial-item {\n  margin: 0.25rem 0;\n}\n.p-speeddial-direction-down .p-speeddial-item:first-child {\n  margin-top: 0.5rem;\n}\n\n.p-speeddial-direction-left .p-speeddial-item {\n  margin: 0 0.25rem;\n}\n.p-speeddial-direction-left .p-speeddial-item:first-child {\n  margin-right: 0.5rem;\n}\n\n.p-speeddial-direction-right .p-speeddial-item {\n  margin: 0 0.25rem;\n}\n.p-speeddial-direction-right .p-speeddial-item:first-child {\n  margin-left: 0.5rem;\n}\n\n.p-speeddial-circle .p-speeddial-item,\n.p-speeddial-semi-circle .p-speeddial-item,\n.p-speeddial-quarter-circle .p-speeddial-item {\n  margin: 0;\n}\n.p-speeddial-circle .p-speeddial-item:first-child, .p-speeddial-circle .p-speeddial-item:last-child,\n.p-speeddial-semi-circle .p-speeddial-item:first-child,\n.p-speeddial-semi-circle .p-speeddial-item:last-child,\n.p-speeddial-quarter-circle .p-speeddial-item:first-child,\n.p-speeddial-quarter-circle .p-speeddial-item:last-child {\n  margin: 0;\n}\n\n.p-speeddial-mask {\n  background-color: rgba(0, 0, 0, 0.4);\n}\n\n.p-splitbutton {\n  border-radius: 0.375rem;\n}\n.p-splitbutton.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #4F46E5;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(79, 70, 229, 0.04);\n  color: #4F46E5;\n}\n.p-splitbutton.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(79, 70, 229, 0.16);\n  color: #4F46E5;\n}\n.p-splitbutton.p-button-outlined.p-button-plain > .p-button {\n  color: #71717A;\n  border-color: #71717A;\n}\n.p-splitbutton.p-button-outlined.p-button-plain > .p-button:enabled:hover, .p-splitbutton.p-button-outlined.p-button-plain > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: #f4f4f5;\n  color: #71717A;\n}\n.p-splitbutton.p-button-outlined.p-button-plain > .p-button:enabled:active, .p-splitbutton.p-button-outlined.p-button-plain > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: #e5e7eb;\n  color: #71717A;\n}\n.p-splitbutton.p-button-text > .p-button {\n  background-color: transparent;\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(79, 70, 229, 0.04);\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(79, 70, 229, 0.16);\n  color: #4F46E5;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-text.p-button-plain > .p-button {\n  color: #71717A;\n}\n.p-splitbutton.p-button-text.p-button-plain > .p-button:enabled:hover, .p-splitbutton.p-button-text.p-button-plain > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: #f4f4f5;\n  color: #71717A;\n}\n.p-splitbutton.p-button-text.p-button-plain > .p-button:enabled:active, .p-splitbutton.p-button-text.p-button-plain > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: #e5e7eb;\n  color: #71717A;\n}\n.p-splitbutton.p-button-raised {\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n}\n.p-splitbutton.p-button-rounded {\n  border-radius: 2rem;\n}\n.p-splitbutton.p-button-rounded > .p-button {\n  border-radius: 2rem;\n}\n.p-splitbutton.p-button-sm > .p-button {\n  font-size: 0.875rem;\n  padding: 0.65625rem 0.875rem;\n}\n.p-splitbutton.p-button-sm > .p-button .p-button-icon {\n  font-size: 0.875rem;\n}\n.p-splitbutton.p-button-lg > .p-button {\n  font-size: 1.25rem;\n  padding: 0.9375rem 1.25rem;\n}\n.p-splitbutton.p-button-lg > .p-button .p-button-icon {\n  font-size: 1.25rem;\n}\n\n.p-splitbutton.p-button-secondary.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #64748B;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-secondary.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-secondary.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(100, 116, 139, 0.04);\n  color: #64748B;\n}\n.p-splitbutton.p-button-secondary.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-secondary.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(100, 116, 139, 0.16);\n  color: #64748B;\n}\n.p-splitbutton.p-button-secondary.p-button-text > .p-button {\n  background-color: transparent;\n  color: #64748B;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-secondary.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-secondary.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(100, 116, 139, 0.04);\n  border-color: transparent;\n  color: #64748B;\n}\n.p-splitbutton.p-button-secondary.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-secondary.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(100, 116, 139, 0.16);\n  border-color: transparent;\n  color: #64748B;\n}\n\n.p-splitbutton.p-button-info.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #3B82F6;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-info.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-info.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(59, 130, 246, 0.04);\n  color: #3B82F6;\n}\n.p-splitbutton.p-button-info.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-info.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(59, 130, 246, 0.16);\n  color: #3B82F6;\n}\n.p-splitbutton.p-button-info.p-button-text > .p-button {\n  background-color: transparent;\n  color: #3B82F6;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-info.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-info.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(59, 130, 246, 0.04);\n  border-color: transparent;\n  color: #3B82F6;\n}\n.p-splitbutton.p-button-info.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-info.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(59, 130, 246, 0.16);\n  border-color: transparent;\n  color: #3B82F6;\n}\n\n.p-splitbutton.p-button-success.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #22C55E;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-success.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-success.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(34, 197, 94, 0.04);\n  color: #22C55E;\n}\n.p-splitbutton.p-button-success.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-success.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(34, 197, 94, 0.16);\n  color: #22C55E;\n}\n.p-splitbutton.p-button-success.p-button-text > .p-button {\n  background-color: transparent;\n  color: #22C55E;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-success.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-success.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(34, 197, 94, 0.04);\n  border-color: transparent;\n  color: #22C55E;\n}\n.p-splitbutton.p-button-success.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-success.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(34, 197, 94, 0.16);\n  border-color: transparent;\n  color: #22C55E;\n}\n\n.p-splitbutton.p-button-warning.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #F59E0B;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-warning.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-warning.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(245, 158, 11, 0.04);\n  color: #F59E0B;\n}\n.p-splitbutton.p-button-warning.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-warning.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(245, 158, 11, 0.16);\n  color: #F59E0B;\n}\n.p-splitbutton.p-button-warning.p-button-text > .p-button {\n  background-color: transparent;\n  color: #F59E0B;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-warning.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-warning.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(245, 158, 11, 0.04);\n  border-color: transparent;\n  color: #F59E0B;\n}\n.p-splitbutton.p-button-warning.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-warning.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(245, 158, 11, 0.16);\n  border-color: transparent;\n  color: #F59E0B;\n}\n\n.p-splitbutton.p-button-help.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #A855F7;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-help.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-help.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(168, 85, 247, 0.04);\n  color: #A855F7;\n}\n.p-splitbutton.p-button-help.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-help.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(168, 85, 247, 0.16);\n  color: #A855F7;\n}\n.p-splitbutton.p-button-help.p-button-text > .p-button {\n  background-color: transparent;\n  color: #A855F7;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-help.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-help.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(168, 85, 247, 0.04);\n  border-color: transparent;\n  color: #A855F7;\n}\n.p-splitbutton.p-button-help.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-help.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(168, 85, 247, 0.16);\n  border-color: transparent;\n  color: #A855F7;\n}\n\n.p-splitbutton.p-button-danger.p-button-outlined > .p-button {\n  background-color: transparent;\n  color: #EF4444;\n  border: 1px solid;\n}\n.p-splitbutton.p-button-danger.p-button-outlined > .p-button:enabled:hover, .p-splitbutton.p-button-danger.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(239, 68, 68, 0.04);\n  color: #EF4444;\n}\n.p-splitbutton.p-button-danger.p-button-outlined > .p-button:enabled:active, .p-splitbutton.p-button-danger.p-button-outlined > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(239, 68, 68, 0.16);\n  color: #EF4444;\n}\n.p-splitbutton.p-button-danger.p-button-text > .p-button {\n  background-color: transparent;\n  color: #EF4444;\n  border-color: transparent;\n}\n.p-splitbutton.p-button-danger.p-button-text > .p-button:enabled:hover, .p-splitbutton.p-button-danger.p-button-text > .p-button:not(button):not(a):not(.p-disabled):hover {\n  background: rgba(239, 68, 68, 0.04);\n  border-color: transparent;\n  color: #EF4444;\n}\n.p-splitbutton.p-button-danger.p-button-text > .p-button:enabled:active, .p-splitbutton.p-button-danger.p-button-text > .p-button:not(button):not(a):not(.p-disabled):active {\n  background: rgba(239, 68, 68, 0.16);\n  border-color: transparent;\n  color: #EF4444;\n}\n\n.p-carousel .p-carousel-content .p-carousel-prev,\n.p-carousel .p-carousel-content .p-carousel-next {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n  margin: 0.5rem;\n}\n.p-carousel .p-carousel-content .p-carousel-prev:enabled:hover,\n.p-carousel .p-carousel-content .p-carousel-next:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-carousel .p-carousel-content .p-carousel-prev:focus,\n.p-carousel .p-carousel-content .p-carousel-next:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-carousel .p-carousel-indicators {\n  padding: 1rem;\n}\n.p-carousel .p-carousel-indicators .p-carousel-indicator {\n  margin-right: 0.5rem;\n  margin-bottom: 0.5rem;\n}\n.p-carousel .p-carousel-indicators .p-carousel-indicator button {\n  background-color: #f4f4f5;\n  width: 2rem;\n  height: 0.5rem;\n  transition: none;\n  border-radius: 0;\n}\n.p-carousel .p-carousel-indicators .p-carousel-indicator button:hover {\n  background: #e5e7eb;\n}\n.p-carousel .p-carousel-indicators .p-carousel-indicator.p-highlight button {\n  background: #EEF2FF;\n  color: #312E81;\n}\n\n.p-datatable .p-paginator-top {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-datatable .p-paginator-bottom {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-datatable .p-datatable-header {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 1px 0 1px 0;\n  padding: 1.25rem 1.25rem;\n  font-weight: 600;\n}\n.p-datatable .p-datatable-footer {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  padding: 0.75rem 1.5rem;\n  font-weight: 600;\n}\n.p-datatable .p-datatable-thead > tr > th {\n  text-align: left;\n  padding: 0.75rem 1.5rem;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  font-weight: 500;\n  color: #6b7280;\n  background: #fafafa;\n  transition: none;\n}\n.p-datatable .p-datatable-tfoot > tr > td {\n  text-align: left;\n  padding: 1rem 1rem;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  font-weight: 600;\n  color: #3f3f46;\n  background: #fafafa;\n}\n.p-datatable .p-sortable-column .p-sortable-column-icon {\n  color: #71717A;\n  margin-left: 0.5rem;\n}\n.p-datatable .p-sortable-column .p-sortable-column-badge {\n  border-radius: 50%;\n  height: 1.143rem;\n  min-width: 1.143rem;\n  line-height: 1.143rem;\n  color: #312E81;\n  background: #EEF2FF;\n  margin-left: 0.5rem;\n}\n.p-datatable .p-sortable-column:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-datatable .p-sortable-column:not(.p-highlight):hover .p-sortable-column-icon {\n  color: #71717A;\n}\n.p-datatable .p-sortable-column.p-highlight {\n  background: #fafafa;\n  color: #4F46E5;\n}\n.p-datatable .p-sortable-column.p-highlight .p-sortable-column-icon {\n  color: #4F46E5;\n}\n.p-datatable .p-sortable-column.p-highlight:hover {\n  background: #f4f4f5;\n  color: #4F46E5;\n}\n.p-datatable .p-sortable-column.p-highlight:hover .p-sortable-column-icon {\n  color: #4F46E5;\n}\n.p-datatable .p-sortable-column:focus {\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n  outline: 0 none;\n}\n.p-datatable .p-datatable-tbody > tr {\n  background: #ffffff;\n  color: #3f3f46;\n  transition: none;\n}\n.p-datatable .p-datatable-tbody > tr > td {\n  text-align: left;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  padding: 1rem 1.5rem;\n}\n.p-datatable .p-datatable-tbody > tr > td .p-row-toggler,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-init,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-save,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-cancel {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-datatable .p-datatable-tbody > tr > td .p-row-toggler:enabled:hover,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-init:enabled:hover,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-save:enabled:hover,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-cancel:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-datatable .p-datatable-tbody > tr > td .p-row-toggler:focus,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-init:focus,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-save:focus,\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-cancel:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-datatable .p-datatable-tbody > tr > td .p-row-editor-save {\n  margin-right: 0.5rem;\n}\n.p-datatable .p-datatable-tbody > tr > td > .p-column-title {\n  font-weight: 500;\n}\n.p-datatable .p-datatable-tbody > tr:focus {\n  outline: 0.15rem solid #6366F1;\n  outline-offset: -0.15rem;\n}\n.p-datatable .p-datatable-tbody > tr.p-highlight {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-datatable .p-datatable-tbody > tr.p-datatable-dragpoint-top > td {\n  box-shadow: inset 0 2px 0 0 #EEF2FF;\n}\n.p-datatable .p-datatable-tbody > tr.p-datatable-dragpoint-bottom > td {\n  box-shadow: inset 0 -2px 0 0 #EEF2FF;\n}\n.p-datatable.p-datatable-hoverable-rows .p-datatable-tbody > tr:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-datatable .p-column-resizer-helper {\n  background: #4F46E5;\n}\n.p-datatable .p-datatable-scrollable-header,\n.p-datatable .p-datatable-scrollable-footer {\n  background: #fafafa;\n}\n.p-datatable.p-datatable-scrollable > .p-datatable-wrapper > .p-datatable-table > .p-datatable-thead,\n.p-datatable.p-datatable-scrollable > .p-datatable-wrapper > .p-datatable-table > .p-datatable-tfoot, .p-datatable.p-datatable-scrollable > .p-datatable-wrapper > .p-virtualscroller > .p-datatable-table > .p-datatable-thead,\n.p-datatable.p-datatable-scrollable > .p-datatable-wrapper > .p-virtualscroller > .p-datatable-table > .p-datatable-tfoot {\n  background-color: #fafafa;\n}\n.p-datatable .p-datatable-loading-icon {\n  font-size: 2rem;\n}\n.p-datatable.p-datatable-gridlines .p-datatable-header {\n  border-width: 1px 1px 0 1px;\n}\n.p-datatable.p-datatable-gridlines .p-datatable-footer {\n  border-width: 0 1px 1px 1px;\n}\n.p-datatable.p-datatable-gridlines .p-paginator-top {\n  border-width: 0 1px 0 1px;\n}\n.p-datatable.p-datatable-gridlines .p-paginator-bottom {\n  border-width: 0 1px 1px 1px;\n}\n.p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th {\n  border-width: 1px 1px 1px 1px;\n}\n.p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td {\n  border-width: 1px;\n}\n.p-datatable.p-datatable-gridlines .p-datatable-tfoot > tr > td {\n  border-width: 1px;\n}\n.p-datatable.p-datatable-gridlines.p-datatable-scrollable .p-datatable-thead > tr > th + th {\n  border-left-width: 0;\n}\n.p-datatable.p-datatable-gridlines.p-datatable-scrollable .p-datatable-tbody > tr > td + td {\n  border-left-width: 0;\n}\n.p-datatable.p-datatable-gridlines.p-datatable-scrollable .p-datatable-tbody > tr + tr > td, .p-datatable.p-datatable-gridlines.p-datatable-scrollable .p-datatable-tbody > tr:first-child > td {\n  border-top-width: 0;\n}\n.p-datatable.p-datatable-gridlines.p-datatable-scrollable .p-datatable-tfoot > tr > td + td {\n  border-left-width: 0;\n}\n.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {\n  background: #fcfcfc;\n}\n.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even).p-highlight {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even).p-highlight .p-row-toggler {\n  color: #312E81;\n}\n.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even).p-highlight .p-row-toggler:hover {\n  color: #312E81;\n}\n.p-datatable.p-datatable-sm .p-datatable-header {\n  padding: 0.625rem 0.625rem;\n}\n.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {\n  padding: 0.375rem 0.75rem;\n}\n.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {\n  padding: 0.5rem 0.75rem;\n}\n.p-datatable.p-datatable-sm .p-datatable-tfoot > tr > td {\n  padding: 0.375rem 0.75rem;\n}\n.p-datatable.p-datatable-sm .p-datatable-footer {\n  padding: 0.375rem 0.75rem;\n}\n.p-datatable.p-datatable-lg .p-datatable-header {\n  padding: 1.5625rem 1.5625rem;\n}\n.p-datatable.p-datatable-lg .p-datatable-thead > tr > th {\n  padding: 0.9375rem 1.875rem;\n}\n.p-datatable.p-datatable-lg .p-datatable-tbody > tr > td {\n  padding: 1.25rem 1.875rem;\n}\n.p-datatable.p-datatable-lg .p-datatable-tfoot > tr > td {\n  padding: 0.9375rem 1.875rem;\n}\n.p-datatable.p-datatable-lg .p-datatable-footer {\n  padding: 0.9375rem 1.875rem;\n}\n\n.p-dataview .p-paginator-top {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-dataview .p-paginator-bottom {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-dataview .p-dataview-header {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 1px 0 1px 0;\n  padding: 1.25rem 1.25rem;\n  font-weight: 600;\n}\n.p-dataview .p-dataview-content {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  padding: 0;\n}\n.p-dataview.p-dataview-list .p-dataview-content > .p-grid > div {\n  border: solid #f4f4f5;\n  border-width: 0 0 1px 0;\n}\n.p-dataview .p-dataview-footer {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  padding: 0.75rem 1.5rem;\n  font-weight: 600;\n  border-bottom-left-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n\n.p-column-filter-row .p-column-filter-menu-button,\n.p-column-filter-row .p-column-filter-clear-button {\n  margin-left: 0.5rem;\n}\n\n.p-column-filter-menu-button {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-column-filter-menu-button:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-column-filter-menu-button.p-column-filter-menu-button-open, .p-column-filter-menu-button.p-column-filter-menu-button-open:hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-column-filter-menu-button.p-column-filter-menu-button-active, .p-column-filter-menu-button.p-column-filter-menu-button-active:hover {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-column-filter-menu-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-column-filter-clear-button {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-column-filter-clear-button:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-column-filter-clear-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-column-filter-overlay {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  min-width: 12.5rem;\n}\n.p-column-filter-overlay .p-column-filter-row-items {\n  padding: 0.25rem 0;\n}\n.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: none;\n  border-radius: 0;\n}\n.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item:not(.p-highlight):not(.p-disabled):hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-row-item:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n}\n.p-column-filter-overlay .p-column-filter-row-items .p-column-filter-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n\n.p-column-filter-overlay-menu .p-column-filter-operator {\n  padding: 0.5rem 0.75rem;\n  border-bottom: 0 none;\n  color: #3f3f46;\n  background: #fafafa;\n  margin: 0;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-column-filter-overlay-menu .p-column-filter-constraint {\n  padding: 1.25rem;\n  border-bottom: 1px solid #f3f4f6;\n}\n.p-column-filter-overlay-menu .p-column-filter-constraint .p-column-filter-matchmode-dropdown {\n  margin-bottom: 0.5rem;\n}\n.p-column-filter-overlay-menu .p-column-filter-constraint .p-column-filter-remove-button {\n  margin-top: 0.5rem;\n}\n.p-column-filter-overlay-menu .p-column-filter-constraint:last-child {\n  border-bottom: 0 none;\n}\n.p-column-filter-overlay-menu .p-column-filter-add-rule {\n  padding: 0.75rem 1.25rem;\n}\n.p-column-filter-overlay-menu .p-column-filter-buttonbar {\n  padding: 1.25rem;\n}\n\n.fc {\n  /* FullCalendar 4 */\n  /* FullCalendar 5 */\n}\n.fc.fc-unthemed .fc-view-container th {\n  background: #fafafa;\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n}\n.fc.fc-unthemed .fc-view-container td.fc-widget-content {\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n}\n.fc.fc-unthemed .fc-view-container td.fc-head-container {\n  border: 1px solid #e5e7eb;\n}\n.fc.fc-unthemed .fc-view-container .fc-view {\n  background: #ffffff;\n}\n.fc.fc-unthemed .fc-view-container .fc-row {\n  border-right: 1px solid #e5e7eb;\n}\n.fc.fc-unthemed .fc-view-container .fc-event {\n  background: #4F46E5;\n  border: 1px solid #4F46E5;\n  color: #ffffff;\n}\n.fc.fc-unthemed .fc-view-container .fc-divider {\n  background: #fafafa;\n  border: 1px solid #e5e7eb;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button {\n  color: #ffffff;\n  background: #4F46E5;\n  border: 1px solid #4F46E5;\n  font-size: 1rem;\n  transition: none;\n  border-radius: 0.375rem;\n  display: flex;\n  align-items: center;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button:enabled:hover {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button:enabled:active {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button:enabled:active:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button .fc-icon-chevron-left {\n  font-family: \"PrimeIcons\" !important;\n  text-indent: 0;\n  font-size: 1rem;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button .fc-icon-chevron-left:before {\n  content: \"\\e900\";\n}\n.fc.fc-unthemed .fc-toolbar .fc-button .fc-icon-chevron-right {\n  font-family: \"PrimeIcons\" !important;\n  text-indent: 0;\n  font-size: 1rem;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button .fc-icon-chevron-right:before {\n  content: \"\\e901\";\n}\n.fc.fc-unthemed .fc-toolbar .fc-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button.fc-dayGridMonth-button, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridWeek-button, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridDay-button {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  color: #3f3f46;\n  transition: none;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button.fc-dayGridMonth-button:hover, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridWeek-button:hover, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridDay-button:hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button.fc-dayGridMonth-button.fc-button-active, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridWeek-button.fc-button-active, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridDay-button.fc-button-active {\n  background: #4F46E5;\n  border-color: #4F46E5;\n  color: #ffffff;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button.fc-dayGridMonth-button.fc-button-active:hover, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridWeek-button.fc-button-active:hover, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridDay-button.fc-button-active:hover {\n  background: #4338CA;\n  border-color: #4338CA;\n  color: #ffffff;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button.fc-dayGridMonth-button:focus, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridWeek-button:focus, .fc.fc-unthemed .fc-toolbar .fc-button.fc-timeGridDay-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  z-index: 1;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button-group .fc-button {\n  border-radius: 0;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button-group .fc-button:first-child {\n  border-top-left-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.fc.fc-unthemed .fc-toolbar .fc-button-group .fc-button:last-child {\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-scrollgrid {\n  border-color: #e5e7eb;\n}\n.fc.fc-theme-standard .fc-view-harness th {\n  background: #fafafa;\n  border-color: #e5e7eb;\n  color: #3f3f46;\n}\n.fc.fc-theme-standard .fc-view-harness td {\n  color: #3f3f46;\n  border-color: #e5e7eb;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-view {\n  background: #ffffff;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover {\n  background: none;\n  border: 0 none;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-header {\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n  background: #fafafa;\n  color: #3f3f46;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-header .fc-popover-close {\n  opacity: 1;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  overflow: hidden;\n  font-family: \"PrimeIcons\" !important;\n  font-size: 1rem;\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-header .fc-popover-close:before {\n  content: \"\\e90b\";\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-header .fc-popover-close:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-header .fc-popover-close:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-popover .fc-popover-body {\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-top: 0 none;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-event.fc-daygrid-block-event {\n  color: #ffffff;\n  background: #4F46E5;\n  border-color: #4F46E5;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-event.fc-daygrid-block-event .fc-event-main {\n  color: #ffffff;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-event.fc-daygrid-dot-event .fc-daygrid-event-dot {\n  background: #4F46E5;\n  border-color: #4F46E5;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-event.fc-daygrid-dot-event:hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.fc.fc-theme-standard .fc-view-harness .fc-cell-shaded {\n  background: #fafafa;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button {\n  color: #ffffff;\n  background: #4F46E5;\n  border: 1px solid #4F46E5;\n  font-size: 1rem;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button:enabled:hover {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button:enabled:active {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button:enabled:active:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button:disabled {\n  opacity: 0.6;\n  color: #ffffff;\n  background: #4F46E5;\n  border: 1px solid #4F46E5;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button .fc-icon-chevron-left {\n  font-family: \"PrimeIcons\" !important;\n  text-indent: 0;\n  font-size: 1rem;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button .fc-icon-chevron-left:before {\n  content: \"\\e900\";\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button .fc-icon-chevron-right {\n  font-family: \"PrimeIcons\" !important;\n  text-indent: 0;\n  font-size: 1rem;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button .fc-icon-chevron-right:before {\n  content: \"\\e901\";\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button.fc-dayGridMonth-button, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridWeek-button, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridDay-button {\n  background: #ffffff;\n  border: 1px solid #d4d4d8;\n  color: #3f3f46;\n  transition: none;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button.fc-dayGridMonth-button:hover, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridWeek-button:hover, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridDay-button:hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button.fc-dayGridMonth-button.fc-button-active, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridWeek-button.fc-button-active, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridDay-button.fc-button-active {\n  background: #4F46E5;\n  border-color: #4F46E5;\n  color: #ffffff;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button.fc-dayGridMonth-button.fc-button-active:hover, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridWeek-button.fc-button-active:hover, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridDay-button.fc-button-active:hover {\n  background: #4338CA;\n  border-color: #4338CA;\n  color: #ffffff;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button.fc-dayGridMonth-button:not(:disabled):focus, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridWeek-button:not(:disabled):focus, .fc.fc-theme-standard .fc-toolbar .fc-button.fc-timeGridDay-button:not(:disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n  z-index: 1;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button-group .fc-button {\n  border-radius: 0;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button-group .fc-button:first-child {\n  border-top-left-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.fc.fc-theme-standard .fc-toolbar .fc-button-group .fc-button:last-child {\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n.fc.fc-theme-standard .fc-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n\n.p-orderlist .p-orderlist-controls {\n  padding: 1.25rem;\n}\n.p-orderlist .p-orderlist-controls .p-button {\n  margin-bottom: 0.5rem;\n}\n.p-orderlist .p-orderlist-header {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n  font-weight: 700;\n  border-bottom: 0 none;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-orderlist .p-orderlist-list {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 0.25rem 0;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-orderlist .p-orderlist-list .p-orderlist-item {\n  padding: 0.75rem 1rem;\n  margin: 0;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: transform 0.2s, none;\n}\n.p-orderlist .p-orderlist-list .p-orderlist-item:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-orderlist .p-orderlist-list .p-orderlist-item:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n}\n.p-orderlist .p-orderlist-list .p-orderlist-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-orderlist.p-orderlist-striped .p-orderlist-list .p-orderlist-item:nth-child(even) {\n  background: #fcfcfc;\n}\n.p-orderlist.p-orderlist-striped .p-orderlist-list .p-orderlist-item:nth-child(even):hover {\n  background: #f4f4f5;\n}\n\n.p-organizationchart .p-organizationchart-node-content.p-organizationchart-selectable-node:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-organizationchart .p-organizationchart-node-content.p-highlight {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-organizationchart .p-organizationchart-node-content.p-highlight .p-node-toggler i {\n  color: #6f91ff;\n}\n.p-organizationchart .p-organizationchart-line-down {\n  background: #e5e7eb;\n}\n.p-organizationchart .p-organizationchart-line-left {\n  border-right: 1px solid #e5e7eb;\n  border-color: #e5e7eb;\n}\n.p-organizationchart .p-organizationchart-line-top {\n  border-top: 1px solid #e5e7eb;\n  border-color: #e5e7eb;\n}\n.p-organizationchart .p-organizationchart-node-content {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 1.25rem;\n}\n.p-organizationchart .p-organizationchart-node-content .p-node-toggler {\n  background: inherit;\n  color: inherit;\n  border-radius: 50%;\n}\n.p-organizationchart .p-organizationchart-node-content .p-node-toggler:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-paginator {\n  background: #ffffff;\n  color: #71717A;\n  border: solid #f4f4f5;\n  border-width: 0;\n  padding: 0.75rem 1.5rem;\n  border-radius: 0.375rem;\n}\n.p-paginator .p-paginator-first,\n.p-paginator .p-paginator-prev,\n.p-paginator .p-paginator-next,\n.p-paginator .p-paginator-last {\n  background-color: transparent;\n  border: 1px solid #d4d4d8;\n  color: #71717A;\n  min-width: 3rem;\n  height: 3rem;\n  margin: 0 0 0 -1px;\n  transition: none;\n  border-radius: 0;\n}\n.p-paginator .p-paginator-first:not(.p-disabled):not(.p-highlight):hover,\n.p-paginator .p-paginator-prev:not(.p-disabled):not(.p-highlight):hover,\n.p-paginator .p-paginator-next:not(.p-disabled):not(.p-highlight):hover,\n.p-paginator .p-paginator-last:not(.p-disabled):not(.p-highlight):hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n.p-paginator .p-paginator-first {\n  border-top-left-radius: 0;\n  border-bottom-left-radius: 0;\n}\n.p-paginator .p-paginator-last {\n  border-top-right-radius: 0;\n  border-bottom-right-radius: 0;\n}\n.p-paginator .p-dropdown {\n  margin-left: 0.5rem;\n  margin-right: 0.5rem;\n  height: 3rem;\n}\n.p-paginator .p-dropdown .p-dropdown-label {\n  padding-right: 0;\n}\n.p-paginator .p-paginator-page-input {\n  margin-left: 0.5rem;\n  margin-right: 0.5rem;\n}\n.p-paginator .p-paginator-page-input .p-inputtext {\n  max-width: 3rem;\n}\n.p-paginator .p-paginator-current {\n  background-color: transparent;\n  border: 1px solid #d4d4d8;\n  color: #71717A;\n  min-width: 3rem;\n  height: 3rem;\n  margin: 0 0 0 -1px;\n  padding: 0 0.5rem;\n}\n.p-paginator .p-paginator-pages .p-paginator-page {\n  background-color: transparent;\n  border: 1px solid #d4d4d8;\n  color: #71717A;\n  min-width: 3rem;\n  height: 3rem;\n  margin: 0 0 0 -1px;\n  transition: none;\n  border-radius: 0;\n}\n.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {\n  background: #EEF2FF;\n  border-color: #EEF2FF;\n  color: #312E81;\n}\n.p-paginator .p-paginator-pages .p-paginator-page:not(.p-highlight):hover {\n  background: #f4f4f5;\n  border-color: #d4d4d8;\n  color: #3f3f46;\n}\n\n.p-picklist .p-picklist-buttons {\n  padding: 1.25rem;\n}\n.p-picklist .p-picklist-buttons .p-button {\n  margin-bottom: 0.5rem;\n}\n.p-picklist .p-picklist-header {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n  font-weight: 700;\n  border-bottom: 0 none;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-picklist .p-picklist-list {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 0.25rem 0;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-picklist .p-picklist-list .p-picklist-item {\n  padding: 0.75rem 1rem;\n  margin: 0;\n  border: 0 none;\n  color: #3f3f46;\n  background: transparent;\n  transition: transform 0.2s, none;\n}\n.p-picklist .p-picklist-list .p-picklist-item:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-picklist .p-picklist-list .p-picklist-item:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n}\n.p-picklist .p-picklist-list .p-picklist-item.p-highlight {\n  color: #312E81;\n  background: #EEF2FF;\n}\n.p-picklist.p-picklist-striped .p-picklist-list .p-picklist-item:nth-child(even) {\n  background: #fcfcfc;\n}\n.p-picklist.p-picklist-striped .p-picklist-list .p-picklist-item:nth-child(even):hover {\n  background: #f4f4f5;\n}\n\n.p-timeline .p-timeline-event-marker {\n  border: 2px solid #4F46E5;\n  border-radius: 50%;\n  width: 1rem;\n  height: 1rem;\n  background-color: #ffffff;\n}\n.p-timeline .p-timeline-event-connector {\n  background-color: #e5e7eb;\n}\n.p-timeline.p-timeline-vertical .p-timeline-event-opposite,\n.p-timeline.p-timeline-vertical .p-timeline-event-content {\n  padding: 0 1rem;\n}\n.p-timeline.p-timeline-vertical .p-timeline-event-connector {\n  width: 2px;\n}\n.p-timeline.p-timeline-horizontal .p-timeline-event-opposite,\n.p-timeline.p-timeline-horizontal .p-timeline-event-content {\n  padding: 1rem 0;\n}\n.p-timeline.p-timeline-horizontal .p-timeline-event-connector {\n  height: 2px;\n}\n\n.p-tree {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 1.25rem;\n  border-radius: 0.375rem;\n}\n.p-tree .p-tree-container .p-treenode {\n  padding: 0.143rem;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content {\n  border-radius: 0.375rem;\n  transition: none;\n  padding: 0;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-tree-toggler {\n  margin-right: 0.5rem;\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-tree-toggler:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-tree-toggler:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-treenode-icon {\n  margin-right: 0.5rem;\n  color: #71717A;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-checkbox {\n  margin-right: 0.5rem;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content .p-checkbox .p-indeterminate .p-checkbox-icon {\n  color: #3f3f46;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-highlight {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-highlight .p-tree-toggler,\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-highlight .p-treenode-icon {\n  color: #312E81;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-highlight .p-tree-toggler:hover,\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-highlight .p-treenode-icon:hover {\n  color: #312E81;\n}\n.p-tree .p-tree-container .p-treenode .p-treenode-content.p-treenode-selectable:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-tree .p-tree-filter-container {\n  margin-bottom: 0.5rem;\n}\n.p-tree .p-tree-filter-container .p-tree-filter {\n  width: 100%;\n  padding-right: 1.75rem;\n}\n.p-tree .p-tree-filter-container .p-tree-filter-icon {\n  right: 0.75rem;\n  color: #71717A;\n}\n.p-tree .p-treenode-children {\n  padding: 0 0 0 1rem;\n}\n.p-tree .p-tree-loading-icon {\n  font-size: 2rem;\n}\n\n.p-treetable .p-paginator-top {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-treetable .p-paginator-bottom {\n  border-width: 0 0 1px 0;\n  border-radius: 0;\n}\n.p-treetable .p-treetable-header {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 1px 0 1px 0;\n  padding: 1.25rem 1.25rem;\n  font-weight: 600;\n}\n.p-treetable .p-treetable-footer {\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  padding: 0.75rem 1.5rem;\n  font-weight: 600;\n}\n.p-treetable .p-treetable-thead > tr > th {\n  text-align: left;\n  padding: 0.75rem 1.5rem;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  font-weight: 500;\n  color: #6b7280;\n  background: #fafafa;\n  transition: none;\n}\n.p-treetable .p-treetable-tfoot > tr > td {\n  text-align: left;\n  padding: 1rem 1rem;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  font-weight: 600;\n  color: #3f3f46;\n  background: #fafafa;\n}\n.p-treetable .p-sortable-column {\n  outline-color: #6366F1;\n}\n.p-treetable .p-sortable-column .p-sortable-column-icon {\n  color: #71717A;\n  margin-left: 0.5rem;\n}\n.p-treetable .p-sortable-column .p-sortable-column-badge {\n  border-radius: 50%;\n  height: 1.143rem;\n  min-width: 1.143rem;\n  line-height: 1.143rem;\n  color: #312E81;\n  background: #EEF2FF;\n  margin-left: 0.5rem;\n}\n.p-treetable .p-sortable-column:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-treetable .p-sortable-column:not(.p-highlight):hover .p-sortable-column-icon {\n  color: #71717A;\n}\n.p-treetable .p-sortable-column.p-highlight {\n  background: #fafafa;\n  color: #4F46E5;\n}\n.p-treetable .p-sortable-column.p-highlight .p-sortable-column-icon {\n  color: #4F46E5;\n}\n.p-treetable .p-treetable-tbody > tr {\n  background: #ffffff;\n  color: #3f3f46;\n  transition: none;\n}\n.p-treetable .p-treetable-tbody > tr > td {\n  text-align: left;\n  border: 1px solid #f4f4f5;\n  border-width: 0 0 1px 0;\n  padding: 1rem 1.5rem;\n}\n.p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n  margin-right: 0.5rem;\n}\n.p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler + .p-checkbox {\n  margin-right: 0.5rem;\n}\n.p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler + .p-checkbox .p-indeterminate .p-checkbox-icon {\n  color: #3f3f46;\n}\n.p-treetable .p-treetable-tbody > tr:focus {\n  outline: 0.15rem solid #6366F1;\n  outline-offset: -0.15rem;\n}\n.p-treetable .p-treetable-tbody > tr.p-highlight {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-treetable .p-treetable-tbody > tr.p-highlight .p-treetable-toggler {\n  color: #312E81;\n}\n.p-treetable .p-treetable-tbody > tr.p-highlight .p-treetable-toggler:hover {\n  color: #312E81;\n}\n.p-treetable.p-treetable-hoverable-rows .p-treetable-tbody > tr:not(.p-highlight):hover {\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-treetable.p-treetable-hoverable-rows .p-treetable-tbody > tr:not(.p-highlight):hover .p-treetable-toggler {\n  color: #3f3f46;\n}\n.p-treetable .p-column-resizer-helper {\n  background: #4F46E5;\n}\n.p-treetable .p-treetable-scrollable-header,\n.p-treetable .p-treetable-scrollable-footer {\n  background: #fafafa;\n}\n.p-treetable .p-treetable-loading-icon {\n  font-size: 2rem;\n}\n.p-treetable.p-treetable-gridlines .p-datatable-header {\n  border-width: 1px 1px 0 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-footer {\n  border-width: 0 1px 1px 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-top {\n  border-width: 0 1px 0 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-bottom {\n  border-width: 0 1px 1px 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-thead > tr > th {\n  border-width: 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-tbody > tr > td {\n  border-width: 1px;\n}\n.p-treetable.p-treetable-gridlines .p-treetable-tfoot > tr > td {\n  border-width: 1px;\n}\n.p-treetable.p-treetable-sm .p-treetable-header {\n  padding: 1.09375rem 1.09375rem;\n}\n.p-treetable.p-treetable-sm .p-treetable-thead > tr > th {\n  padding: 0.375rem 0.75rem;\n}\n.p-treetable.p-treetable-sm .p-treetable-tbody > tr > td {\n  padding: 0.5rem 0.75rem;\n}\n.p-treetable.p-treetable-sm .p-treetable-tfoot > tr > td {\n  padding: 0.375rem 0.75rem;\n}\n.p-treetable.p-treetable-sm .p-treetable-footer {\n  padding: 0.375rem 0.75rem;\n}\n.p-treetable.p-treetable-lg .p-treetable-header {\n  padding: 1.5625rem 1.5625rem;\n}\n.p-treetable.p-treetable-lg .p-treetable-thead > tr > th {\n  padding: 0.9375rem 1.875rem;\n}\n.p-treetable.p-treetable-lg .p-treetable-tbody > tr > td {\n  padding: 1.25rem 1.875rem;\n}\n.p-treetable.p-treetable-lg .p-treetable-tfoot > tr > td {\n  padding: 0.9375rem 1.875rem;\n}\n.p-treetable.p-treetable-lg .p-treetable-footer {\n  padding: 0.9375rem 1.875rem;\n}\n\n.p-accordion .p-accordion-header .p-accordion-header-link {\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n  background: #fafafa;\n  font-weight: 700;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-accordion .p-accordion-header .p-accordion-header-link .p-accordion-toggle-icon {\n  margin-right: 0.5rem;\n}\n.p-accordion .p-accordion-header:not(.p-disabled) .p-accordion-header-link:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 1px #6366F1;\n}\n.p-accordion .p-accordion-header:not(.p-highlight):not(.p-disabled):hover .p-accordion-header-link {\n  background: #f4f4f5;\n  border-color: #e5e7eb;\n  color: #3f3f46;\n}\n.p-accordion .p-accordion-header:not(.p-disabled).p-highlight .p-accordion-header-link {\n  background: #fafafa;\n  border-color: #e5e7eb;\n  color: #3f3f46;\n  border-bottom-right-radius: 0;\n  border-bottom-left-radius: 0;\n}\n.p-accordion .p-accordion-header:not(.p-disabled).p-highlight:hover .p-accordion-header-link {\n  border-color: #e5e7eb;\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-accordion .p-accordion-content {\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-top: 0;\n  border-top-right-radius: 0;\n  border-top-left-radius: 0;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-accordion .p-accordion-tab {\n  margin-bottom: 0;\n}\n.p-accordion .p-accordion-tab .p-accordion-header .p-accordion-header-link {\n  border-radius: 0;\n}\n.p-accordion .p-accordion-tab .p-accordion-content {\n  border-bottom-right-radius: 0;\n  border-bottom-left-radius: 0;\n}\n.p-accordion .p-accordion-tab:not(:first-child) .p-accordion-header .p-accordion-header-link {\n  border-top: 0 none;\n}\n.p-accordion .p-accordion-tab:not(:first-child) .p-accordion-header:not(.p-highlight):not(.p-disabled):hover .p-accordion-header-link, .p-accordion .p-accordion-tab:not(:first-child) .p-accordion-header:not(.p-disabled).p-highlight:hover .p-accordion-header-link {\n  border-top: 0 none;\n}\n.p-accordion .p-accordion-tab:first-child .p-accordion-header .p-accordion-header-link {\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-accordion .p-accordion-tab:last-child .p-accordion-header:not(.p-highlight) .p-accordion-header-link {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-accordion .p-accordion-tab:last-child .p-accordion-content {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.p-card {\n  background: #ffffff;\n  color: #3f3f46;\n  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);\n  border-radius: 0.375rem;\n}\n.p-card .p-card-body {\n  padding: 1.25rem;\n}\n.p-card .p-card-title {\n  font-size: 1.5rem;\n  font-weight: 700;\n  margin-bottom: 0.5rem;\n}\n.p-card .p-card-subtitle {\n  font-weight: 400;\n  margin-bottom: 0.5rem;\n  color: #71717A;\n}\n.p-card .p-card-content {\n  padding: 1.25rem 0;\n}\n.p-card .p-card-footer {\n  padding: 1.25rem 0 0 0;\n}\n\n.p-fieldset {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-radius: 0.375rem;\n}\n.p-fieldset .p-fieldset-legend {\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n  background: #fafafa;\n  font-weight: 700;\n  border-radius: 0.375rem;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend {\n  padding: 0;\n  transition: none;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend a {\n  padding: 1.25rem;\n  color: #3f3f46;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend a .p-fieldset-toggler {\n  margin-right: 0.5rem;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend a:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend a:hover {\n  color: #18181B;\n}\n.p-fieldset.p-fieldset-toggleable .p-fieldset-legend:hover {\n  background: #f4f4f5;\n  border-color: #e5e7eb;\n  color: #18181B;\n}\n.p-fieldset .p-fieldset-content {\n  padding: 1.25rem;\n}\n\n.p-divider .p-divider-content {\n  background-color: #ffffff;\n}\n.p-divider.p-divider-horizontal {\n  margin: 1rem 0;\n  padding: 0 1rem;\n}\n.p-divider.p-divider-horizontal:before {\n  border-top: 1px #e5e7eb;\n}\n.p-divider.p-divider-horizontal .p-divider-content {\n  padding: 0 0.5rem;\n}\n.p-divider.p-divider-vertical {\n  margin: 0 1rem;\n  padding: 1rem 0;\n}\n.p-divider.p-divider-vertical:before {\n  border-left: 1px #e5e7eb;\n}\n.p-divider.p-divider-vertical .p-divider-content {\n  padding: 0.5rem 0;\n}\n\n.p-panel .p-panel-header {\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n  background: #fafafa;\n  color: #3f3f46;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-panel .p-panel-header .p-panel-title {\n  font-weight: 700;\n}\n.p-panel .p-panel-header .p-panel-header-icon {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-panel .p-panel-header .p-panel-header-icon:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-panel .p-panel-header .p-panel-header-icon:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-panel.p-panel-toggleable .p-panel-header {\n  padding: 0.75rem 1.25rem;\n}\n.p-panel .p-panel-content {\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n  border-top: 0 none;\n}\n.p-panel .p-panel-footer {\n  padding: 0.75rem 1.25rem;\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-top: 0 none;\n}\n\n.p-scrollpanel .p-scrollpanel-bar {\n  background: #fafafa;\n  border: 0 none;\n  transition: none;\n}\n.p-scrollpanel .p-scrollpanel-bar:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-splitter {\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  border-radius: 0.375rem;\n  color: #3f3f46;\n}\n.p-splitter .p-splitter-gutter {\n  transition: none;\n  background: #fafafa;\n}\n.p-splitter .p-splitter-gutter .p-splitter-gutter-handle {\n  background: #e5e7eb;\n  transition: none;\n}\n.p-splitter .p-splitter-gutter .p-splitter-gutter-handle:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-splitter .p-splitter-gutter-resizing {\n  background: #e5e7eb;\n}\n\n.p-tabview .p-tabview-nav {\n  background: #ffffff;\n  border: 1px solid #e5e7eb;\n  border-width: 0 0 2px 0;\n}\n.p-tabview .p-tabview-nav li {\n  margin-right: 0;\n}\n.p-tabview .p-tabview-nav li .p-tabview-nav-link {\n  border: solid #e5e7eb;\n  border-width: 0 0 2px 0;\n  border-color: transparent transparent #e5e7eb transparent;\n  background: #ffffff;\n  color: #71717A;\n  padding: 1.25rem;\n  font-weight: 700;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n  transition: none;\n  margin: 0 0 -2px 0;\n}\n.p-tabview .p-tabview-nav li .p-tabview-nav-link:not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 1px #6366F1;\n}\n.p-tabview .p-tabview-nav li:not(.p-highlight):not(.p-disabled):hover .p-tabview-nav-link {\n  background: #ffffff;\n  border-color: #71717A;\n  color: #71717A;\n}\n.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {\n  background: #ffffff;\n  border-color: #4F46E5;\n  color: #4F46E5;\n}\n.p-tabview .p-tabview-nav-btn.p-link {\n  background: #ffffff;\n  color: #4F46E5;\n  width: 3rem;\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n  border-radius: 0;\n}\n.p-tabview .p-tabview-nav-btn.p-link:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 1px #6366F1;\n}\n.p-tabview .p-tabview-panels {\n  background: #ffffff;\n  padding: 1.25rem;\n  border: 0 none;\n  color: #3f3f46;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.p-toolbar {\n  background: #fafafa;\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n  border-radius: 0.375rem;\n}\n.p-toolbar .p-toolbar-separator {\n  margin: 0 0.5rem;\n}\n\n.p-confirm-popup {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n}\n.p-confirm-popup .p-confirm-popup-content {\n  padding: 1.25rem;\n}\n.p-confirm-popup .p-confirm-popup-footer {\n  text-align: right;\n  padding: 0 1rem 1rem 1rem;\n}\n.p-confirm-popup .p-confirm-popup-footer button {\n  margin: 0 0.5rem 0 0;\n  width: auto;\n}\n.p-confirm-popup .p-confirm-popup-footer button:last-child {\n  margin: 0;\n}\n.p-confirm-popup:after {\n  border: solid transparent;\n  border-color: rgba(255, 255, 255, 0);\n  border-bottom-color: #ffffff;\n}\n.p-confirm-popup:before {\n  border: solid transparent;\n  border-color: rgba(255, 255, 255, 0);\n  border-bottom-color: #ffffff;\n}\n.p-confirm-popup.p-confirm-popup-flipped:after {\n  border-top-color: #ffffff;\n}\n.p-confirm-popup.p-confirm-popup-flipped:before {\n  border-top-color: #ffffff;\n}\n.p-confirm-popup .p-confirm-popup-icon {\n  font-size: 1.5rem;\n}\n.p-confirm-popup .p-confirm-popup-message {\n  margin-left: 1rem;\n}\n\n.p-dialog {\n  border-radius: 0.375rem;\n  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n  border: 0 none;\n}\n.p-dialog .p-dialog-header {\n  border-bottom: 0 none;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 1.5rem;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-dialog .p-dialog-header .p-dialog-title {\n  font-weight: 600;\n  font-size: 1.5rem;\n}\n.p-dialog .p-dialog-header .p-dialog-header-icon {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n  margin-right: 0.5rem;\n}\n.p-dialog .p-dialog-header .p-dialog-header-icon:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-dialog .p-dialog-header .p-dialog-header-icon:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-dialog .p-dialog-header .p-dialog-header-icon:last-child {\n  margin-right: 0;\n}\n.p-dialog .p-dialog-content {\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 0 1.5rem 1.5rem 1.5rem;\n}\n.p-dialog .p-dialog-content:last-of-type {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-dialog .p-dialog-footer {\n  border-top: 0 none;\n  background: #ffffff;\n  color: #3f3f46;\n  padding: 0 1.5rem 1.5rem 1.5rem;\n  text-align: right;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-dialog .p-dialog-footer button {\n  margin: 0 0.5rem 0 0;\n  width: auto;\n}\n.p-dialog.p-confirm-dialog .p-confirm-dialog-icon {\n  font-size: 2rem;\n}\n.p-dialog.p-confirm-dialog .p-confirm-dialog-message {\n  margin-left: 1rem;\n}\n\n.p-overlaypanel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  border-radius: 0.375rem;\n  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n}\n.p-overlaypanel .p-overlaypanel-content {\n  padding: 1.25rem;\n}\n.p-overlaypanel .p-overlaypanel-close {\n  background: #4F46E5;\n  color: #ffffff;\n  width: 2rem;\n  height: 2rem;\n  transition: none;\n  border-radius: 50%;\n  position: absolute;\n  top: -1rem;\n  right: -1rem;\n}\n.p-overlaypanel .p-overlaypanel-close:enabled:hover {\n  background: #4338CA;\n  color: #ffffff;\n}\n.p-overlaypanel:after {\n  border: solid transparent;\n  border-color: rgba(255, 255, 255, 0);\n  border-bottom-color: #ffffff;\n}\n.p-overlaypanel:before {\n  border: solid transparent;\n  border-color: rgba(255, 255, 255, 0);\n  border-bottom-color: #f2f2f2;\n}\n.p-overlaypanel.p-overlaypanel-flipped:after {\n  border-top-color: #ffffff;\n}\n.p-overlaypanel.p-overlaypanel-flipped:before {\n  border-top-color: #ffffff;\n}\n\n.p-sidebar {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n}\n.p-sidebar .p-sidebar-header {\n  padding: 1.25rem;\n}\n.p-sidebar .p-sidebar-header .p-sidebar-close,\n.p-sidebar .p-sidebar-header .p-sidebar-icon {\n  width: 2rem;\n  height: 2rem;\n  color: #71717A;\n  border: 0 none;\n  background: transparent;\n  border-radius: 50%;\n  transition: none;\n}\n.p-sidebar .p-sidebar-header .p-sidebar-close:enabled:hover,\n.p-sidebar .p-sidebar-header .p-sidebar-icon:enabled:hover {\n  color: #18181B;\n  border-color: transparent;\n  background: #f4f4f5;\n}\n.p-sidebar .p-sidebar-header .p-sidebar-close:focus,\n.p-sidebar .p-sidebar-header .p-sidebar-icon:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-sidebar .p-sidebar-header + .p-sidebar-content {\n  padding-top: 0;\n}\n.p-sidebar .p-sidebar-content {\n  padding: 1.25rem;\n}\n\n.p-tooltip .p-tooltip-text {\n  background: #3f3f46;\n  color: #ffffff;\n  padding: 0.75rem 0.75rem;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  border-radius: 0.375rem;\n}\n.p-tooltip.p-tooltip-right .p-tooltip-arrow {\n  border-right-color: #3f3f46;\n}\n.p-tooltip.p-tooltip-left .p-tooltip-arrow {\n  border-left-color: #3f3f46;\n}\n.p-tooltip.p-tooltip-top .p-tooltip-arrow {\n  border-top-color: #3f3f46;\n}\n.p-tooltip.p-tooltip-bottom .p-tooltip-arrow {\n  border-bottom-color: #3f3f46;\n}\n\n.p-fileupload .p-fileupload-buttonbar {\n  background: #fafafa;\n  padding: 1.25rem;\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n  border-bottom: 0 none;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n  gap: 0.5rem;\n}\n.p-fileupload .p-fileupload-buttonbar .p-button.p-fileupload-choose.p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-fileupload .p-fileupload-content {\n  background: #ffffff;\n  padding: 2rem 1rem;\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-fileupload .p-fileupload-file {\n  padding: 1rem;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n  gap: 0.5rem;\n  margin-bottom: 0.5rem;\n}\n.p-fileupload .p-fileupload-file:last-child {\n  margin-bottom: 0;\n}\n.p-fileupload .p-fileupload-file-name {\n  margin-bottom: 0.5rem;\n}\n.p-fileupload .p-fileupload-file-size {\n  margin-right: 0.5rem;\n}\n.p-fileupload .p-progressbar {\n  height: 0.25rem;\n}\n.p-fileupload .p-fileupload-row > div {\n  padding: 1rem 1.5rem;\n}\n.p-fileupload.p-fileupload-advanced .p-message {\n  margin-top: 0;\n}\n\n.p-fileupload-choose:not(.p-disabled):hover {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n.p-fileupload-choose:not(.p-disabled):active {\n  background: #4338CA;\n  color: #ffffff;\n  border-color: #4338CA;\n}\n\n.p-breadcrumb {\n  background: #ffffff;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n  padding: 1rem;\n}\n.p-breadcrumb .p-breadcrumb-list li .p-menuitem-link {\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-breadcrumb .p-breadcrumb-list li .p-menuitem-link:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-breadcrumb .p-breadcrumb-list li .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-breadcrumb .p-breadcrumb-list li .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n}\n.p-breadcrumb .p-breadcrumb-list li.p-menuitem-separator {\n  margin: 0 0.5rem 0 0.5rem;\n  color: #3f3f46;\n}\n.p-breadcrumb .p-breadcrumb-list li:last-child .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-breadcrumb .p-breadcrumb-list li:last-child .p-menuitem-icon {\n  color: #71717A;\n}\n\n.p-contextmenu {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  border-radius: 0.375rem;\n  width: 12.5rem;\n}\n.p-contextmenu .p-contextmenu-root-list {\n  outline: 0 none;\n}\n.p-contextmenu .p-submenu-list {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  border-radius: 0.375rem;\n}\n.p-contextmenu .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-contextmenu .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-contextmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-contextmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-contextmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-contextmenu .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-contextmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-contextmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-contextmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-contextmenu .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-contextmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-contextmenu .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n.p-contextmenu .p-submenu-icon {\n  font-size: 0.875rem;\n}\n\n.p-dock .p-dock-list-container {\n  background: rgba(255, 255, 255, 0.1);\n  border: 1px solid rgba(255, 255, 255, 0.2);\n  padding: 0.5rem 0.5rem;\n  border-radius: 0.5rem;\n}\n.p-dock .p-dock-list-container .p-dock-list {\n  outline: 0 none;\n}\n.p-dock .p-dock-item {\n  padding: 0.5rem;\n  border-radius: 0.375rem;\n}\n.p-dock .p-dock-item.p-focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 0.15rem #6366F1;\n}\n.p-dock .p-dock-link {\n  width: 4rem;\n  height: 4rem;\n}\n.p-dock.p-dock-top .p-dock-item-second-prev,\n.p-dock.p-dock-top .p-dock-item-second-next, .p-dock.p-dock-bottom .p-dock-item-second-prev,\n.p-dock.p-dock-bottom .p-dock-item-second-next {\n  margin: 0 0.9rem;\n}\n.p-dock.p-dock-top .p-dock-item-prev,\n.p-dock.p-dock-top .p-dock-item-next, .p-dock.p-dock-bottom .p-dock-item-prev,\n.p-dock.p-dock-bottom .p-dock-item-next {\n  margin: 0 1.3rem;\n}\n.p-dock.p-dock-top .p-dock-item-current, .p-dock.p-dock-bottom .p-dock-item-current {\n  margin: 0 1.5rem;\n}\n.p-dock.p-dock-left .p-dock-item-second-prev,\n.p-dock.p-dock-left .p-dock-item-second-next, .p-dock.p-dock-right .p-dock-item-second-prev,\n.p-dock.p-dock-right .p-dock-item-second-next {\n  margin: 0.9rem 0;\n}\n.p-dock.p-dock-left .p-dock-item-prev,\n.p-dock.p-dock-left .p-dock-item-next, .p-dock.p-dock-right .p-dock-item-prev,\n.p-dock.p-dock-right .p-dock-item-next {\n  margin: 1.3rem 0;\n}\n.p-dock.p-dock-left .p-dock-item-current, .p-dock.p-dock-right .p-dock-item-current {\n  margin: 1.5rem 0;\n}\n\n@media screen and (max-width: 960px) {\n  .p-dock.p-dock-top .p-dock-list-container, .p-dock.p-dock-bottom .p-dock-list-container {\n    overflow-x: auto;\n    width: 100%;\n  }\n  .p-dock.p-dock-top .p-dock-list-container .p-dock-list, .p-dock.p-dock-bottom .p-dock-list-container .p-dock-list {\n    margin: 0 auto;\n  }\n  .p-dock.p-dock-left .p-dock-list-container, .p-dock.p-dock-right .p-dock-list-container {\n    overflow-y: auto;\n    height: 100%;\n  }\n  .p-dock.p-dock-left .p-dock-list-container .p-dock-list, .p-dock.p-dock-right .p-dock-list-container .p-dock-list {\n    margin: auto 0;\n  }\n  .p-dock .p-dock-list .p-dock-item {\n    transform: none;\n    margin: 0;\n  }\n}\n.p-megamenu {\n  padding: 1rem;\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n}\n.p-megamenu .p-megamenu-root-list {\n  outline: 0 none;\n}\n.p-megamenu .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-megamenu .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-megamenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-megamenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-megamenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-megamenu .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-megamenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-megamenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-megamenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-megamenu .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-megamenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-megamenu .p-megamenu-panel {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-megamenu .p-submenu-header {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-megamenu .p-submenu-list {\n  padding: 0.25rem 0;\n  width: 12.5rem;\n}\n.p-megamenu .p-submenu-list .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n.p-megamenu.p-megamenu-vertical {\n  width: 12.5rem;\n  padding: 0.25rem 0;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n  margin-left: 0.5rem;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-megamenu.p-megamenu-horizontal .p-megamenu-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n\n.p-menu {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n  width: 12.5rem;\n}\n.p-menu .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-menu .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-menu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-menu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-menu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menu .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-menu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-menu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-menu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menu .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-menu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-menu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menu.p-menu-overlay {\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-menu .p-submenu-header {\n  margin: 0;\n  padding: 0.75rem 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  font-weight: 600;\n  border-top-right-radius: 0;\n  border-top-left-radius: 0;\n}\n.p-menu .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n\n.p-menubar {\n  padding: 1rem;\n  background: #fafafa;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n}\n.p-menubar .p-menubar-root-list {\n  outline: 0 none;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0.375rem;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n  margin-left: 0.5rem;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-menubar .p-menubar-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-menubar .p-menubar-root-list > .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menubar .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-menubar .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-menubar .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-menubar .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-menubar .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menubar .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-menubar .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-menubar .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-menubar .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menubar .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-menubar .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-menubar .p-submenu-list {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  width: 12.5rem;\n}\n.p-menubar .p-submenu-list .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n.p-menubar .p-submenu-list .p-submenu-icon {\n  font-size: 0.875rem;\n}\n\n@media screen and (max-width: 960px) {\n  .p-menubar {\n    position: relative;\n  }\n  .p-menubar .p-menubar-button {\n    display: flex;\n    width: 2rem;\n    height: 2rem;\n    color: #71717A;\n    border-radius: 50%;\n    transition: none;\n  }\n  .p-menubar .p-menubar-button:hover {\n    color: #71717A;\n    background: #f4f4f5;\n  }\n  .p-menubar .p-menubar-button:focus {\n    outline: 0 none;\n    outline-offset: 0;\n    box-shadow: 0 0 0 1px #6366F1;\n  }\n  .p-menubar .p-menubar-root-list {\n    position: absolute;\n    display: none;\n    padding: 0.25rem 0;\n    background: #ffffff;\n    border: 0 none;\n    box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n    width: 100%;\n  }\n  .p-menubar .p-menubar-root-list .p-menuitem-separator {\n    border-top: 1px solid #f3f4f6;\n    margin: 0.25rem 0;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-icon {\n    font-size: 0.875rem;\n  }\n  .p-menubar .p-menubar-root-list .p-menuitem {\n    width: 100%;\n    position: static;\n  }\n  .p-menubar .p-menubar-root-list .p-menuitem .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n    margin-left: auto;\n    transition: transform 0.2s;\n  }\n  .p-menubar .p-menubar-root-list .p-menuitem.p-menuitem-active > .p-menuitem-content > .p-menuitem-link > .p-submenu-icon {\n    transform: rotate(-180deg);\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list {\n    width: 100%;\n    position: static;\n    box-shadow: none;\n    border: 0 none;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-submenu-icon {\n    transition: transform 0.2s;\n    transform: rotate(90deg);\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem-active > .p-menuitem-content > .p-menuitem-link > .p-submenu-icon {\n    transform: rotate(-90deg);\n  }\n  .p-menubar .p-menubar-root-list .p-menuitem {\n    width: 100%;\n    position: static;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem .p-menuitem-content .p-menuitem-link {\n    padding-left: 2.25rem;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-menuitem-content .p-menuitem-link {\n    padding-left: 3.75rem;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-menuitem-content .p-menuitem-link {\n    padding-left: 5.25rem;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-menuitem-content .p-menuitem-link {\n    padding-left: 6.75rem;\n  }\n  .p-menubar .p-menubar-root-list .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-submenu-list .p-menuitem .p-menuitem-content .p-menuitem-link {\n    padding-left: 8.25rem;\n  }\n  .p-menubar.p-menubar-mobile-active .p-menubar-root-list {\n    display: flex;\n    flex-direction: column;\n    top: 100%;\n    left: 0;\n    z-index: 1;\n  }\n}\n.p-panelmenu .p-panelmenu-header {\n  outline: 0 none;\n}\n.p-panelmenu .p-panelmenu-header .p-panelmenu-header-content {\n  border: 1px solid #e5e7eb;\n  color: #3f3f46;\n  background: #fafafa;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-action {\n  padding: 1.25rem;\n  font-weight: 700;\n}\n.p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-action .p-submenu-icon {\n  margin-right: 0.5rem;\n}\n.p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-action .p-menuitem-icon {\n  margin-right: 0.5rem;\n}\n.p-panelmenu .p-panelmenu-header:not(.p-disabled):focus .p-panelmenu-header-content {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 1px #6366F1;\n}\n.p-panelmenu .p-panelmenu-header:not(.p-highlight):not(.p-disabled):hover .p-panelmenu-header-content {\n  background: #f4f4f5;\n  border-color: #e5e7eb;\n  color: #3f3f46;\n}\n.p-panelmenu .p-panelmenu-header:not(.p-disabled).p-highlight .p-panelmenu-header-content {\n  background: #fafafa;\n  border-color: #e5e7eb;\n  color: #3f3f46;\n  border-bottom-right-radius: 0;\n  border-bottom-left-radius: 0;\n  margin-bottom: 0;\n}\n.p-panelmenu .p-panelmenu-header:not(.p-disabled).p-highlight:hover .p-panelmenu-header-content {\n  border-color: #e5e7eb;\n  background: #f4f4f5;\n  color: #3f3f46;\n}\n.p-panelmenu .p-panelmenu-content {\n  padding: 0.25rem 0;\n  border: 1px solid #e5e7eb;\n  background: #ffffff;\n  color: #3f3f46;\n  border-top: 0;\n  border-top-right-radius: 0;\n  border-top-left-radius: 0;\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-panelmenu .p-panelmenu-content .p-panelmenu-root-list {\n  outline: 0 none;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-panelmenu .p-panelmenu-content .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-panelmenu .p-panelmenu-content .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  margin-right: 0.5rem;\n}\n.p-panelmenu .p-panelmenu-content .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n.p-panelmenu .p-panelmenu-content .p-submenu-list:not(.p-panelmenu-root-list) {\n  padding: 0 0 0 1rem;\n}\n.p-panelmenu .p-panelmenu-panel {\n  margin-bottom: 0;\n}\n.p-panelmenu .p-panelmenu-panel .p-panelmenu-header .p-panelmenu-header-content {\n  border-radius: 0;\n}\n.p-panelmenu .p-panelmenu-panel .p-panelmenu-content {\n  border-radius: 0;\n}\n.p-panelmenu .p-panelmenu-panel:not(:first-child) .p-panelmenu-header .p-panelmenu-header-content {\n  border-top: 0 none;\n}\n.p-panelmenu .p-panelmenu-panel:not(:first-child) .p-panelmenu-header:not(.p-highlight):not(.p-disabled):hover .p-panelmenu-header-content, .p-panelmenu .p-panelmenu-panel:not(:first-child) .p-panelmenu-header:not(.p-disabled).p-highlight:hover .p-panelmenu-header-content {\n  border-top: 0 none;\n}\n.p-panelmenu .p-panelmenu-panel:first-child .p-panelmenu-header .p-panelmenu-header-content {\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n}\n.p-panelmenu .p-panelmenu-panel:last-child .p-panelmenu-header:not(.p-highlight) .p-panelmenu-header-content {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n.p-panelmenu .p-panelmenu-panel:last-child .p-panelmenu-content {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.p-steps .p-steps-item .p-menuitem-link {\n  background: transparent;\n  transition: none;\n  border-radius: 0.375rem;\n  background: #ffffff;\n}\n.p-steps .p-steps-item .p-menuitem-link .p-steps-number {\n  color: #3f3f46;\n  border: 1px solid #f4f4f5;\n  background: #ffffff;\n  min-width: 2rem;\n  height: 2rem;\n  line-height: 2rem;\n  font-size: 1.143rem;\n  z-index: 1;\n  border-radius: 50%;\n}\n.p-steps .p-steps-item .p-menuitem-link .p-steps-title {\n  margin-top: 0.5rem;\n  color: #71717A;\n}\n.p-steps .p-steps-item .p-menuitem-link:not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-steps .p-steps-item.p-highlight .p-steps-number {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-steps .p-steps-item.p-highlight .p-steps-title {\n  font-weight: 600;\n  color: #3f3f46;\n}\n.p-steps .p-steps-item:before {\n  content: \" \";\n  border-top: 1px solid #f3f4f6;\n  width: 100%;\n  top: 50%;\n  left: 0;\n  display: block;\n  position: absolute;\n  margin-top: -1rem;\n}\n\n.p-tabmenu .p-tabmenu-nav {\n  background: #ffffff;\n  border: 1px solid #e5e7eb;\n  border-width: 0 0 2px 0;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem {\n  margin-right: 0;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link {\n  border: solid #e5e7eb;\n  border-width: 0 0 2px 0;\n  border-color: transparent transparent #e5e7eb transparent;\n  background: #ffffff;\n  color: #71717A;\n  padding: 1.25rem;\n  font-weight: 700;\n  border-top-right-radius: 0.375rem;\n  border-top-left-radius: 0.375rem;\n  transition: none;\n  margin: 0 0 -2px 0;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link .p-menuitem-icon {\n  margin-right: 0.5rem;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link:not(.p-disabled):focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: inset 0 0 0 1px #6366F1;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem:not(.p-highlight):not(.p-disabled):hover .p-menuitem-link {\n  background: #ffffff;\n  border-color: #71717A;\n  color: #71717A;\n}\n.p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {\n  background: #ffffff;\n  border-color: #4F46E5;\n  color: #4F46E5;\n}\n\n.p-tieredmenu {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  border-radius: 0.375rem;\n  width: 12.5rem;\n}\n.p-tieredmenu.p-tieredmenu-overlay {\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-tieredmenu .p-tieredmenu-root-list {\n  outline: 0 none;\n}\n.p-tieredmenu .p-submenu-list {\n  padding: 0.25rem 0;\n  background: #ffffff;\n  border: 0 none;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n.p-tieredmenu .p-menuitem > .p-menuitem-content {\n  color: #3f3f46;\n  transition: none;\n  border-radius: 0;\n}\n.p-tieredmenu .p-menuitem > .p-menuitem-content .p-menuitem-link {\n  padding: 0.75rem 1rem;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.p-tieredmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-tieredmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-menuitem-icon {\n  color: #71717A;\n  margin-right: 0.5rem;\n}\n.p-tieredmenu .p-menuitem > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-tieredmenu .p-menuitem.p-highlight > .p-menuitem-content {\n  color: #3f3f46;\n  background: #f4f4f5;\n}\n.p-tieredmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #3f3f46;\n}\n.p-tieredmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-tieredmenu .p-menuitem.p-highlight > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-tieredmenu .p-menuitem.p-highlight.p-focus > .p-menuitem-content {\n  background: #f4f4f5;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {\n  color: #18181B;\n  background: #e5e7eb;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-menuitem-icon, .p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content .p-menuitem-link .p-submenu-icon {\n  color: #18181B;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {\n  color: #18181B;\n  background: #f4f4f5;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-text {\n  color: #18181B;\n}\n.p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-menuitem-icon, .p-tieredmenu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover .p-menuitem-link .p-submenu-icon {\n  color: #71717A;\n}\n.p-tieredmenu .p-menuitem-separator {\n  border-top: 1px solid #f3f4f6;\n  margin: 0.25rem 0;\n}\n.p-tieredmenu .p-submenu-icon {\n  font-size: 0.875rem;\n}\n\n.p-inline-message {\n  padding: 0.75rem 0.75rem;\n  margin: 0;\n  border-radius: 0.375rem;\n}\n.p-inline-message.p-inline-message-info {\n  background: #EFF6FF;\n  border: none;\n  border-width: 0px;\n  color: #2563EB;\n}\n.p-inline-message.p-inline-message-info .p-inline-message-icon {\n  color: #2563EB;\n}\n.p-inline-message.p-inline-message-success {\n  background: #ECFDF5;\n  border: none;\n  border-width: 0px;\n  color: #059669;\n}\n.p-inline-message.p-inline-message-success .p-inline-message-icon {\n  color: #059669;\n}\n.p-inline-message.p-inline-message-warn {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0px;\n  color: #D97706;\n}\n.p-inline-message.p-inline-message-warn .p-inline-message-icon {\n  color: #D97706;\n}\n.p-inline-message.p-inline-message-error {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0px;\n  color: #DC2626;\n}\n.p-inline-message.p-inline-message-error .p-inline-message-icon {\n  color: #DC2626;\n}\n.p-inline-message .p-inline-message-icon {\n  font-size: 1rem;\n  margin-right: 0.5rem;\n}\n.p-inline-message .p-inline-message-text {\n  font-size: 1rem;\n}\n.p-inline-message.p-inline-message-icon-only .p-inline-message-icon {\n  margin-right: 0;\n}\n\n.p-message {\n  margin: 1rem 0;\n  border-radius: 0.375rem;\n}\n.p-message .p-message-wrapper {\n  padding: 1.25rem 1.75rem;\n}\n.p-message .p-message-close {\n  width: 2rem;\n  height: 2rem;\n  border-radius: 50%;\n  background: transparent;\n  transition: none;\n}\n.p-message .p-message-close:hover {\n  background: rgba(255, 255, 255, 0.3);\n}\n.p-message .p-message-close:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-message.p-message-info {\n  background: #EFF6FF;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #2563EB;\n}\n.p-message.p-message-info .p-message-icon {\n  color: #2563EB;\n}\n.p-message.p-message-info .p-message-close {\n  color: #2563EB;\n}\n.p-message.p-message-success {\n  background: #ECFDF5;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #059669;\n}\n.p-message.p-message-success .p-message-icon {\n  color: #059669;\n}\n.p-message.p-message-success .p-message-close {\n  color: #059669;\n}\n.p-message.p-message-warn {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #D97706;\n}\n.p-message.p-message-warn .p-message-icon {\n  color: #D97706;\n}\n.p-message.p-message-warn .p-message-close {\n  color: #D97706;\n}\n.p-message.p-message-error {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #DC2626;\n}\n.p-message.p-message-error .p-message-icon {\n  color: #DC2626;\n}\n.p-message.p-message-error .p-message-close {\n  color: #DC2626;\n}\n.p-message .p-message-text {\n  font-size: 1rem;\n  font-weight: 500;\n}\n.p-message .p-message-icon {\n  font-size: 1.5rem;\n  margin-right: 0.5rem;\n}\n\n.p-toast {\n  opacity: 0.9;\n}\n.p-toast .p-toast-message {\n  margin: 0 0 1rem 0;\n  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n  border-radius: 0.375rem;\n}\n.p-toast .p-toast-message .p-toast-message-content {\n  padding: 1rem;\n  border-width: 0 0 0 6px;\n}\n.p-toast .p-toast-message .p-toast-message-content .p-toast-message-text {\n  margin: 0 0 0 1rem;\n}\n.p-toast .p-toast-message .p-toast-message-content .p-toast-message-icon {\n  font-size: 2rem;\n}\n.p-toast .p-toast-message .p-toast-message-content .p-toast-summary {\n  font-weight: 700;\n}\n.p-toast .p-toast-message .p-toast-message-content .p-toast-detail {\n  margin: 0.5rem 0 0 0;\n}\n.p-toast .p-toast-message .p-toast-icon-close {\n  width: 2rem;\n  height: 2rem;\n  border-radius: 50%;\n  background: transparent;\n  transition: none;\n}\n.p-toast .p-toast-message .p-toast-icon-close:hover {\n  background: rgba(255, 255, 255, 0.3);\n}\n.p-toast .p-toast-message .p-toast-icon-close:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n.p-toast .p-toast-message.p-toast-message-info {\n  background: #EFF6FF;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #2563EB;\n}\n.p-toast .p-toast-message.p-toast-message-info .p-toast-message-icon,\n.p-toast .p-toast-message.p-toast-message-info .p-toast-icon-close {\n  color: #2563EB;\n}\n.p-toast .p-toast-message.p-toast-message-success {\n  background: #ECFDF5;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #059669;\n}\n.p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon,\n.p-toast .p-toast-message.p-toast-message-success .p-toast-icon-close {\n  color: #059669;\n}\n.p-toast .p-toast-message.p-toast-message-warn {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #D97706;\n}\n.p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon,\n.p-toast .p-toast-message.p-toast-message-warn .p-toast-icon-close {\n  color: #D97706;\n}\n.p-toast .p-toast-message.p-toast-message-error {\n  background: #FEF3C7;\n  border: none;\n  border-width: 0 0 0 6px;\n  color: #DC2626;\n}\n.p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon,\n.p-toast .p-toast-message.p-toast-message-error .p-toast-icon-close {\n  color: #DC2626;\n}\n\n.p-galleria .p-galleria-close {\n  margin: 0.5rem;\n  background: transparent;\n  color: #fafafa;\n  width: 4rem;\n  height: 4rem;\n  transition: none;\n  border-radius: 50%;\n}\n.p-galleria .p-galleria-close .p-galleria-close-icon {\n  font-size: 2rem;\n}\n.p-galleria .p-galleria-close:hover {\n  background: rgba(255, 255, 255, 0.1);\n  color: #fafafa;\n}\n.p-galleria .p-galleria-item-nav {\n  background: transparent;\n  color: #fafafa;\n  width: 4rem;\n  height: 4rem;\n  transition: none;\n  border-radius: 0.375rem;\n  margin: 0 0.5rem;\n}\n.p-galleria .p-galleria-item-nav .p-galleria-item-prev-icon,\n.p-galleria .p-galleria-item-nav .p-galleria-item-next-icon {\n  font-size: 2rem;\n}\n.p-galleria .p-galleria-item-nav:not(.p-disabled):hover {\n  background: rgba(255, 255, 255, 0.1);\n  color: #fafafa;\n}\n.p-galleria .p-galleria-caption {\n  background: rgba(0, 0, 0, 0.5);\n  color: #fafafa;\n  padding: 1rem;\n}\n.p-galleria .p-galleria-indicators {\n  padding: 1rem;\n}\n.p-galleria .p-galleria-indicators .p-galleria-indicator button {\n  background-color: #f4f4f5;\n  width: 1rem;\n  height: 1rem;\n  transition: none;\n  border-radius: 50%;\n}\n.p-galleria .p-galleria-indicators .p-galleria-indicator button:hover {\n  background: #e5e7eb;\n}\n.p-galleria .p-galleria-indicators .p-galleria-indicator.p-highlight button {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-galleria.p-galleria-indicators-bottom .p-galleria-indicator, .p-galleria.p-galleria-indicators-top .p-galleria-indicator {\n  margin-right: 0.5rem;\n}\n.p-galleria.p-galleria-indicators-left .p-galleria-indicator, .p-galleria.p-galleria-indicators-right .p-galleria-indicator {\n  margin-bottom: 0.5rem;\n}\n.p-galleria.p-galleria-indicator-onitem .p-galleria-indicators {\n  background: rgba(0, 0, 0, 0.5);\n}\n.p-galleria.p-galleria-indicator-onitem .p-galleria-indicators .p-galleria-indicator button {\n  background: rgba(255, 255, 255, 0.4);\n}\n.p-galleria.p-galleria-indicator-onitem .p-galleria-indicators .p-galleria-indicator button:hover {\n  background: rgba(255, 255, 255, 0.6);\n}\n.p-galleria.p-galleria-indicator-onitem .p-galleria-indicators .p-galleria-indicator.p-highlight button {\n  background: #EEF2FF;\n  color: #312E81;\n}\n.p-galleria .p-galleria-thumbnail-container {\n  background: rgba(0, 0, 0, 0.9);\n  padding: 1rem 0.25rem;\n}\n.p-galleria .p-galleria-thumbnail-container .p-galleria-thumbnail-prev,\n.p-galleria .p-galleria-thumbnail-container .p-galleria-thumbnail-next {\n  margin: 0.5rem;\n  background-color: transparent;\n  color: #fafafa;\n  width: 2rem;\n  height: 2rem;\n  transition: none;\n  border-radius: 50%;\n}\n.p-galleria .p-galleria-thumbnail-container .p-galleria-thumbnail-prev:hover,\n.p-galleria .p-galleria-thumbnail-container .p-galleria-thumbnail-next:hover {\n  background: rgba(255, 255, 255, 0.1);\n  color: #fafafa;\n}\n.p-galleria .p-galleria-thumbnail-container .p-galleria-thumbnail-item-content:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-galleria-mask {\n  --maskbg: rgba(0, 0, 0, 0.9);\n}\n\n.p-image-mask {\n  --maskbg: rgba(0, 0, 0, 0.9);\n}\n\n.p-image-preview-indicator {\n  background-color: transparent;\n  color: #f8f9fa;\n  transition: none;\n}\n\n.p-image-preview-container:hover > .p-image-preview-indicator {\n  background-color: rgba(0, 0, 0, 0.5);\n}\n\n.p-image-toolbar {\n  padding: 1rem;\n}\n\n.p-image-action.p-link {\n  color: #f8f9fa;\n  background-color: transparent;\n  width: 3rem;\n  height: 3rem;\n  border-radius: 50%;\n  transition: none;\n  margin-right: 0.5rem;\n}\n.p-image-action.p-link:last-child {\n  margin-right: 0;\n}\n.p-image-action.p-link:hover {\n  color: #f8f9fa;\n  background-color: rgba(255, 255, 255, 0.1);\n}\n.p-image-action.p-link i {\n  font-size: 1.5rem;\n}\n\n.p-avatar {\n  background-color: #e5e7eb;\n  border-radius: 0.375rem;\n}\n.p-avatar.p-avatar-lg {\n  width: 3rem;\n  height: 3rem;\n  font-size: 1.5rem;\n}\n.p-avatar.p-avatar-lg .p-avatar-icon {\n  font-size: 1.5rem;\n}\n.p-avatar.p-avatar-xl {\n  width: 4rem;\n  height: 4rem;\n  font-size: 2rem;\n}\n.p-avatar.p-avatar-xl .p-avatar-icon {\n  font-size: 2rem;\n}\n\n.p-avatar-group .p-avatar {\n  border: 2px solid #ffffff;\n}\n\n.p-badge {\n  background: #4F46E5;\n  color: #ffffff;\n  font-size: 0.75rem;\n  font-weight: 700;\n  min-width: 1.5rem;\n  height: 1.5rem;\n  line-height: 1.5rem;\n}\n.p-badge.p-badge-secondary {\n  background-color: #64748B;\n  color: #ffffff;\n}\n.p-badge.p-badge-success {\n  background-color: #22C55E;\n  color: #ffffff;\n}\n.p-badge.p-badge-info {\n  background-color: #3B82F6;\n  color: #ffffff;\n}\n.p-badge.p-badge-warning {\n  background-color: #F59E0B;\n  color: #ffffff;\n}\n.p-badge.p-badge-danger {\n  background-color: #EF4444;\n  color: #ffffff;\n}\n.p-badge.p-badge-lg {\n  font-size: 1.125rem;\n  min-width: 2.25rem;\n  height: 2.25rem;\n  line-height: 2.25rem;\n}\n.p-badge.p-badge-xl {\n  font-size: 1.5rem;\n  min-width: 3rem;\n  height: 3rem;\n  line-height: 3rem;\n}\n\n.p-chip {\n  background-color: #e5e7eb;\n  color: #3f3f46;\n  border-radius: 16px;\n  padding: 0 0.75rem;\n}\n.p-chip .p-chip-text {\n  line-height: 1.5;\n  margin-top: 0.375rem;\n  margin-bottom: 0.375rem;\n}\n.p-chip .p-chip-icon {\n  margin-right: 0.5rem;\n}\n.p-chip img {\n  width: 2.25rem;\n  height: 2.25rem;\n  margin-left: -0.75rem;\n  margin-right: 0.5rem;\n}\n.p-chip .p-chip-remove-icon {\n  margin-left: 0.5rem;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-chip .p-chip-remove-icon:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-inplace .p-inplace-display {\n  padding: 0.75rem 0.75rem;\n  border-radius: 0.375rem;\n  transition: none;\n}\n.p-inplace .p-inplace-display:not(.p-disabled):hover {\n  background: #f4f4f5;\n  color: #18181B;\n}\n.p-inplace .p-inplace-display:focus {\n  outline: 0 none;\n  outline-offset: 0;\n  box-shadow: 0 0 0 1px #6366F1;\n}\n\n.p-progressbar {\n  border: 0 none;\n  height: 1.5rem;\n  background: #e5e7eb;\n  border-radius: 0.375rem;\n}\n.p-progressbar .p-progressbar-value {\n  border: 0 none;\n  margin: 0;\n  background: #4F46E5;\n}\n.p-progressbar .p-progressbar-label {\n  color: #ffffff;\n  line-height: 1.5rem;\n}\n\n.p-scrolltop {\n  width: 3rem;\n  height: 3rem;\n  border-radius: 50%;\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n  transition: none;\n}\n.p-scrolltop.p-link {\n  background: rgba(0, 0, 0, 0.7);\n}\n.p-scrolltop.p-link:hover {\n  background: rgba(0, 0, 0, 0.8);\n}\n.p-scrolltop .p-scrolltop-icon {\n  font-size: 1.5rem;\n  color: #fafafa;\n}\n\n.p-skeleton {\n  background-color: #f4f4f5;\n  border-radius: 0.375rem;\n}\n.p-skeleton:after {\n  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));\n}\n\n.p-tag {\n  background: #4F46E5;\n  color: #ffffff;\n  font-size: 0.75rem;\n  font-weight: 700;\n  padding: 0.25rem 0.4rem;\n  border-radius: 0.375rem;\n}\n.p-tag.p-tag-success {\n  background-color: #22C55E;\n  color: #ffffff;\n}\n.p-tag.p-tag-info {\n  background-color: #3B82F6;\n  color: #ffffff;\n}\n.p-tag.p-tag-warning {\n  background-color: #F59E0B;\n  color: #ffffff;\n}\n.p-tag.p-tag-danger {\n  background-color: #EF4444;\n  color: #ffffff;\n}\n.p-tag .p-tag-icon {\n  margin-right: 0.25rem;\n  font-size: 0.75rem;\n}\n\n.p-terminal {\n  background: #ffffff;\n  color: #3f3f46;\n  border: 1px solid #e5e7eb;\n  padding: 1.25rem;\n}\n.p-terminal .p-terminal-input {\n  font-size: 1rem;\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n}\n\n/* Customizations to the designer theme should be defined here */\n.p-inputtext, .p-togglebutton, .p-selectbutton, .p-inputgroup {\n  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgba(0, 0, 0, 0.05);\n}\n\n.p-inputgroup .p-inputtext, .p-inputgroup .p-togglebutton, .p-inputgroup .p-selectbutton {\n  box-shadow: none;\n}\n\n.p-inputtext.p-invalid.p-component:enabled:focus {\n  box-shadow: 0 0 0 1px #f0a9a7;\n}\n\n.p-highlight {\n  font-weight: 600;\n}\n\n.p-button-label {\n  font-weight: 500;\n}\n\n.p-inputswitch.p-focus .p-inputswitch-slider {\n  box-shadow: 0 0 0 2px #6366F1;\n}\n\n.p-paginator .p-paginator-pages .p-paginator-page {\n  margin-left: -1px;\n}\n.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {\n  border-color: #4F46E5;\n  margin-right: 1px;\n}\n.p-paginator .p-paginator-current {\n  border: 0 none;\n}\n\n.p-button:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #6366F1, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-secondary:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #64748B, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-success:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22C55E, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-info:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #3B82F6, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-warning:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #F59E0B, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-help:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #A855F7, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n.p-button.p-button-danger:enabled:focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #EF4444, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n\n.p-checkbox .p-checkbox-box {\n  border-radius: 0.25rem;\n}\n.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #6366F1, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n\n.p-radiobutton:not(.p-radiobutton-disabled) .p-radiobutton-box.p-focus {\n  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #6366F1, 0 1px 2px 0 rgba(0, 0, 0, 0);\n}\n\n.p-carousel .p-carousel-indicators .p-carousel-indicator.p-highlight button {\n  background-color: #4F46E5;\n}\n\n.p-galleria .p-galleria-indicators .p-galleria-indicator.p-highlight button {\n  background-color: #4F46E5;\n}\n\n.p-datatable .p-datatable-tbody > tr.p-datatable-dragpoint-top > td {\n  box-shadow: inset 0 2px 0 0 #4F46E5;\n}\n.p-datatable .p-datatable-tbody > tr.p-datatable-dragpoint-bottom > td {\n  box-shadow: inset 0 -2px 0 0 #4F46E5;\n}\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./resources/js/dist/app.css":
+/*!*******************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./resources/js/dist/app.css ***!
+  \*******************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "/*\n! tailwindcss v3.2.1 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box;\n  /* 1 */\n  border-width: 0;\n  /* 2 */\n  border-style: solid;\n  /* 2 */\n  border-color: #e5e7eb;\n  /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n*/\n\nhtml {\n  line-height: 1.5;\n  /* 1 */\n  -webkit-text-size-adjust: 100%;\n  /* 2 */\n  -moz-tab-size: 4;\n  /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4;\n  /* 3 */\n  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  /* 4 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0;\n  /* 1 */\n  line-height: inherit;\n  /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0;\n  /* 1 */\n  color: inherit;\n  /* 2 */\n  border-top-width: 1px;\n  /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font family by default.\n2. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;\n  /* 1 */\n  font-size: 1em;\n  /* 2 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0;\n  /* 1 */\n  border-color: inherit;\n  /* 2 */\n  border-collapse: collapse;\n  /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit;\n  /* 1 */\n  font-size: 100%;\n  /* 1 */\n  font-weight: inherit;\n  /* 1 */\n  line-height: inherit;\n  /* 1 */\n  color: inherit;\n  /* 1 */\n  margin: 0;\n  /* 2 */\n  padding: 0;\n  /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\n[type='button'],\n[type='reset'],\n[type='submit'] {\n  -webkit-appearance: button;\n  /* 1 */\n  background-color: transparent;\n  /* 2 */\n  background-image: none;\n  /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield;\n  /* 1 */\n  outline-offset: -2px;\n  /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button;\n  /* 1 */\n  font: inherit;\n  /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1;\n  /* 1 */\n  color: #9ca3af;\n  /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1;\n  /* 1 */\n  color: #9ca3af;\n  /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block;\n  /* 1 */\n  vertical-align: middle;\n  /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden] {\n  display: none;\n}\n\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n}\n\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n}\n\n.select2-dropdown {\n  border-bottom-right-radius: 0.5rem;\n  border-bottom-left-radius: 0.5rem;\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.visible {\n  visibility: visible;\n}\n\n.collapse {\n  visibility: collapse;\n}\n\n.relative {\n  position: relative;\n}\n\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n\n.my-5 {\n  margin-top: 1.25rem;\n  margin-bottom: 1.25rem;\n}\n\n.block {\n  display: block;\n}\n\n.flex {\n  display: flex;\n}\n\n.table {\n  display: table;\n}\n\n.contents {\n  display: contents;\n}\n\n.hidden {\n  display: none;\n}\n\n.h-full {\n  height: 100%;\n}\n\n.h-14 {\n  height: 3.5rem;\n}\n\n.h-auto {\n  height: auto;\n}\n\n.w-1\\/2 {\n  width: 50%;\n}\n\n.w-full {\n  width: 100%;\n}\n\n.w-1\\/4 {\n  width: 25%;\n}\n\n.w-2\\/4 {\n  width: 50%;\n}\n\n.w-96 {\n  width: 24rem;\n}\n\n.w-56 {\n  width: 14rem;\n}\n\n.w-64 {\n  width: 16rem;\n}\n\n.border-collapse {\n  border-collapse: collapse;\n}\n\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.resize {\n  resize: both;\n}\n\n.flex-row {\n  flex-direction: row;\n}\n\n.flex-col {\n  flex-direction: column;\n}\n\n.items-start {\n  align-items: flex-start;\n}\n\n.items-end {\n  align-items: flex-end;\n}\n\n.items-center {\n  align-items: center;\n}\n\n.justify-start {\n  justify-content: flex-start;\n}\n\n.justify-end {\n  justify-content: flex-end;\n}\n\n.justify-center {\n  justify-content: center;\n}\n\n.justify-between {\n  justify-content: space-between;\n}\n\n.space-x-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-x-reverse: 0;\n  margin-right: calc(0.5rem * var(--tw-space-x-reverse));\n  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));\n}\n\n.overflow-hidden {\n  overflow: hidden;\n}\n\n.overflow-x-auto {\n  overflow-x: auto;\n}\n\n.rounded-b-lg {\n  border-bottom-right-radius: 0.5rem;\n  border-bottom-left-radius: 0.5rem;\n}\n\n.border {\n  border-width: 1px;\n}\n\n.border-b {\n  border-bottom-width: 1px;\n}\n\n.bg-blue-400 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(96 165 250 / var(--tw-bg-opacity));\n}\n\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\n}\n\n.bg-white {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity));\n}\n\n.bg-gray-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(249 250 251 / var(--tw-bg-opacity));\n}\n\n.p-3 {\n  padding: 0.75rem;\n}\n\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.py-5 {\n  padding-top: 1.25rem;\n  padding-bottom: 1.25rem;\n}\n\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.px-10 {\n  padding-left: 2.5rem;\n  padding-right: 2.5rem;\n}\n\n.text-left {\n  text-align: left;\n}\n\n.text-xs {\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.font-bold {\n  font-weight: 700;\n}\n\n.text-sky-500 {\n  --tw-text-opacity: 1;\n  color: rgb(14 165 233 / var(--tw-text-opacity));\n}\n\n.text-sky-600 {\n  --tw-text-opacity: 1;\n  color: rgb(2 132 199 / var(--tw-text-opacity));\n}\n\n.underline {\n  text-decoration-line: underline;\n}\n\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.outline {\n  outline-style: solid;\n}\n\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.hover\\:bg-gray-100:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css":
+/*!***********************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+___CSS_LOADER_EXPORT___.push([module.id, "@import url(https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,400&display=swap);"]);
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "\nbody {\r\n  overflow-y: hidden;\r\n  overflow-x: hidden;\n}\n#app {\r\n  font-family: \"Roboto\", sans-serif;\r\n  -webkit-font-smoothing: antialiased;\r\n  -moz-osx-font-smoothing: grayscale;\r\n  text-align: center;\r\n  color: #2c3e50;\r\n  font-size: 14px;\n}\r\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/runtime/api.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+// eslint-disable-next-line func-names
+module.exports = function (cssWithMappingToString) {
+  var list = []; // return the list of modules as css string
+
+  list.toString = function toString() {
+    return this.map(function (item) {
+      var content = cssWithMappingToString(item);
+
+      if (item[2]) {
+        return "@media ".concat(item[2], " {").concat(content, "}");
+      }
+
+      return content;
+    }).join("");
+  }; // import a list of modules into the list
+  // eslint-disable-next-line func-names
+
+
+  list.i = function (modules, mediaQuery, dedupe) {
+    if (typeof modules === "string") {
+      // eslint-disable-next-line no-param-reassign
+      modules = [[null, modules, ""]];
+    }
+
+    var alreadyImportedModules = {};
+
+    if (dedupe) {
+      for (var i = 0; i < this.length; i++) {
+        // eslint-disable-next-line prefer-destructuring
+        var id = this[i][0];
+
+        if (id != null) {
+          alreadyImportedModules[id] = true;
+        }
+      }
+    }
+
+    for (var _i = 0; _i < modules.length; _i++) {
+      var item = [].concat(modules[_i]);
+
+      if (dedupe && alreadyImportedModules[item[0]]) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      if (mediaQuery) {
+        if (!item[2]) {
+          item[2] = mediaQuery;
+        } else {
+          item[2] = "".concat(mediaQuery, " and ").concat(item[2]);
+        }
+      }
+
+      list.push(item);
+    }
+  };
+
+  return list;
+};
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/runtime/getUrl.js":
+/*!********************************************************!*\
+  !*** ./node_modules/css-loader/dist/runtime/getUrl.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function (url, options) {
+  if (!options) {
+    // eslint-disable-next-line no-param-reassign
+    options = {};
+  } // eslint-disable-next-line no-underscore-dangle, no-param-reassign
+
+
+  url = url && url.__esModule ? url.default : url;
+
+  if (typeof url !== "string") {
+    return url;
+  } // If url is already wrapped in quotes, remove them
+
+
+  if (/^['"].*['"]$/.test(url)) {
+    // eslint-disable-next-line no-param-reassign
+    url = url.slice(1, -1);
+  }
+
+  if (options.hash) {
+    // eslint-disable-next-line no-param-reassign
+    url += options.hash;
+  } // Should url be wrapped?
+  // See https://drafts.csswg.org/css-values-3/#urls
+
+
+  if (/["'() \t\n]/.test(url) || options.needQuotes) {
+    return "\"".concat(url.replace(/"/g, '\\"').replace(/\n/g, "\\n"), "\"");
+  }
+
+  return url;
+};
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/images/color.png":
+/*!**********************************************************!*\
+  !*** ./node_modules/primevue/resources/images/color.png ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/vendor/primevue/resources/color.png?6441e63a57ccc5105bad045142bc31eb");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/images/hue.png":
+/*!********************************************************!*\
+  !*** ./node_modules/primevue/resources/images/hue.png ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/vendor/primevue/resources/hue.png?f8505bd4d6f3e3aa435b72d1c045d4a7");
+
+/***/ }),
+
+/***/ "./node_modules/primeicons/fonts/primeicons.eot":
+/*!******************************************************!*\
+  !*** ./node_modules/primeicons/fonts/primeicons.eot ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primeicons/primeicons.eot?7fc4d8e224d1ff1b9c6256b15cbe43a7");
+
+/***/ }),
+
+/***/ "./node_modules/primeicons/fonts/primeicons.svg":
+/*!******************************************************!*\
+  !*** ./node_modules/primeicons/fonts/primeicons.svg ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primeicons/primeicons.svg?c6e2053303524e39530c36f094129407");
+
+/***/ }),
+
+/***/ "./node_modules/primeicons/fonts/primeicons.ttf":
+/*!******************************************************!*\
+  !*** ./node_modules/primeicons/fonts/primeicons.ttf ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primeicons/primeicons.ttf?91bacab1f083f2795272499faf7e83dc");
+
+/***/ }),
+
+/***/ "./node_modules/primeicons/fonts/primeicons.woff":
+/*!*******************************************************!*\
+  !*** ./node_modules/primeicons/fonts/primeicons.woff ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primeicons/primeicons.woff?449aa8c65cdc5c2a868645403b9ea4d3");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff ***!
+  \*************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Bold.woff?93c1301bd9f486c573b3d9001c6ec0e4");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff2":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Bold.woff2 ***!
+  \**************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Bold.woff2?ec64ea577b0349e055ad6646c1d8797a");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff ***!
+  \**************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Light.woff?994e34451cc19ede31d30802a480542b");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff2":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Light.woff2 ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Light.woff2?2d5198822ab091ce430554a436cdf53c");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Medium.woff?9053572c46aeb4b16caafd643a543b8d");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff2":
+/*!****************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Medium.woff2 ***!
+  \****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Medium.woff2?293fd13dbca5a3e450ef1ebfb232a299");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff":
+/*!****************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff ***!
+  \****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Regular.woff?8c206db99195777c67691cbba9d64393");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff2":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-Regular.woff2 ***!
+  \*****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-Regular.woff2?c8ba52b05a9ef10f47584d08ece2ec5c");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff ***!
+  \*****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-SemiBold.woff?cca62d21c8c555c392e580a52e0d4426");
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff2":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/fonts/Inter-SemiBold.woff2 ***!
+  \******************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/fonts/vendor/primevue/resources/themes/tailwind-light/Inter-SemiBold.woff2?b5f0f109bc88052d4000c58ca615671d");
 
 /***/ }),
 
@@ -36826,6 +37734,1699 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/primevue/api/api.esm.js":
+/*!**********************************************!*\
+  !*** ./node_modules/primevue/api/api.esm.js ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "FilterMatchMode": () => (/* binding */ FilterMatchMode),
+/* harmony export */   "FilterOperator": () => (/* binding */ FilterOperator),
+/* harmony export */   "FilterService": () => (/* binding */ FilterService),
+/* harmony export */   "PrimeIcons": () => (/* binding */ PrimeIcons),
+/* harmony export */   "ToastSeverity": () => (/* binding */ ToastSeverities)
+/* harmony export */ });
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+
+
+const FilterMatchMode = {
+    STARTS_WITH: 'startsWith',
+    CONTAINS: 'contains',
+    NOT_CONTAINS: 'notContains',
+    ENDS_WITH: 'endsWith',
+    EQUALS: 'equals',
+    NOT_EQUALS: 'notEquals',
+    IN: 'in',
+    LESS_THAN: 'lt',
+    LESS_THAN_OR_EQUAL_TO: 'lte',
+    GREATER_THAN: 'gt',
+    GREATER_THAN_OR_EQUAL_TO: 'gte',
+    BETWEEN: 'between',
+    DATE_IS: 'dateIs',
+    DATE_IS_NOT: 'dateIsNot',
+    DATE_BEFORE: 'dateBefore',
+    DATE_AFTER: 'dateAfter'
+};
+
+const FilterOperator = {
+    AND: 'and',
+    OR: 'or'
+};
+
+const FilterService = {
+    filter(value, fields, filterValue, filterMatchMode, filterLocale) {
+        let filteredItems = [];
+
+        if (value) {
+            for (let item of value) {
+                for (let field of fields) {
+                    let fieldValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.resolveFieldData(item, field);
+
+                    if (this.filters[filterMatchMode](fieldValue, filterValue, filterLocale)) {
+                        filteredItems.push(item);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return filteredItems;
+    },
+    filters: {
+        startsWith(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || filter.trim() === '') {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            let filterValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+            let stringValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale);
+
+            return stringValue.slice(0, filterValue.length) === filterValue;
+        },
+        contains(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            let filterValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+            let stringValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale);
+
+            return stringValue.indexOf(filterValue) !== -1;
+        },
+        notContains(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            let filterValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+            let stringValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale);
+
+            return stringValue.indexOf(filterValue) === -1;
+        },
+        endsWith(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || filter.trim() === '') {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            let filterValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+            let stringValue = primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale);
+
+            return stringValue.indexOf(filterValue, stringValue.length - filterValue.length) !== -1;
+        },
+        equals(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() === filter.getTime();
+            else return primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale) == primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+        },
+        notEquals(value, filter, filterLocale) {
+            if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+                return false;
+            }
+
+            if (value === undefined || value === null) {
+                return true;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() !== filter.getTime();
+            else return primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(value.toString()).toLocaleLowerCase(filterLocale) != primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.removeAccents(filter.toString()).toLocaleLowerCase(filterLocale);
+        },
+        in(value, filter) {
+            if (filter === undefined || filter === null || filter.length === 0) {
+                return true;
+            }
+
+            for (let i = 0; i < filter.length; i++) {
+                if (primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.equals(value, filter[i])) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+        between(value, filter) {
+            if (filter == null || filter[0] == null || filter[1] == null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime) return filter[0].getTime() <= value.getTime() && value.getTime() <= filter[1].getTime();
+            else return filter[0] <= value && value <= filter[1];
+        },
+        lt(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() < filter.getTime();
+            else return value < filter;
+        },
+        lte(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() <= filter.getTime();
+            else return value <= filter;
+        },
+        gt(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() > filter.getTime();
+            else return value > filter;
+        },
+        gte(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            if (value.getTime && filter.getTime) return value.getTime() >= filter.getTime();
+            else return value >= filter;
+        },
+        dateIs(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            return value.toDateString() === filter.toDateString();
+        },
+        dateIsNot(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            return value.toDateString() !== filter.toDateString();
+        },
+        dateBefore(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            return value.getTime() < filter.getTime();
+        },
+        dateAfter(value, filter) {
+            if (filter === undefined || filter === null) {
+                return true;
+            }
+
+            if (value === undefined || value === null) {
+                return false;
+            }
+
+            return value.getTime() > filter.getTime();
+        }
+    },
+    register(rule, fn) {
+        this.filters[rule] = fn;
+    }
+};
+
+const PrimeIcons = {
+    ALIGN_CENTER: 'pi pi-align-center',
+    ALIGN_JUSTIFY: 'pi pi-align-justify',
+    ALIGN_LEFT: 'pi pi-align-left',
+    ALIGN_RIGHT: 'pi pi-align-right',
+    AMAZON: 'pi pi-amazon',
+    ANDROID: 'pi pi-android',
+    ANGLE_DOUBLE_DOWN: 'pi pi-angle-double-down',
+    ANGLE_DOUBLE_LEFT: 'pi pi-angle-double-left',
+    ANGLE_DOUBLE_RIGHT: 'pi pi-angle-double-right',
+    ANGLE_DOUBLE_UP: 'pi pi-angle-double-up',
+    ANGLE_DOWN: 'pi pi-angle-down',
+    ANGLE_LEFT: 'pi pi-angle-left',
+    ANGLE_RIGHT: 'pi pi-angle-right',
+    ANGLE_UP: 'pi pi-angle-up',
+    APPLE: 'pi pi-apple',
+    ARROW_CIRCLE_DOWN: 'pi pi-arrow-circle-down',
+    ARROW_CIRCLE_LEFT: 'pi pi-arrow-circle-left',
+    ARROW_CIRCLE_RIGHT: 'pi pi-arrow-circle-right',
+    ARROW_CIRCLE_UP: 'pi pi-arrow-circle-up',
+    ARROW_DOWN: 'pi pi-arrow-down',
+    ARROW_DOWN_LEFT: 'pi pi-arrow-down-left',
+    ARROW_DOWN_RIGHT: 'pi pi-arrow-down-right',
+    ARROW_LEFT: 'pi pi-arrow-left',
+    ARROW_RIGHT: 'pi pi-arrow-right',
+    ARROW_RIGHT_ARROW_LEFT: 'pi pi-arrow-right-arrow-left',
+    ARROW_UP: 'pi pi-arrow-up',
+    ARROW_UP_LEFT: 'pi pi-arrow-up-left',
+    ARROW_UP_RIGHT: 'pi pi-arrow-up-right',
+    ARROW_H: 'pi pi-arrows-h',
+    ARROW_V: 'pi pi-arrows-v',
+    ARROW_A: 'pi pi-arrows-alt',
+    AT: 'pi pi-at',
+    BACKWARD: 'pi pi-backward',
+    BAN: 'pi pi-ban',
+    BARS: 'pi pi-bars',
+    BELL: 'pi pi-bell',
+    BITCOIN: 'pi pi-bitcoin',
+    BOLT: 'pi pi-bolt',
+    BOOK: 'pi pi-book',
+    BOOKMARK: 'pi pi-bookmark',
+    BOOKMARK_FILL: 'pi pi-bookmark-fill',
+    BOX: 'pi pi-box',
+    BRIEFCASE: 'pi pi-briefcase',
+    BUILDING: 'pi pi-building',
+    CALENDAR: 'pi pi-calendar',
+    CALENDAR_MINUS: 'pi pi-calendar-minus',
+    CALENDAR_PLUS: 'pi pi-calendar-plus',
+    CALENDAR_TIMES: 'pi pi-calendar-times',
+    CALCULATOR: 'pi pi-calculator',
+    CAMERA: 'pi pi-camera',
+    CAR: 'pi pi-car',
+    CARET_DOWN: 'pi pi-caret-down',
+    CARET_LEFT: 'pi pi-caret-left',
+    CARET_RIGHT: 'pi pi-caret-right',
+    CARET_UP: 'pi pi-caret-up',
+    CART_PLUS: 'pi pi-cart-plus',
+    CHART_BAR: 'pi pi-chart-bar',
+    CHART_LINE: 'pi pi-chart-line',
+    CHART_PIE: 'pi pi-chart-pie',
+    CHECK: 'pi pi-check',
+    CHECK_CIRCLE: 'pi pi-check-circle',
+    CHECK_SQUARE: 'pi pi-check-square',
+    CHEVRON_CIRCLE_DOWN: 'pi pi-chevron-circle-down',
+    CHEVRON_CIRCLE_LEFT: 'pi pi-chevron-circle-left',
+    CHEVRON_CIRCLE_RIGHT: 'pi pi-chevron-circle-right',
+    CHEVRON_CIRCLE_UP: 'pi pi-chevron-circle-up',
+    CHEVRON_DOWN: 'pi pi-chevron-down',
+    CHEVRON_LEFT: 'pi pi-chevron-left',
+    CHEVRON_RIGHT: 'pi pi-chevron-right',
+    CHEVRON_UP: 'pi pi-chevron-up',
+    CIRCLE: 'pi pi-circle',
+    CIRCLE_FILL: 'pi pi-circle-fill',
+    CLOCK: 'pi pi-clock',
+    CLONE: 'pi pi-clone',
+    CLOUD: 'pi pi-cloud',
+    CLOUD_DOWNLOAD: 'pi pi-cloud-download',
+    CLOUD_UPLOAD: 'pi pi-cloud-upload',
+    CODE: 'pi pi-code',
+    COG: 'pi pi-cog',
+    COMMENT: 'pi pi-comment',
+    COMMENTS: 'pi pi-comments',
+    COMPASS: 'pi pi-compass',
+    COPY: 'pi pi-copy',
+    CREDIT_CARD: 'pi pi-credit-card',
+    DATABASE: 'pi pi-database',
+    DELETELEFT: 'pi pi-delete-left',
+    DESKTOP: 'pi pi-desktop',
+    DIRECTIONS: 'pi pi-directions',
+    DIRECTIONS_ALT: 'pi pi-directions-alt',
+    DISCORD: 'pi pi-discord',
+    DOLLAR: 'pi pi-dollar',
+    DOWNLOAD: 'pi pi-download',
+    EJECT: 'pi pi-eject',
+    ELLIPSIS_H: 'pi pi-ellipsis-h',
+    ELLIPSIS_V: 'pi pi-ellipsis-v',
+    ENVELOPE: 'pi pi-envelope',
+    ERASER: 'pi pi-eraser',
+    EURO: 'pi pi-euro',
+    EXCLAMATION_CIRCLE: 'pi pi-exclamation-circle',
+    EXCLAMATION_TRIANGLE: 'pi pi-exclamation-triangle',
+    EXTERNAL_LINK: 'pi pi-external-link',
+    EYE: 'pi pi-eye',
+    EYE_SLASH: 'pi pi-eye-slash',
+    FACEBOOK: 'pi pi-facebook',
+    FAST_BACKWARD: 'pi pi-fast-backward',
+    FAST_FORWARD: 'pi pi-fast-forward',
+    FILE: 'pi pi-file',
+    FILE_EDIT: 'pi pi-file-edit',
+    FILE_EXCEL: 'pi pi-file-excel',
+    FILE_EXPORT: 'pi pi-file-export',
+    FILE_IMPORT: 'pi pi-file-import',
+    FILE_PDF: 'pi pi-file-pdf',
+    FILE_WORD: 'pi pi-file-word',
+    FILTER: 'pi pi-filter',
+    FILTER_FILL: 'pi pi-filter-fill',
+    FILTER_SLASH: 'pi pi-filter-slash',
+    FLAG: 'pi pi-flag',
+    FLAG_FILL: 'pi pi-flag-fill',
+    FOLDER: 'pi pi-folder',
+    FOLDER_OPEN: 'pi pi-folder-open',
+    FORWARD: 'pi pi-forward',
+    GIFT: 'pi pi-gift',
+    GITHUB: 'pi pi-github',
+    GLOBE: 'pi pi-globe',
+    GOOGLE: 'pi pi-google',
+    HASHTAG: 'pi pi-hashtag',
+    HEART: 'pi pi-heart',
+    HEART_FILL: 'pi pi-heart-fill',
+    HISTORY: 'pi pi-history',
+    HOURGLASS: 'pi pi-hourglass',
+    HOME: 'pi pi-home',
+    ID_CARD: 'pi pi-id-card',
+    IMAGE: 'pi pi-image',
+    IMAGES: 'pi pi-images',
+    INBOX: 'pi pi-inbox',
+    INFO: 'pi pi-info',
+    INFO_CIRCLE: 'pi pi-info-circle',
+    INSTAGRAM: 'pi pi-instagram',
+    KEY: 'pi pi-key',
+    LANGUAGE: 'pi pi-language',
+    LINK: 'pi pi-link',
+    LINKEDIN: 'pi pi-linkedin',
+    LIST: 'pi pi-list',
+    LOCK: 'pi pi-lock',
+    LOCK_OPEN: 'pi pi-lock-open',
+    MAP: 'pi pi-map',
+    MAP_MARKER: 'pi pi-map-marker',
+    MEGAPHONE: 'pi pi-megaphone',
+    MICREPHONE: 'pi pi-microphone',
+    MICROSOFT: 'pi pi-microsoft',
+    MINUS: 'pi pi-minus',
+    MINUS_CIRCLE: 'pi pi-minus-circle',
+    MOBILE: 'pi pi-mobile',
+    MONEY_BILL: 'pi pi-money-bill',
+    MOON: 'pi pi-moon',
+    PALETTE: 'pi pi-palette',
+    PAPERCLIP: 'pi pi-paperclip',
+    PAUSE: 'pi pi-pause',
+    PAYPAL: 'pi pi-paypal',
+    PENCIL: 'pi pi-pencil',
+    PERCENTAGE: 'pi pi-percentage',
+    PHONE: 'pi pi-phone',
+    PLAY: 'pi pi-play',
+    PLUS: 'pi pi-plus',
+    PLUS_CIRCLE: 'pi pi-plus-circle',
+    POUND: 'pi pi-pound',
+    POWER_OFF: 'pi pi-power-off',
+    PRIME: 'pi pi-prime',
+    PRINT: 'pi pi-print',
+    QRCODE: 'pi pi-qrcode',
+    QUESTION: 'pi pi-question',
+    QUESTION_CIRCLE: 'pi pi-question-circle',
+    REDDIT: 'pi pi-reddit',
+    REFRESH: 'pi pi-refresh',
+    REPLAY: 'pi pi-replay',
+    REPLY: 'pi pi-reply',
+    SAVE: 'pi pi-save',
+    SEARCH: 'pi pi-search',
+    SEARCH_MINUS: 'pi pi-search-minus',
+    SEARCH_PLUS: 'pi pi-search-plus',
+    SEND: 'pi pi-send',
+    SERVER: 'pi pi-server',
+    SHARE_ALT: 'pi pi-share-alt',
+    SHIELD: 'pi pi-shield',
+    SHOPPING_BAG: 'pi pi-shopping-bag',
+    SHOPPING_CART: 'pi pi-shopping-cart',
+    SIGN_IN: 'pi pi-sign-in',
+    SIGN_OUT: 'pi pi-sign-out',
+    SITEMAP: 'pi pi-sitemap',
+    SLACK: 'pi pi-slack',
+    SLIDERS_H: 'pi pi-sliders-h',
+    SLIDERS_V: 'pi pi-sliders-v',
+    SORT: 'pi pi-sort',
+    SORT_ALPHA_DOWN: 'pi pi-sort-alpha-down',
+    SORT_ALPHA_ALT_DOWN: 'pi pi-sort-alpha-alt-down',
+    SORT_ALPHA_UP: 'pi pi-sort-alpha-up',
+    SORT_ALPHA_ALT_UP: 'pi pi-sort-alpha-alt-up',
+    SORT_ALT: 'pi pi-sort-alt',
+    SORT_ALT_SLASH: 'pi pi-sort-slash',
+    SORT_AMOUNT_DOWN: 'pi pi-sort-amount-down',
+    SORT_AMOUNT_DOWN_ALT: 'pi pi-sort-amount-down-alt',
+    SORT_AMOUNT_UP: 'pi pi-sort-amount-up',
+    SORT_AMOUNT_UP_ALT: 'pi pi-sort-amount-up-alt',
+    SORT_DOWN: 'pi pi-sort-down',
+    SORT_NUMERIC_DOWN: 'pi pi-sort-numeric-down',
+    SORT_NUMERIC_ALT_DOWN: 'pi pi-sort-numeric-alt-down',
+    SORT_NUMERIC_UP: 'pi pi-sort-numeric-up',
+    SORT_NUMERIC_ALT_UP: 'pi pi-sort-numeric-alt-up',
+    SORT_UP: 'pi pi-sort-up',
+    SPINNER: 'pi pi-spinner',
+    STAR: 'pi pi-star',
+    STAR_FILL: 'pi pi-star-fill',
+    STEP_BACKWARD: 'pi pi-step-backward',
+    STEP_BACKWARD_ALT: 'pi pi-step-backward-alt',
+    STEP_FORWARD: 'pi pi-step-forward',
+    STEP_FORWARD_ALT: 'pi pi-step-forward-alt',
+    STOP: 'pi pi-stop',
+    STOPWATCH: 'pi pi-stop-watch',
+    STOP_CIRCLE: 'pi pi-stop-circle',
+    SUN: 'pi pi-sun',
+    SYNC: 'pi pi-sync',
+    TABLE: 'pi pi-table',
+    TABLET: 'pi pi-tablet',
+    TAG: 'pi pi-tag',
+    TAGS: 'pi pi-tags',
+    TELEGRAM: 'pi pi-telegram',
+    TH_LARGE: 'pi pi-th-large',
+    THUMBS_DOWN: 'pi pi-thumbs-down',
+    THUMBS_DOWN_FILL: 'pi pi-thumbs-down-fill',
+    THUMBS_UP: 'pi pi-thumbs-up',
+    THUMBS_UP_FILL: 'pi pi-thumbs-up-fill',
+    TICKET: 'pi pi-ticket',
+    TIMES: 'pi pi-times',
+    TIMES_CIRCLE: 'pi pi-times-circle',
+    TRASH: 'pi pi-trash',
+    TRUCK: 'pi pi-truck',
+    TWITTER: 'pi pi-twitter',
+    UNDO: 'pi pi-undo',
+    UNLOCK: 'pi pi-unlock',
+    UPLOAD: 'pi pi-upload',
+    USER: 'pi pi-user',
+    USER_EDIT: 'pi pi-user-edit',
+    USER_MINUS: 'pi pi-user-minus',
+    USER_PLUS: 'pi pi-user-plus',
+    USERS: 'pi pi-users',
+    VERIFIED: 'pi pi-verified',
+    VIDEO: 'pi pi-video',
+    VIMEO: 'pi pi-vimeo',
+    VOLUME_DOWN: 'pi pi-volume-down',
+    VOLUME_OFF: 'pi pi-volume-off',
+    VOLUME_UP: 'pi pi-volume-up',
+    WALLET: 'pi pi-wallet',
+    WHATSAPP: 'pi pi-whatsapp',
+    WIFI: 'pi pi-wifi',
+    WINDOW_MAXIMIZE: 'pi pi-window-maximize',
+    WINDOW_MINIMIZE: 'pi pi-window-minimize',
+    WRENCH: 'pi pi-wrench',
+    YOUTUBE: 'pi pi-youtube'
+};
+
+const ToastSeverities = {
+    INFO: 'info',
+    WARN: 'warn',
+    ERROR: 'error',
+    SUCCESS: 'success'
+};
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/config/config.esm.js":
+/*!****************************************************!*\
+  !*** ./node_modules/primevue/config/config.esm.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ PrimeVue),
+/* harmony export */   "usePrimeVue": () => (/* binding */ usePrimeVue)
+/* harmony export */ });
+/* harmony import */ var primevue_api__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/api */ "./node_modules/primevue/api/api.esm.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+
+const defaultOptions = {
+    ripple: false,
+    inputStyle: 'outlined',
+    locale: {
+        startsWith: 'Starts with',
+        contains: 'Contains',
+        notContains: 'Not contains',
+        endsWith: 'Ends with',
+        equals: 'Equals',
+        notEquals: 'Not equals',
+        noFilter: 'No Filter',
+        lt: 'Less than',
+        lte: 'Less than or equal to',
+        gt: 'Greater than',
+        gte: 'Greater than or equal to',
+        dateIs: 'Date is',
+        dateIsNot: 'Date is not',
+        dateBefore: 'Date is before',
+        dateAfter: 'Date is after',
+        clear: 'Clear',
+        apply: 'Apply',
+        matchAll: 'Match All',
+        matchAny: 'Match Any',
+        addRule: 'Add Rule',
+        removeRule: 'Remove Rule',
+        accept: 'Yes',
+        reject: 'No',
+        choose: 'Choose',
+        upload: 'Upload',
+        cancel: 'Cancel',
+        completed: 'Completed',
+        pending: 'Pending',
+        dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        dayNamesMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+        monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        chooseYear: 'Choose Year',
+        chooseMonth: 'Choose Month',
+        chooseDate: 'Choose Date',
+        prevDecade: 'Previous Decade',
+        nextDecade: 'Next Decade',
+        prevYear: 'Previous Year',
+        nextYear: 'Next Year',
+        prevMonth: 'Previous Month',
+        nextMonth: 'Next Month',
+        prevHour: 'Previous Hour',
+        nextHour: 'Next Hour',
+        prevMinute: 'Previous Minute',
+        nextMinute: 'Next Minute',
+        prevSecond: 'Previous Second',
+        nextSecond: 'Next Second',
+        am: 'am',
+        pm: 'pm',
+        today: 'Today',
+        weekHeader: 'Wk',
+        firstDayOfWeek: 0,
+        dateFormat: 'mm/dd/yy',
+        weak: 'Weak',
+        medium: 'Medium',
+        strong: 'Strong',
+        passwordPrompt: 'Enter a password',
+        emptyFilterMessage: 'No results found', // @deprecated Use 'emptySearchMessage' option instead.
+        searchMessage: '{0} results are available',
+        selectionMessage: '{0} items selected',
+        emptySelectionMessage: 'No selected item',
+        emptySearchMessage: 'No results found',
+        emptyMessage: 'No available options',
+        aria: {
+            trueLabel: 'True',
+            falseLabel: 'False',
+            nullLabel: 'Not Selected',
+            star: '1 star',
+            stars: '{star} stars',
+            selectAll: 'All items selected',
+            unselectAll: 'All items unselected',
+            close: 'Close',
+            previous: 'Previous',
+            next: 'Next',
+            navigation: 'Navigation'
+        }
+    },
+    filterMatchModeOptions: {
+        text: [primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.STARTS_WITH, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.CONTAINS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.NOT_CONTAINS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.ENDS_WITH, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.EQUALS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.NOT_EQUALS],
+        numeric: [primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.EQUALS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.NOT_EQUALS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.LESS_THAN, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.LESS_THAN_OR_EQUAL_TO, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.GREATER_THAN, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.GREATER_THAN_OR_EQUAL_TO],
+        date: [primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.DATE_IS, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.DATE_IS_NOT, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.DATE_BEFORE, primevue_api__WEBPACK_IMPORTED_MODULE_0__.FilterMatchMode.DATE_AFTER]
+    },
+    zIndex: {
+        modal: 1100,
+        overlay: 1000,
+        menu: 1000,
+        tooltip: 1100
+    }
+};
+
+const PrimeVueSymbol = Symbol();
+
+function usePrimeVue() {
+    const PrimeVue = (0,vue__WEBPACK_IMPORTED_MODULE_1__.inject)(PrimeVueSymbol);
+
+    if (!PrimeVue) {
+        throw new Error('PrimeVue is not installed!');
+    }
+
+    return PrimeVue;
+}
+
+var PrimeVue = {
+    install: (app, options) => {
+        let configOptions = options ? { ...defaultOptions, ...options } : { ...defaultOptions };
+        const PrimeVue = {
+            config: (0,vue__WEBPACK_IMPORTED_MODULE_1__.reactive)(configOptions)
+        };
+
+        app.config.globalProperties.$primevue = PrimeVue;
+        app.provide(PrimeVueSymbol, PrimeVue);
+    }
+};
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/utils/utils.esm.js":
+/*!**************************************************!*\
+  !*** ./node_modules/primevue/utils/utils.esm.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ConnectedOverlayScrollHandler": () => (/* binding */ ConnectedOverlayScrollHandler),
+/* harmony export */   "DomHandler": () => (/* binding */ DomHandler),
+/* harmony export */   "EventBus": () => (/* binding */ primebus),
+/* harmony export */   "ObjectUtils": () => (/* binding */ ObjectUtils),
+/* harmony export */   "UniqueComponentId": () => (/* binding */ UniqueComponentId),
+/* harmony export */   "ZIndexUtils": () => (/* binding */ ZIndexUtils)
+/* harmony export */ });
+var DomHandler = {
+    innerWidth(el) {
+        if (el) {
+            let width = el.offsetWidth;
+            let style = getComputedStyle(el);
+
+            width += parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+
+            return width;
+        }
+
+        return 0;
+    },
+
+    width(el) {
+        if (el) {
+            let width = el.offsetWidth;
+            let style = getComputedStyle(el);
+
+            width -= parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+
+            return width;
+        }
+
+        return 0;
+    },
+
+    getWindowScrollTop() {
+        let doc = document.documentElement;
+
+        return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+    },
+
+    getWindowScrollLeft() {
+        let doc = document.documentElement;
+
+        return (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+    },
+
+    getOuterWidth(el, margin) {
+        if (el) {
+            let width = el.offsetWidth;
+
+            if (margin) {
+                let style = getComputedStyle(el);
+
+                width += parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+            }
+
+            return width;
+        }
+
+        return 0;
+    },
+
+    getOuterHeight(el, margin) {
+        if (el) {
+            let height = el.offsetHeight;
+
+            if (margin) {
+                let style = getComputedStyle(el);
+
+                height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+            }
+
+            return height;
+        }
+
+        return 0;
+    },
+
+    getClientHeight(el, margin) {
+        if (el) {
+            let height = el.clientHeight;
+
+            if (margin) {
+                let style = getComputedStyle(el);
+
+                height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+            }
+
+            return height;
+        }
+
+        return 0;
+    },
+
+    getViewport() {
+        let win = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            w = win.innerWidth || e.clientWidth || g.clientWidth,
+            h = win.innerHeight || e.clientHeight || g.clientHeight;
+
+        return { width: w, height: h };
+    },
+
+    getOffset(el) {
+        if (el) {
+            let rect = el.getBoundingClientRect();
+
+            return {
+                top: rect.top + (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0),
+                left: rect.left + (window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0)
+            };
+        }
+
+        return {
+            top: 'auto',
+            left: 'auto'
+        };
+    },
+
+    index(element) {
+        if (element) {
+            let children = element.parentNode.childNodes;
+            let num = 0;
+
+            for (let i = 0; i < children.length; i++) {
+                if (children[i] === element) return num;
+                if (children[i].nodeType === 1) num++;
+            }
+        }
+
+        return -1;
+    },
+
+    addMultipleClasses(element, className) {
+        if (element && className) {
+            if (element.classList) {
+                let styles = className.split(' ');
+
+                for (let i = 0; i < styles.length; i++) {
+                    element.classList.add(styles[i]);
+                }
+            } else {
+                let styles = className.split(' ');
+
+                for (let i = 0; i < styles.length; i++) {
+                    element.className += ' ' + styles[i];
+                }
+            }
+        }
+    },
+
+    addClass(element, className) {
+        if (element && className) {
+            if (element.classList) element.classList.add(className);
+            else element.className += ' ' + className;
+        }
+    },
+
+    removeClass(element, className) {
+        if (element && className) {
+            if (element.classList) element.classList.remove(className);
+            else element.className = element.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+    },
+
+    hasClass(element, className) {
+        if (element) {
+            if (element.classList) return element.classList.contains(className);
+            else return new RegExp('(^| )' + className + '( |$)', 'gi').test(element.className);
+        }
+
+        return false;
+    },
+
+    find(element, selector) {
+        return element ? element.querySelectorAll(selector) : [];
+    },
+
+    findSingle(element, selector) {
+        if (element) {
+            return element.querySelector(selector);
+        }
+
+        return null;
+    },
+
+    getHeight(el) {
+        if (el) {
+            let height = el.offsetHeight;
+            let style = getComputedStyle(el);
+
+            height -= parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+
+            return height;
+        }
+
+        return 0;
+    },
+
+    getWidth(el) {
+        if (el) {
+            let width = el.offsetWidth;
+            let style = getComputedStyle(el);
+
+            width -= parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+
+            return width;
+        }
+
+        return 0;
+    },
+
+    absolutePosition(element, target) {
+        if (element) {
+            let elementDimensions = element.offsetParent ? { width: element.offsetWidth, height: element.offsetHeight } : this.getHiddenElementDimensions(element);
+            let elementOuterHeight = elementDimensions.height;
+            let elementOuterWidth = elementDimensions.width;
+            let targetOuterHeight = target.offsetHeight;
+            let targetOuterWidth = target.offsetWidth;
+            let targetOffset = target.getBoundingClientRect();
+            let windowScrollTop = this.getWindowScrollTop();
+            let windowScrollLeft = this.getWindowScrollLeft();
+            let viewport = this.getViewport();
+            let top, left;
+
+            if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
+                top = targetOffset.top + windowScrollTop - elementOuterHeight;
+                element.style.transformOrigin = 'bottom';
+
+                if (top < 0) {
+                    top = windowScrollTop;
+                }
+            } else {
+                top = targetOuterHeight + targetOffset.top + windowScrollTop;
+                element.style.transformOrigin = 'top';
+            }
+
+            if (targetOffset.left + elementOuterWidth > viewport.width) left = Math.max(0, targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth);
+            else left = targetOffset.left + windowScrollLeft;
+
+            element.style.top = top + 'px';
+            element.style.left = left + 'px';
+        }
+    },
+
+    relativePosition(element, target) {
+        if (element) {
+            let elementDimensions = element.offsetParent ? { width: element.offsetWidth, height: element.offsetHeight } : this.getHiddenElementDimensions(element);
+            const targetHeight = target.offsetHeight;
+            const targetOffset = target.getBoundingClientRect();
+            const viewport = this.getViewport();
+            let top, left;
+
+            if (targetOffset.top + targetHeight + elementDimensions.height > viewport.height) {
+                top = -1 * elementDimensions.height;
+                element.style.transformOrigin = 'bottom';
+
+                if (targetOffset.top + top < 0) {
+                    top = -1 * targetOffset.top;
+                }
+            } else {
+                top = targetHeight;
+                element.style.transformOrigin = 'top';
+            }
+
+            if (elementDimensions.width > viewport.width) {
+                // element wider then viewport and cannot fit on screen (align at left side of viewport)
+                left = targetOffset.left * -1;
+            } else if (targetOffset.left + elementDimensions.width > viewport.width) {
+                // element wider then viewport but can be fit on screen (align at right side of viewport)
+                left = (targetOffset.left + elementDimensions.width - viewport.width) * -1;
+            } else {
+                // element fits on screen (align with target)
+                left = 0;
+            }
+
+            element.style.top = top + 'px';
+            element.style.left = left + 'px';
+        }
+    },
+
+    getParents(element, parents = []) {
+        return element['parentNode'] === null ? parents : this.getParents(element.parentNode, parents.concat([element.parentNode]));
+    },
+
+    getScrollableParents(element) {
+        let scrollableParents = [];
+
+        if (element) {
+            let parents = this.getParents(element);
+            const overflowRegex = /(auto|scroll)/;
+
+            const overflowCheck = (node) => {
+                let styleDeclaration = window['getComputedStyle'](node, null);
+
+                return overflowRegex.test(styleDeclaration.getPropertyValue('overflow')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowX')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowY'));
+            };
+
+            for (let parent of parents) {
+                let scrollSelectors = parent.nodeType === 1 && parent.dataset['scrollselectors'];
+
+                if (scrollSelectors) {
+                    let selectors = scrollSelectors.split(',');
+
+                    for (let selector of selectors) {
+                        let el = this.findSingle(parent, selector);
+
+                        if (el && overflowCheck(el)) {
+                            scrollableParents.push(el);
+                        }
+                    }
+                }
+
+                if (parent.nodeType !== 9 && overflowCheck(parent)) {
+                    scrollableParents.push(parent);
+                }
+            }
+        }
+
+        return scrollableParents;
+    },
+
+    getHiddenElementOuterHeight(element) {
+        if (element) {
+            element.style.visibility = 'hidden';
+            element.style.display = 'block';
+            let elementHeight = element.offsetHeight;
+
+            element.style.display = 'none';
+            element.style.visibility = 'visible';
+
+            return elementHeight;
+        }
+
+        return 0;
+    },
+
+    getHiddenElementOuterWidth(element) {
+        if (element) {
+            element.style.visibility = 'hidden';
+            element.style.display = 'block';
+            let elementWidth = element.offsetWidth;
+
+            element.style.display = 'none';
+            element.style.visibility = 'visible';
+
+            return elementWidth;
+        }
+
+        return 0;
+    },
+
+    getHiddenElementDimensions(element) {
+        if (element) {
+            let dimensions = {};
+
+            element.style.visibility = 'hidden';
+            element.style.display = 'block';
+            dimensions.width = element.offsetWidth;
+            dimensions.height = element.offsetHeight;
+            element.style.display = 'none';
+            element.style.visibility = 'visible';
+
+            return dimensions;
+        }
+
+        return 0;
+    },
+
+    fadeIn(element, duration) {
+        if (element) {
+            element.style.opacity = 0;
+
+            let last = +new Date();
+            let opacity = 0;
+
+            let tick = function () {
+                opacity = +element.style.opacity + (new Date().getTime() - last) / duration;
+                element.style.opacity = opacity;
+                last = +new Date();
+
+                if (+opacity < 1) {
+                    (window.requestAnimationFrame && requestAnimationFrame(tick)) || setTimeout(tick, 16);
+                }
+            };
+
+            tick();
+        }
+    },
+
+    fadeOut(element, ms) {
+        if (element) {
+            let opacity = 1,
+                interval = 50,
+                duration = ms,
+                gap = interval / duration;
+
+            let fading = setInterval(() => {
+                opacity -= gap;
+
+                if (opacity <= 0) {
+                    opacity = 0;
+                    clearInterval(fading);
+                }
+
+                element.style.opacity = opacity;
+            }, interval);
+        }
+    },
+
+    getUserAgent() {
+        return navigator.userAgent;
+    },
+
+    appendChild(element, target) {
+        if (this.isElement(target)) target.appendChild(element);
+        else if (target.el && target.elElement) target.elElement.appendChild(element);
+        else throw new Error('Cannot append ' + target + ' to ' + element);
+    },
+
+    scrollInView(container, item) {
+        let borderTopValue = getComputedStyle(container).getPropertyValue('borderTopWidth');
+        let borderTop = borderTopValue ? parseFloat(borderTopValue) : 0;
+        let paddingTopValue = getComputedStyle(container).getPropertyValue('paddingTop');
+        let paddingTop = paddingTopValue ? parseFloat(paddingTopValue) : 0;
+        let containerRect = container.getBoundingClientRect();
+        let itemRect = item.getBoundingClientRect();
+        let offset = itemRect.top + document.body.scrollTop - (containerRect.top + document.body.scrollTop) - borderTop - paddingTop;
+        let scroll = container.scrollTop;
+        let elementHeight = container.clientHeight;
+        let itemHeight = this.getOuterHeight(item);
+
+        if (offset < 0) {
+            container.scrollTop = scroll + offset;
+        } else if (offset + itemHeight > elementHeight) {
+            container.scrollTop = scroll + offset - elementHeight + itemHeight;
+        }
+    },
+
+    clearSelection() {
+        if (window.getSelection) {
+            if (window.getSelection().empty) {
+                window.getSelection().empty();
+            } else if (window.getSelection().removeAllRanges && window.getSelection().rangeCount > 0 && window.getSelection().getRangeAt(0).getClientRects().length > 0) {
+                window.getSelection().removeAllRanges();
+            }
+        } else if (document['selection'] && document['selection'].empty) {
+            try {
+                document['selection'].empty();
+            } catch (error) {
+                //ignore IE bug
+            }
+        }
+    },
+
+    getSelection() {
+        if (window.getSelection) return window.getSelection().toString();
+        else if (document.getSelection) return document.getSelection().toString();
+        else if (document['selection']) return document['selection'].createRange().text;
+
+        return null;
+    },
+
+    calculateScrollbarWidth() {
+        if (this.calculatedScrollbarWidth != null) return this.calculatedScrollbarWidth;
+
+        let scrollDiv = document.createElement('div');
+
+        scrollDiv.className = 'p-scrollbar-measure';
+        document.body.appendChild(scrollDiv);
+
+        let scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+
+        document.body.removeChild(scrollDiv);
+
+        this.calculatedScrollbarWidth = scrollbarWidth;
+
+        return scrollbarWidth;
+    },
+
+    getBrowser() {
+        if (!this.browser) {
+            let matched = this.resolveUserAgent();
+
+            this.browser = {};
+
+            if (matched.browser) {
+                this.browser[matched.browser] = true;
+                this.browser['version'] = matched.version;
+            }
+
+            if (this.browser['chrome']) {
+                this.browser['webkit'] = true;
+            } else if (this.browser['webkit']) {
+                this.browser['safari'] = true;
+            }
+        }
+
+        return this.browser;
+    },
+
+    resolveUserAgent() {
+        let ua = navigator.userAgent.toLowerCase();
+        let match = /(chrome)[ ]([\w.]+)/.exec(ua) || /(webkit)[ ]([\w.]+)/.exec(ua) || /(opera)(?:.*version|)[ ]([\w.]+)/.exec(ua) || /(msie) ([\w.]+)/.exec(ua) || (ua.indexOf('compatible') < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua)) || [];
+
+        return {
+            browser: match[1] || '',
+            version: match[2] || '0'
+        };
+    },
+
+    isVisible(element) {
+        return element && element.offsetParent != null;
+    },
+
+    invokeElementMethod(element, methodName, args) {
+        element[methodName].apply(element, args);
+    },
+
+    isExist(element) {
+        return element !== null && typeof element !== 'undefined' && element.nodeName && element.parentNode;
+    },
+
+    isClient() {
+        return !!(typeof window !== 'undefined' && window.document && window.document.createElement);
+    },
+
+    focus(el, options) {
+        el && document.activeElement !== el && el.focus(options);
+    },
+
+    getFocusableElements(element, selector = '') {
+        let focusableElements = this.find(
+            element,
+            `button:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                [href][clientHeight][clientWidth]:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                input:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                select:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                textarea:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                [tabIndex]:not([tabIndex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector},
+                [contenteditable]:not([tabIndex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])${selector}`
+        );
+
+        let visibleFocusableElements = [];
+
+        for (let focusableElement of focusableElements) {
+            if (getComputedStyle(focusableElement).display != 'none' && getComputedStyle(focusableElement).visibility != 'hidden') visibleFocusableElements.push(focusableElement);
+        }
+
+        return visibleFocusableElements;
+    },
+
+    getFirstFocusableElement(element, selector) {
+        const focusableElements = this.getFocusableElements(element, selector);
+
+        return focusableElements.length > 0 ? focusableElements[0] : null;
+    },
+
+    isClickable(element) {
+        const targetNode = element.nodeName;
+        const parentNode = element.parentElement && element.parentElement.nodeName;
+
+        return (
+            targetNode == 'INPUT' ||
+            targetNode == 'BUTTON' ||
+            targetNode == 'A' ||
+            parentNode == 'INPUT' ||
+            parentNode == 'BUTTON' ||
+            parentNode == 'A' ||
+            this.hasClass(element, 'p-button') ||
+            this.hasClass(element.parentElement, 'p-button') ||
+            this.hasClass(element.parentElement, 'p-checkbox') ||
+            this.hasClass(element.parentElement, 'p-radiobutton')
+        );
+    },
+
+    applyStyle(element, style) {
+        if (typeof style === 'string') {
+            element.style.cssText = style;
+        } else {
+            for (let prop in style) {
+                element.style[prop] = style[prop];
+            }
+        }
+    },
+
+    isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window['MSStream'];
+    },
+
+    isAndroid() {
+        return /(android)/i.test(navigator.userAgent);
+    },
+
+    isTouchDevice() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+    },
+
+    exportCSV(csv, filename) {
+        let blob = new Blob([csv], {
+            type: 'application/csv;charset=utf-8;'
+        });
+
+        if (window.navigator.msSaveOrOpenBlob) {
+            navigator.msSaveOrOpenBlob(blob, filename + '.csv');
+        } else {
+            let link = document.createElement('a');
+
+            if (link.download !== undefined) {
+                link.setAttribute('href', URL.createObjectURL(blob));
+                link.setAttribute('download', filename + '.csv');
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                csv = 'data:text/csv;charset=utf-8,' + csv;
+                window.open(encodeURI(csv));
+            }
+        }
+    }
+};
+
+class ConnectedOverlayScrollHandler {
+    constructor(element, listener = () => {}) {
+        this.element = element;
+        this.listener = listener;
+    }
+
+    bindScrollListener() {
+        this.scrollableParents = DomHandler.getScrollableParents(this.element);
+
+        for (let i = 0; i < this.scrollableParents.length; i++) {
+            this.scrollableParents[i].addEventListener('scroll', this.listener);
+        }
+    }
+
+    unbindScrollListener() {
+        if (this.scrollableParents) {
+            for (let i = 0; i < this.scrollableParents.length; i++) {
+                this.scrollableParents[i].removeEventListener('scroll', this.listener);
+            }
+        }
+    }
+
+    destroy() {
+        this.unbindScrollListener();
+        this.element = null;
+        this.listener = null;
+        this.scrollableParents = null;
+    }
+}
+
+var ObjectUtils = {
+    equals(obj1, obj2, field) {
+        if (field) return this.resolveFieldData(obj1, field) === this.resolveFieldData(obj2, field);
+        else return this.deepEquals(obj1, obj2);
+    },
+
+    deepEquals(a, b) {
+        if (a === b) return true;
+
+        if (a && b && typeof a == 'object' && typeof b == 'object') {
+            var arrA = Array.isArray(a),
+                arrB = Array.isArray(b),
+                i,
+                length,
+                key;
+
+            if (arrA && arrB) {
+                length = a.length;
+                if (length != b.length) return false;
+                for (i = length; i-- !== 0; ) if (!this.deepEquals(a[i], b[i])) return false;
+
+                return true;
+            }
+
+            if (arrA != arrB) return false;
+
+            var dateA = a instanceof Date,
+                dateB = b instanceof Date;
+
+            if (dateA != dateB) return false;
+            if (dateA && dateB) return a.getTime() == b.getTime();
+
+            var regexpA = a instanceof RegExp,
+                regexpB = b instanceof RegExp;
+
+            if (regexpA != regexpB) return false;
+            if (regexpA && regexpB) return a.toString() == b.toString();
+
+            var keys = Object.keys(a);
+
+            length = keys.length;
+
+            if (length !== Object.keys(b).length) return false;
+
+            for (i = length; i-- !== 0; ) if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+
+            for (i = length; i-- !== 0; ) {
+                key = keys[i];
+                if (!this.deepEquals(a[key], b[key])) return false;
+            }
+
+            return true;
+        }
+
+        return a !== a && b !== b;
+    },
+
+    resolveFieldData(data, field) {
+        if (data && Object.keys(data).length && field) {
+            if (this.isFunction(field)) {
+                return field(data);
+            } else if (field.indexOf('.') === -1) {
+                return data[field];
+            } else {
+                let fields = field.split('.');
+                let value = data;
+
+                for (var i = 0, len = fields.length; i < len; ++i) {
+                    if (value == null) {
+                        return null;
+                    }
+
+                    value = value[fields[i]];
+                }
+
+                return value;
+            }
+        } else {
+            return null;
+        }
+    },
+
+    isFunction(obj) {
+        return !!(obj && obj.constructor && obj.call && obj.apply);
+    },
+
+    getItemValue(obj, ...params) {
+        return this.isFunction(obj) ? obj(...params) : obj;
+    },
+
+    filter(value, fields, filterValue) {
+        var filteredItems = [];
+
+        if (value) {
+            for (let item of value) {
+                for (let field of fields) {
+                    if (String(this.resolveFieldData(item, field)).toLowerCase().indexOf(filterValue.toLowerCase()) > -1) {
+                        filteredItems.push(item);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return filteredItems;
+    },
+
+    reorderArray(value, from, to) {
+        let target;
+
+        if (value && from !== to) {
+            if (to >= value.length) {
+                target = to - value.length;
+
+                while (target-- + 1) {
+                    value.push(undefined);
+                }
+            }
+
+            value.splice(to, 0, value.splice(from, 1)[0]);
+        }
+    },
+
+    findIndexInList(value, list) {
+        let index = -1;
+
+        if (list) {
+            for (let i = 0; i < list.length; i++) {
+                if (list[i] === value) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+
+        return index;
+    },
+
+    contains(value, list) {
+        if (value != null && list && list.length) {
+            for (let val of list) {
+                if (this.equals(value, val)) return true;
+            }
+        }
+
+        return false;
+    },
+
+    insertIntoOrderedArray(item, index, arr, sourceArr) {
+        if (arr.length > 0) {
+            let injected = false;
+
+            for (let i = 0; i < arr.length; i++) {
+                let currentItemIndex = this.findIndexInList(arr[i], sourceArr);
+
+                if (currentItemIndex > index) {
+                    arr.splice(i, 0, item);
+                    injected = true;
+                    break;
+                }
+            }
+
+            if (!injected) {
+                arr.push(item);
+            }
+        } else {
+            arr.push(item);
+        }
+    },
+
+    removeAccents(str) {
+        if (str && str.search(/[\xC0-\xFF]/g) > -1) {
+            str = str
+                .replace(/[\xC0-\xC5]/g, 'A')
+                .replace(/[\xC6]/g, 'AE')
+                .replace(/[\xC7]/g, 'C')
+                .replace(/[\xC8-\xCB]/g, 'E')
+                .replace(/[\xCC-\xCF]/g, 'I')
+                .replace(/[\xD0]/g, 'D')
+                .replace(/[\xD1]/g, 'N')
+                .replace(/[\xD2-\xD6\xD8]/g, 'O')
+                .replace(/[\xD9-\xDC]/g, 'U')
+                .replace(/[\xDD]/g, 'Y')
+                .replace(/[\xDE]/g, 'P')
+                .replace(/[\xE0-\xE5]/g, 'a')
+                .replace(/[\xE6]/g, 'ae')
+                .replace(/[\xE7]/g, 'c')
+                .replace(/[\xE8-\xEB]/g, 'e')
+                .replace(/[\xEC-\xEF]/g, 'i')
+                .replace(/[\xF1]/g, 'n')
+                .replace(/[\xF2-\xF6\xF8]/g, 'o')
+                .replace(/[\xF9-\xFC]/g, 'u')
+                .replace(/[\xFE]/g, 'p')
+                .replace(/[\xFD\xFF]/g, 'y');
+        }
+
+        return str;
+    },
+
+    getVNodeProp(vnode, prop) {
+        let props = vnode.props;
+
+        if (props) {
+            let kebapProp = prop.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+            let propName = Object.prototype.hasOwnProperty.call(props, kebapProp) ? kebapProp : prop;
+
+            return vnode.type.props[prop].type === Boolean && props[propName] === '' ? true : props[propName];
+        }
+
+        return null;
+    },
+
+    isEmpty(value) {
+        return value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0) || (!(value instanceof Date) && typeof value === 'object' && Object.keys(value).length === 0);
+    },
+
+    isNotEmpty(value) {
+        return !this.isEmpty(value);
+    },
+
+    isPrintableCharacter(char = '') {
+        return this.isNotEmpty(char) && char.length === 1 && char.match(/\S| /);
+    },
+
+    /**
+     * Firefox-v103 does not currently support the "findLast" method. It is stated that this method will be supported with Firefox-v104.
+     * https://caniuse.com/mdn-javascript_builtins_array_findlast
+     */
+    findLast(arr, callback) {
+        let item;
+
+        if (this.isNotEmpty(arr)) {
+            try {
+                item = arr.findLast(callback);
+            } catch {
+                item = [...arr].reverse().find(callback);
+            }
+        }
+
+        return item;
+    },
+
+    /**
+     * Firefox-v103 does not currently support the "findLastIndex" method. It is stated that this method will be supported with Firefox-v104.
+     * https://caniuse.com/mdn-javascript_builtins_array_findlastindex
+     */
+    findLastIndex(arr, callback) {
+        let index = -1;
+
+        if (this.isNotEmpty(arr)) {
+            try {
+                index = arr.findLastIndex(callback);
+            } catch {
+                index = arr.lastIndexOf([...arr].reverse().find(callback));
+            }
+        }
+
+        return index;
+    }
+};
+
+function handler() {
+    let zIndexes = [];
+
+    const generateZIndex = (key, baseZIndex) => {
+        let lastZIndex = zIndexes.length > 0 ? zIndexes[zIndexes.length - 1] : { key, value: baseZIndex };
+        let newZIndex = lastZIndex.value + (lastZIndex.key === key ? 0 : baseZIndex) + 1;
+
+        zIndexes.push({ key, value: newZIndex });
+
+        return newZIndex;
+    };
+
+    const revertZIndex = (zIndex) => {
+        zIndexes = zIndexes.filter((obj) => obj.value !== zIndex);
+    };
+
+    const getCurrentZIndex = () => {
+        return zIndexes.length > 0 ? zIndexes[zIndexes.length - 1].value : 0;
+    };
+
+    const getZIndex = (el) => {
+        return el ? parseInt(el.style.zIndex, 10) || 0 : 0;
+    };
+
+    return {
+        get: getZIndex,
+        set: (key, el, baseZIndex) => {
+            if (el) {
+                el.style.zIndex = String(generateZIndex(key, baseZIndex));
+            }
+        },
+        clear: (el) => {
+            if (el) {
+                revertZIndex(getZIndex(el));
+                el.style.zIndex = '';
+            }
+        },
+        getCurrent: () => getCurrentZIndex()
+    };
+}
+
+var ZIndexUtils = handler();
+
+var lastId = 0;
+
+function UniqueComponentId (prefix = 'pv_id_') {
+    lastId++;
+
+    return `${prefix}${lastId}`;
+}
+
+function primebus() {
+    const allHandlers = new Map();
+
+    return {
+        on(type, handler) {
+            let handlers = allHandlers.get(type);
+
+            if (!handlers) handlers = [handler];
+            else handlers.push(handler);
+
+            allHandlers.set(type, handlers);
+        },
+
+        off(type, handler) {
+            let handlers = allHandlers.get(type);
+
+            if (handlers) {
+                handlers.splice(handlers.indexOf(handler) >>> 0, 1);
+            }
+        },
+
+        emit(type, evt) {
+            let handlers = allHandlers.get(type);
+
+            if (handlers) {
+                handlers.slice().map((handler) => {
+                    handler(evt);
+                });
+            }
+        }
+    };
+}
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
@@ -37020,6 +39621,435 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
+/***/ "./node_modules/primeicons/primeicons.css":
+/*!************************************************!*\
+  !*** ./node_modules/primeicons/primeicons.css ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primeicons_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./primeicons.css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primeicons/primeicons.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primeicons_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primeicons_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/primevue.min.css":
+/*!**********************************************************!*\
+  !*** ./node_modules/primevue/resources/primevue.min.css ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primevue_min_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./primevue.min.css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/primevue.min.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primevue_min_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_primevue_min_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./node_modules/primevue/resources/themes/tailwind-light/theme.css":
+/*!*************************************************************************!*\
+  !*** ./node_modules/primevue/resources/themes/tailwind-light/theme.css ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_theme_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./theme.css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/primevue/resources/themes/tailwind-light/theme.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_theme_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_theme_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./resources/js/dist/app.css":
+/*!***********************************!*\
+  !*** ./resources/js/dist/app.css ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_app_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./app.css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./resources/js/dist/app.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_app_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_app_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_style_index_0_id_f348271a_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../node_modules/vue-loader/dist/stylePostLoader.js!../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./App.vue?vue&type=style&index=0&id=f348271a&lang=css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_style_index_0_id_f348271a_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_style_index_0_id_f348271a_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var isOldIE = function isOldIE() {
+  var memo;
+  return function memorize() {
+    if (typeof memo === 'undefined') {
+      // Test for IE <= 9 as proposed by Browserhacks
+      // @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+      // Tests for existence of standard globals is to allow style-loader
+      // to operate correctly into non-standard environments
+      // @see https://github.com/webpack-contrib/style-loader/issues/177
+      memo = Boolean(window && document && document.all && !window.atob);
+    }
+
+    return memo;
+  };
+}();
+
+var getTarget = function getTarget() {
+  var memo = {};
+  return function memorize(target) {
+    if (typeof memo[target] === 'undefined') {
+      var styleTarget = document.querySelector(target); // Special case to return head of iframe instead of iframe itself
+
+      if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+        try {
+          // This will throw an exception if access to iframe is blocked
+          // due to cross-origin restrictions
+          styleTarget = styleTarget.contentDocument.head;
+        } catch (e) {
+          // istanbul ignore next
+          styleTarget = null;
+        }
+      }
+
+      memo[target] = styleTarget;
+    }
+
+    return memo[target];
+  };
+}();
+
+var stylesInDom = [];
+
+function getIndexByIdentifier(identifier) {
+  var result = -1;
+
+  for (var i = 0; i < stylesInDom.length; i++) {
+    if (stylesInDom[i].identifier === identifier) {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+
+function modulesToDom(list, options) {
+  var idCountMap = {};
+  var identifiers = [];
+
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i];
+    var id = options.base ? item[0] + options.base : item[0];
+    var count = idCountMap[id] || 0;
+    var identifier = "".concat(id, " ").concat(count);
+    idCountMap[id] = count + 1;
+    var index = getIndexByIdentifier(identifier);
+    var obj = {
+      css: item[1],
+      media: item[2],
+      sourceMap: item[3]
+    };
+
+    if (index !== -1) {
+      stylesInDom[index].references++;
+      stylesInDom[index].updater(obj);
+    } else {
+      stylesInDom.push({
+        identifier: identifier,
+        updater: addStyle(obj, options),
+        references: 1
+      });
+    }
+
+    identifiers.push(identifier);
+  }
+
+  return identifiers;
+}
+
+function insertStyleElement(options) {
+  var style = document.createElement('style');
+  var attributes = options.attributes || {};
+
+  if (typeof attributes.nonce === 'undefined') {
+    var nonce =  true ? __webpack_require__.nc : 0;
+
+    if (nonce) {
+      attributes.nonce = nonce;
+    }
+  }
+
+  Object.keys(attributes).forEach(function (key) {
+    style.setAttribute(key, attributes[key]);
+  });
+
+  if (typeof options.insert === 'function') {
+    options.insert(style);
+  } else {
+    var target = getTarget(options.insert || 'head');
+
+    if (!target) {
+      throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
+    }
+
+    target.appendChild(style);
+  }
+
+  return style;
+}
+
+function removeStyleElement(style) {
+  // istanbul ignore if
+  if (style.parentNode === null) {
+    return false;
+  }
+
+  style.parentNode.removeChild(style);
+}
+/* istanbul ignore next  */
+
+
+var replaceText = function replaceText() {
+  var textStore = [];
+  return function replace(index, replacement) {
+    textStore[index] = replacement;
+    return textStore.filter(Boolean).join('\n');
+  };
+}();
+
+function applyToSingletonTag(style, index, remove, obj) {
+  var css = remove ? '' : obj.media ? "@media ".concat(obj.media, " {").concat(obj.css, "}") : obj.css; // For old IE
+
+  /* istanbul ignore if  */
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = replaceText(index, css);
+  } else {
+    var cssNode = document.createTextNode(css);
+    var childNodes = style.childNodes;
+
+    if (childNodes[index]) {
+      style.removeChild(childNodes[index]);
+    }
+
+    if (childNodes.length) {
+      style.insertBefore(cssNode, childNodes[index]);
+    } else {
+      style.appendChild(cssNode);
+    }
+  }
+}
+
+function applyToTag(style, options, obj) {
+  var css = obj.css;
+  var media = obj.media;
+  var sourceMap = obj.sourceMap;
+
+  if (media) {
+    style.setAttribute('media', media);
+  } else {
+    style.removeAttribute('media');
+  }
+
+  if (sourceMap && typeof btoa !== 'undefined') {
+    css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
+  } // For old IE
+
+  /* istanbul ignore if  */
+
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    while (style.firstChild) {
+      style.removeChild(style.firstChild);
+    }
+
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var singleton = null;
+var singletonCounter = 0;
+
+function addStyle(obj, options) {
+  var style;
+  var update;
+  var remove;
+
+  if (options.singleton) {
+    var styleIndex = singletonCounter++;
+    style = singleton || (singleton = insertStyleElement(options));
+    update = applyToSingletonTag.bind(null, style, styleIndex, false);
+    remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+  } else {
+    style = insertStyleElement(options);
+    update = applyToTag.bind(null, style, options);
+
+    remove = function remove() {
+      removeStyleElement(style);
+    };
+  }
+
+  update(obj);
+  return function updateStyle(newObj) {
+    if (newObj) {
+      if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap) {
+        return;
+      }
+
+      update(obj = newObj);
+    } else {
+      remove();
+    }
+  };
+}
+
+module.exports = function (list, options) {
+  options = options || {}; // Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+  // tags it will allow on a page
+
+  if (!options.singleton && typeof options.singleton !== 'boolean') {
+    options.singleton = isOldIE();
+  }
+
+  list = list || [];
+  var lastIdentifiers = modulesToDom(list, options);
+  return function update(newList) {
+    newList = newList || [];
+
+    if (Object.prototype.toString.call(newList) !== '[object Array]') {
+      return;
+    }
+
+    for (var i = 0; i < lastIdentifiers.length; i++) {
+      var identifier = lastIdentifiers[i];
+      var index = getIndexByIdentifier(identifier);
+      stylesInDom[index].references--;
+    }
+
+    var newLastIdentifiers = modulesToDom(newList, options);
+
+    for (var _i = 0; _i < lastIdentifiers.length; _i++) {
+      var _identifier = lastIdentifiers[_i];
+
+      var _index = getIndexByIdentifier(_identifier);
+
+      if (stylesInDom[_index].references === 0) {
+        stylesInDom[_index].updater();
+
+        stylesInDom.splice(_index, 1);
+      }
+    }
+
+    lastIdentifiers = newLastIdentifiers;
+  };
+};
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/dist/exportHelper.js":
 /*!******************************************************!*\
   !*** ./node_modules/vue-loader/dist/exportHelper.js ***!
@@ -37042,6 +40072,37 @@ exports["default"] = (sfc, props) => {
 
 /***/ }),
 
+/***/ "./resources/js/App.vue":
+/*!******************************!*\
+  !*** ./resources/js/App.vue ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _App_vue_vue_type_template_id_f348271a__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./App.vue?vue&type=template&id=f348271a */ "./resources/js/App.vue?vue&type=template&id=f348271a");
+/* harmony import */ var _App_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./App.vue?vue&type=script&lang=js */ "./resources/js/App.vue?vue&type=script&lang=js");
+/* harmony import */ var _App_vue_vue_type_style_index_0_id_f348271a_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./App.vue?vue&type=style&index=0&id=f348271a&lang=css */ "./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css");
+/* harmony import */ var D_Project_Lerning_Subscription_Management_LV_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+
+
+const __exports__ = /*#__PURE__*/(0,D_Project_Lerning_Subscription_Management_LV_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_App_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_App_vue_vue_type_template_id_f348271a__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/App.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
 /***/ "./resources/js/components/welcome.vue":
 /*!*********************************************!*\
   !*** ./resources/js/components/welcome.vue ***!
@@ -37055,18 +40116,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _welcome_vue_vue_type_template_id_73da9be7__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./welcome.vue?vue&type=template&id=73da9be7 */ "./resources/js/components/welcome.vue?vue&type=template&id=73da9be7");
 /* harmony import */ var _welcome_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./welcome.vue?vue&type=script&lang=js */ "./resources/js/components/welcome.vue?vue&type=script&lang=js");
-/* harmony import */ var D_Project_Lerning_subscription_management_system_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var D_Project_Lerning_Subscription_Management_LV_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,D_Project_Lerning_subscription_management_system_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_welcome_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_welcome_vue_vue_type_template_id_73da9be7__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/welcome.vue"]])
+const __exports__ = /*#__PURE__*/(0,D_Project_Lerning_Subscription_Management_LV_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_welcome_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_welcome_vue_vue_type_template_id_73da9be7__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/welcome.vue"]])
 /* hot reload */
 if (false) {}
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
+/***/ "./resources/js/App.vue?vue&type=script&lang=js":
+/*!******************************************************!*\
+  !*** ./resources/js/App.vue?vue&type=script&lang=js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./App.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=script&lang=js");
+ 
 
 /***/ }),
 
@@ -37086,6 +40163,22 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/App.vue?vue&type=template&id=f348271a":
+/*!************************************************************!*\
+  !*** ./resources/js/App.vue?vue&type=template&id=f348271a ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_template_id_f348271a__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_template_id_f348271a__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./App.vue?vue&type=template&id=f348271a */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=template&id=f348271a");
+
+
+/***/ }),
+
 /***/ "./resources/js/components/welcome.vue?vue&type=template&id=73da9be7":
 /*!***************************************************************************!*\
   !*** ./resources/js/components/welcome.vue?vue&type=template&id=73da9be7 ***!
@@ -37098,6 +40191,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_welcome_vue_vue_type_template_id_73da9be7__WEBPACK_IMPORTED_MODULE_0__.render)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_welcome_vue_vue_type_template_id_73da9be7__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./welcome.vue?vue&type=template&id=73da9be7 */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/components/welcome.vue?vue&type=template&id=73da9be7");
+
+
+/***/ }),
+
+/***/ "./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css":
+/*!**************************************************************************!*\
+  !*** ./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css ***!
+  \**************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_App_vue_vue_type_style_index_0_id_f348271a_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../node_modules/vue-loader/dist/stylePostLoader.js!../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./App.vue?vue&type=style&index=0&id=f348271a&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/App.vue?vue&type=style&index=0&id=f348271a&lang=css");
 
 
 /***/ }),
@@ -41185,6 +44291,3647 @@ const toFiniteNumber = (value, defaultValue) => {
 });
 
 
+/***/ }),
+
+/***/ "./node_modules/vue-router/dist/vue-router.mjs":
+/*!*****************************************************!*\
+  !*** ./node_modules/vue-router/dist/vue-router.mjs ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "NavigationFailureType": () => (/* binding */ NavigationFailureType),
+/* harmony export */   "RouterLink": () => (/* binding */ RouterLink),
+/* harmony export */   "RouterView": () => (/* binding */ RouterView),
+/* harmony export */   "START_LOCATION": () => (/* binding */ START_LOCATION_NORMALIZED),
+/* harmony export */   "createMemoryHistory": () => (/* binding */ createMemoryHistory),
+/* harmony export */   "createRouter": () => (/* binding */ createRouter),
+/* harmony export */   "createRouterMatcher": () => (/* binding */ createRouterMatcher),
+/* harmony export */   "createWebHashHistory": () => (/* binding */ createWebHashHistory),
+/* harmony export */   "createWebHistory": () => (/* binding */ createWebHistory),
+/* harmony export */   "isNavigationFailure": () => (/* binding */ isNavigationFailure),
+/* harmony export */   "loadRouteLocation": () => (/* binding */ loadRouteLocation),
+/* harmony export */   "matchedRouteKey": () => (/* binding */ matchedRouteKey),
+/* harmony export */   "onBeforeRouteLeave": () => (/* binding */ onBeforeRouteLeave),
+/* harmony export */   "onBeforeRouteUpdate": () => (/* binding */ onBeforeRouteUpdate),
+/* harmony export */   "parseQuery": () => (/* binding */ parseQuery),
+/* harmony export */   "routeLocationKey": () => (/* binding */ routeLocationKey),
+/* harmony export */   "routerKey": () => (/* binding */ routerKey),
+/* harmony export */   "routerViewLocationKey": () => (/* binding */ routerViewLocationKey),
+/* harmony export */   "stringifyQuery": () => (/* binding */ stringifyQuery),
+/* harmony export */   "useLink": () => (/* binding */ useLink),
+/* harmony export */   "useRoute": () => (/* binding */ useRoute),
+/* harmony export */   "useRouter": () => (/* binding */ useRouter),
+/* harmony export */   "viewDepthKey": () => (/* binding */ viewDepthKey)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+/* harmony import */ var _vue_devtools_api__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @vue/devtools-api */ "./node_modules/@vue/devtools-api/lib/esm/index.js");
+/*!
+  * vue-router v4.1.6
+  * (c) 2022 Eduardo San Martin Morote
+  * @license MIT
+  */
+
+
+
+const isBrowser = typeof window !== 'undefined';
+
+function isESModule(obj) {
+    return obj.__esModule || obj[Symbol.toStringTag] === 'Module';
+}
+const assign = Object.assign;
+function applyToParams(fn, params) {
+    const newParams = {};
+    for (const key in params) {
+        const value = params[key];
+        newParams[key] = isArray(value)
+            ? value.map(fn)
+            : fn(value);
+    }
+    return newParams;
+}
+const noop = () => { };
+/**
+ * Typesafe alternative to Array.isArray
+ * https://github.com/microsoft/TypeScript/pull/48228
+ */
+const isArray = Array.isArray;
+
+function warn(msg) {
+    // avoid using ...args as it breaks in older Edge builds
+    const args = Array.from(arguments).slice(1);
+    console.warn.apply(console, ['[Vue Router warn]: ' + msg].concat(args));
+}
+
+const TRAILING_SLASH_RE = /\/$/;
+const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, '');
+/**
+ * Transforms a URI into a normalized history location
+ *
+ * @param parseQuery
+ * @param location - URI to normalize
+ * @param currentLocation - current absolute location. Allows resolving relative
+ * paths. Must start with `/`. Defaults to `/`
+ * @returns a normalized history location
+ */
+function parseURL(parseQuery, location, currentLocation = '/') {
+    let path, query = {}, searchString = '', hash = '';
+    // Could use URL and URLSearchParams but IE 11 doesn't support it
+    // TODO: move to new URL()
+    const hashPos = location.indexOf('#');
+    let searchPos = location.indexOf('?');
+    // the hash appears before the search, so it's not part of the search string
+    if (hashPos < searchPos && hashPos >= 0) {
+        searchPos = -1;
+    }
+    if (searchPos > -1) {
+        path = location.slice(0, searchPos);
+        searchString = location.slice(searchPos + 1, hashPos > -1 ? hashPos : location.length);
+        query = parseQuery(searchString);
+    }
+    if (hashPos > -1) {
+        path = path || location.slice(0, hashPos);
+        // keep the # character
+        hash = location.slice(hashPos, location.length);
+    }
+    // no search and no query
+    path = resolveRelativePath(path != null ? path : location, currentLocation);
+    // empty path means a relative query or hash `?foo=f`, `#thing`
+    return {
+        fullPath: path + (searchString && '?') + searchString + hash,
+        path,
+        query,
+        hash,
+    };
+}
+/**
+ * Stringifies a URL object
+ *
+ * @param stringifyQuery
+ * @param location
+ */
+function stringifyURL(stringifyQuery, location) {
+    const query = location.query ? stringifyQuery(location.query) : '';
+    return location.path + (query && '?') + query + (location.hash || '');
+}
+/**
+ * Strips off the base from the beginning of a location.pathname in a non-case-sensitive way.
+ *
+ * @param pathname - location.pathname
+ * @param base - base to strip off
+ */
+function stripBase(pathname, base) {
+    // no base or base is not found at the beginning
+    if (!base || !pathname.toLowerCase().startsWith(base.toLowerCase()))
+        return pathname;
+    return pathname.slice(base.length) || '/';
+}
+/**
+ * Checks if two RouteLocation are equal. This means that both locations are
+ * pointing towards the same {@link RouteRecord} and that all `params`, `query`
+ * parameters and `hash` are the same
+ *
+ * @param a - first {@link RouteLocation}
+ * @param b - second {@link RouteLocation}
+ */
+function isSameRouteLocation(stringifyQuery, a, b) {
+    const aLastIndex = a.matched.length - 1;
+    const bLastIndex = b.matched.length - 1;
+    return (aLastIndex > -1 &&
+        aLastIndex === bLastIndex &&
+        isSameRouteRecord(a.matched[aLastIndex], b.matched[bLastIndex]) &&
+        isSameRouteLocationParams(a.params, b.params) &&
+        stringifyQuery(a.query) === stringifyQuery(b.query) &&
+        a.hash === b.hash);
+}
+/**
+ * Check if two `RouteRecords` are equal. Takes into account aliases: they are
+ * considered equal to the `RouteRecord` they are aliasing.
+ *
+ * @param a - first {@link RouteRecord}
+ * @param b - second {@link RouteRecord}
+ */
+function isSameRouteRecord(a, b) {
+    // since the original record has an undefined value for aliasOf
+    // but all aliases point to the original record, this will always compare
+    // the original record
+    return (a.aliasOf || a) === (b.aliasOf || b);
+}
+function isSameRouteLocationParams(a, b) {
+    if (Object.keys(a).length !== Object.keys(b).length)
+        return false;
+    for (const key in a) {
+        if (!isSameRouteLocationParamsValue(a[key], b[key]))
+            return false;
+    }
+    return true;
+}
+function isSameRouteLocationParamsValue(a, b) {
+    return isArray(a)
+        ? isEquivalentArray(a, b)
+        : isArray(b)
+            ? isEquivalentArray(b, a)
+            : a === b;
+}
+/**
+ * Check if two arrays are the same or if an array with one single entry is the
+ * same as another primitive value. Used to check query and parameters
+ *
+ * @param a - array of values
+ * @param b - array of values or a single value
+ */
+function isEquivalentArray(a, b) {
+    return isArray(b)
+        ? a.length === b.length && a.every((value, i) => value === b[i])
+        : a.length === 1 && a[0] === b;
+}
+/**
+ * Resolves a relative path that starts with `.`.
+ *
+ * @param to - path location we are resolving
+ * @param from - currentLocation.path, should start with `/`
+ */
+function resolveRelativePath(to, from) {
+    if (to.startsWith('/'))
+        return to;
+    if (( true) && !from.startsWith('/')) {
+        warn(`Cannot resolve a relative location without an absolute path. Trying to resolve "${to}" from "${from}". It should look like "/${from}".`);
+        return to;
+    }
+    if (!to)
+        return from;
+    const fromSegments = from.split('/');
+    const toSegments = to.split('/');
+    let position = fromSegments.length - 1;
+    let toPosition;
+    let segment;
+    for (toPosition = 0; toPosition < toSegments.length; toPosition++) {
+        segment = toSegments[toPosition];
+        // we stay on the same position
+        if (segment === '.')
+            continue;
+        // go up in the from array
+        if (segment === '..') {
+            // we can't go below zero, but we still need to increment toPosition
+            if (position > 1)
+                position--;
+            // continue
+        }
+        // we reached a non-relative path, we stop here
+        else
+            break;
+    }
+    return (fromSegments.slice(0, position).join('/') +
+        '/' +
+        toSegments
+            // ensure we use at least the last element in the toSegments
+            .slice(toPosition - (toPosition === toSegments.length ? 1 : 0))
+            .join('/'));
+}
+
+var NavigationType;
+(function (NavigationType) {
+    NavigationType["pop"] = "pop";
+    NavigationType["push"] = "push";
+})(NavigationType || (NavigationType = {}));
+var NavigationDirection;
+(function (NavigationDirection) {
+    NavigationDirection["back"] = "back";
+    NavigationDirection["forward"] = "forward";
+    NavigationDirection["unknown"] = "";
+})(NavigationDirection || (NavigationDirection = {}));
+/**
+ * Starting location for Histories
+ */
+const START = '';
+// Generic utils
+/**
+ * Normalizes a base by removing any trailing slash and reading the base tag if
+ * present.
+ *
+ * @param base - base to normalize
+ */
+function normalizeBase(base) {
+    if (!base) {
+        if (isBrowser) {
+            // respect <base> tag
+            const baseEl = document.querySelector('base');
+            base = (baseEl && baseEl.getAttribute('href')) || '/';
+            // strip full URL origin
+            base = base.replace(/^\w+:\/\/[^\/]+/, '');
+        }
+        else {
+            base = '/';
+        }
+    }
+    // ensure leading slash when it was removed by the regex above avoid leading
+    // slash with hash because the file could be read from the disk like file://
+    // and the leading slash would cause problems
+    if (base[0] !== '/' && base[0] !== '#')
+        base = '/' + base;
+    // remove the trailing slash so all other method can just do `base + fullPath`
+    // to build an href
+    return removeTrailingSlash(base);
+}
+// remove any character before the hash
+const BEFORE_HASH_RE = /^[^#]+#/;
+function createHref(base, location) {
+    return base.replace(BEFORE_HASH_RE, '#') + location;
+}
+
+function getElementPosition(el, offset) {
+    const docRect = document.documentElement.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    return {
+        behavior: offset.behavior,
+        left: elRect.left - docRect.left - (offset.left || 0),
+        top: elRect.top - docRect.top - (offset.top || 0),
+    };
+}
+const computeScrollPosition = () => ({
+    left: window.pageXOffset,
+    top: window.pageYOffset,
+});
+function scrollToPosition(position) {
+    let scrollToOptions;
+    if ('el' in position) {
+        const positionEl = position.el;
+        const isIdSelector = typeof positionEl === 'string' && positionEl.startsWith('#');
+        /**
+         * `id`s can accept pretty much any characters, including CSS combinators
+         * like `>` or `~`. It's still possible to retrieve elements using
+         * `document.getElementById('~')` but it needs to be escaped when using
+         * `document.querySelector('#\\~')` for it to be valid. The only
+         * requirements for `id`s are them to be unique on the page and to not be
+         * empty (`id=""`). Because of that, when passing an id selector, it should
+         * be properly escaped for it to work with `querySelector`. We could check
+         * for the id selector to be simple (no CSS combinators `+ >~`) but that
+         * would make things inconsistent since they are valid characters for an
+         * `id` but would need to be escaped when using `querySelector`, breaking
+         * their usage and ending up in no selector returned. Selectors need to be
+         * escaped:
+         *
+         * - `#1-thing` becomes `#\31 -thing`
+         * - `#with~symbols` becomes `#with\\~symbols`
+         *
+         * - More information about  the topic can be found at
+         *   https://mathiasbynens.be/notes/html5-id-class.
+         * - Practical example: https://mathiasbynens.be/demo/html5-id
+         */
+        if (( true) && typeof position.el === 'string') {
+            if (!isIdSelector || !document.getElementById(position.el.slice(1))) {
+                try {
+                    const foundEl = document.querySelector(position.el);
+                    if (isIdSelector && foundEl) {
+                        warn(`The selector "${position.el}" should be passed as "el: document.querySelector('${position.el}')" because it starts with "#".`);
+                        // return to avoid other warnings
+                        return;
+                    }
+                }
+                catch (err) {
+                    warn(`The selector "${position.el}" is invalid. If you are using an id selector, make sure to escape it. You can find more information about escaping characters in selectors at https://mathiasbynens.be/notes/css-escapes or use CSS.escape (https://developer.mozilla.org/en-US/docs/Web/API/CSS/escape).`);
+                    // return to avoid other warnings
+                    return;
+                }
+            }
+        }
+        const el = typeof positionEl === 'string'
+            ? isIdSelector
+                ? document.getElementById(positionEl.slice(1))
+                : document.querySelector(positionEl)
+            : positionEl;
+        if (!el) {
+            ( true) &&
+                warn(`Couldn't find element using selector "${position.el}" returned by scrollBehavior.`);
+            return;
+        }
+        scrollToOptions = getElementPosition(el, position);
+    }
+    else {
+        scrollToOptions = position;
+    }
+    if ('scrollBehavior' in document.documentElement.style)
+        window.scrollTo(scrollToOptions);
+    else {
+        window.scrollTo(scrollToOptions.left != null ? scrollToOptions.left : window.pageXOffset, scrollToOptions.top != null ? scrollToOptions.top : window.pageYOffset);
+    }
+}
+function getScrollKey(path, delta) {
+    const position = history.state ? history.state.position - delta : -1;
+    return position + path;
+}
+const scrollPositions = new Map();
+function saveScrollPosition(key, scrollPosition) {
+    scrollPositions.set(key, scrollPosition);
+}
+function getSavedScrollPosition(key) {
+    const scroll = scrollPositions.get(key);
+    // consume it so it's not used again
+    scrollPositions.delete(key);
+    return scroll;
+}
+// TODO: RFC about how to save scroll position
+/**
+ * ScrollBehavior instance used by the router to compute and restore the scroll
+ * position when navigating.
+ */
+// export interface ScrollHandler<ScrollPositionEntry extends HistoryStateValue, ScrollPosition extends ScrollPositionEntry> {
+//   // returns a scroll position that can be saved in history
+//   compute(): ScrollPositionEntry
+//   // can take an extended ScrollPositionEntry
+//   scroll(position: ScrollPosition): void
+// }
+// export const scrollHandler: ScrollHandler<ScrollPosition> = {
+//   compute: computeScroll,
+//   scroll: scrollToPosition,
+// }
+
+let createBaseLocation = () => location.protocol + '//' + location.host;
+/**
+ * Creates a normalized history location from a window.location object
+ * @param location -
+ */
+function createCurrentLocation(base, location) {
+    const { pathname, search, hash } = location;
+    // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
+    const hashPos = base.indexOf('#');
+    if (hashPos > -1) {
+        let slicePos = hash.includes(base.slice(hashPos))
+            ? base.slice(hashPos).length
+            : 1;
+        let pathFromHash = hash.slice(slicePos);
+        // prepend the starting slash to hash so the url starts with /#
+        if (pathFromHash[0] !== '/')
+            pathFromHash = '/' + pathFromHash;
+        return stripBase(pathFromHash, '');
+    }
+    const path = stripBase(pathname, base);
+    return path + search + hash;
+}
+function useHistoryListeners(base, historyState, currentLocation, replace) {
+    let listeners = [];
+    let teardowns = [];
+    // TODO: should it be a stack? a Dict. Check if the popstate listener
+    // can trigger twice
+    let pauseState = null;
+    const popStateHandler = ({ state, }) => {
+        const to = createCurrentLocation(base, location);
+        const from = currentLocation.value;
+        const fromState = historyState.value;
+        let delta = 0;
+        if (state) {
+            currentLocation.value = to;
+            historyState.value = state;
+            // ignore the popstate and reset the pauseState
+            if (pauseState && pauseState === from) {
+                pauseState = null;
+                return;
+            }
+            delta = fromState ? state.position - fromState.position : 0;
+        }
+        else {
+            replace(to);
+        }
+        // console.log({ deltaFromCurrent })
+        // Here we could also revert the navigation by calling history.go(-delta)
+        // this listener will have to be adapted to not trigger again and to wait for the url
+        // to be updated before triggering the listeners. Some kind of validation function would also
+        // need to be passed to the listeners so the navigation can be accepted
+        // call all listeners
+        listeners.forEach(listener => {
+            listener(currentLocation.value, from, {
+                delta,
+                type: NavigationType.pop,
+                direction: delta
+                    ? delta > 0
+                        ? NavigationDirection.forward
+                        : NavigationDirection.back
+                    : NavigationDirection.unknown,
+            });
+        });
+    };
+    function pauseListeners() {
+        pauseState = currentLocation.value;
+    }
+    function listen(callback) {
+        // set up the listener and prepare teardown callbacks
+        listeners.push(callback);
+        const teardown = () => {
+            const index = listeners.indexOf(callback);
+            if (index > -1)
+                listeners.splice(index, 1);
+        };
+        teardowns.push(teardown);
+        return teardown;
+    }
+    function beforeUnloadListener() {
+        const { history } = window;
+        if (!history.state)
+            return;
+        history.replaceState(assign({}, history.state, { scroll: computeScrollPosition() }), '');
+    }
+    function destroy() {
+        for (const teardown of teardowns)
+            teardown();
+        teardowns = [];
+        window.removeEventListener('popstate', popStateHandler);
+        window.removeEventListener('beforeunload', beforeUnloadListener);
+    }
+    // set up the listeners and prepare teardown callbacks
+    window.addEventListener('popstate', popStateHandler);
+    window.addEventListener('beforeunload', beforeUnloadListener);
+    return {
+        pauseListeners,
+        listen,
+        destroy,
+    };
+}
+/**
+ * Creates a state object
+ */
+function buildState(back, current, forward, replaced = false, computeScroll = false) {
+    return {
+        back,
+        current,
+        forward,
+        replaced,
+        position: window.history.length,
+        scroll: computeScroll ? computeScrollPosition() : null,
+    };
+}
+function useHistoryStateNavigation(base) {
+    const { history, location } = window;
+    // private variables
+    const currentLocation = {
+        value: createCurrentLocation(base, location),
+    };
+    const historyState = { value: history.state };
+    // build current history entry as this is a fresh navigation
+    if (!historyState.value) {
+        changeLocation(currentLocation.value, {
+            back: null,
+            current: currentLocation.value,
+            forward: null,
+            // the length is off by one, we need to decrease it
+            position: history.length - 1,
+            replaced: true,
+            // don't add a scroll as the user may have an anchor, and we want
+            // scrollBehavior to be triggered without a saved position
+            scroll: null,
+        }, true);
+    }
+    function changeLocation(to, state, replace) {
+        /**
+         * if a base tag is provided, and we are on a normal domain, we have to
+         * respect the provided `base` attribute because pushState() will use it and
+         * potentially erase anything before the `#` like at
+         * https://github.com/vuejs/router/issues/685 where a base of
+         * `/folder/#` but a base of `/` would erase the `/folder/` section. If
+         * there is no host, the `<base>` tag makes no sense and if there isn't a
+         * base tag we can just use everything after the `#`.
+         */
+        const hashIndex = base.indexOf('#');
+        const url = hashIndex > -1
+            ? (location.host && document.querySelector('base')
+                ? base
+                : base.slice(hashIndex)) + to
+            : createBaseLocation() + base + to;
+        try {
+            // BROWSER QUIRK
+            // NOTE: Safari throws a SecurityError when calling this function 100 times in 30 seconds
+            history[replace ? 'replaceState' : 'pushState'](state, '', url);
+            historyState.value = state;
+        }
+        catch (err) {
+            if ((true)) {
+                warn('Error with push/replace State', err);
+            }
+            else {}
+            // Force the navigation, this also resets the call count
+            location[replace ? 'replace' : 'assign'](url);
+        }
+    }
+    function replace(to, data) {
+        const state = assign({}, history.state, buildState(historyState.value.back, 
+        // keep back and forward entries but override current position
+        to, historyState.value.forward, true), data, { position: historyState.value.position });
+        changeLocation(to, state, true);
+        currentLocation.value = to;
+    }
+    function push(to, data) {
+        // Add to current entry the information of where we are going
+        // as well as saving the current position
+        const currentState = assign({}, 
+        // use current history state to gracefully handle a wrong call to
+        // history.replaceState
+        // https://github.com/vuejs/router/issues/366
+        historyState.value, history.state, {
+            forward: to,
+            scroll: computeScrollPosition(),
+        });
+        if (( true) && !history.state) {
+            warn(`history.state seems to have been manually replaced without preserving the necessary values. Make sure to preserve existing history state if you are manually calling history.replaceState:\n\n` +
+                `history.replaceState(history.state, '', url)\n\n` +
+                `You can find more information at https://next.router.vuejs.org/guide/migration/#usage-of-history-state.`);
+        }
+        changeLocation(currentState.current, currentState, true);
+        const state = assign({}, buildState(currentLocation.value, to, null), { position: currentState.position + 1 }, data);
+        changeLocation(to, state, false);
+        currentLocation.value = to;
+    }
+    return {
+        location: currentLocation,
+        state: historyState,
+        push,
+        replace,
+    };
+}
+/**
+ * Creates an HTML5 history. Most common history for single page applications.
+ *
+ * @param base -
+ */
+function createWebHistory(base) {
+    base = normalizeBase(base);
+    const historyNavigation = useHistoryStateNavigation(base);
+    const historyListeners = useHistoryListeners(base, historyNavigation.state, historyNavigation.location, historyNavigation.replace);
+    function go(delta, triggerListeners = true) {
+        if (!triggerListeners)
+            historyListeners.pauseListeners();
+        history.go(delta);
+    }
+    const routerHistory = assign({
+        // it's overridden right after
+        location: '',
+        base,
+        go,
+        createHref: createHref.bind(null, base),
+    }, historyNavigation, historyListeners);
+    Object.defineProperty(routerHistory, 'location', {
+        enumerable: true,
+        get: () => historyNavigation.location.value,
+    });
+    Object.defineProperty(routerHistory, 'state', {
+        enumerable: true,
+        get: () => historyNavigation.state.value,
+    });
+    return routerHistory;
+}
+
+/**
+ * Creates an in-memory based history. The main purpose of this history is to handle SSR. It starts in a special location that is nowhere.
+ * It's up to the user to replace that location with the starter location by either calling `router.push` or `router.replace`.
+ *
+ * @param base - Base applied to all urls, defaults to '/'
+ * @returns a history object that can be passed to the router constructor
+ */
+function createMemoryHistory(base = '') {
+    let listeners = [];
+    let queue = [START];
+    let position = 0;
+    base = normalizeBase(base);
+    function setLocation(location) {
+        position++;
+        if (position === queue.length) {
+            // we are at the end, we can simply append a new entry
+            queue.push(location);
+        }
+        else {
+            // we are in the middle, we remove everything from here in the queue
+            queue.splice(position);
+            queue.push(location);
+        }
+    }
+    function triggerListeners(to, from, { direction, delta }) {
+        const info = {
+            direction,
+            delta,
+            type: NavigationType.pop,
+        };
+        for (const callback of listeners) {
+            callback(to, from, info);
+        }
+    }
+    const routerHistory = {
+        // rewritten by Object.defineProperty
+        location: START,
+        // TODO: should be kept in queue
+        state: {},
+        base,
+        createHref: createHref.bind(null, base),
+        replace(to) {
+            // remove current entry and decrement position
+            queue.splice(position--, 1);
+            setLocation(to);
+        },
+        push(to, data) {
+            setLocation(to);
+        },
+        listen(callback) {
+            listeners.push(callback);
+            return () => {
+                const index = listeners.indexOf(callback);
+                if (index > -1)
+                    listeners.splice(index, 1);
+            };
+        },
+        destroy() {
+            listeners = [];
+            queue = [START];
+            position = 0;
+        },
+        go(delta, shouldTrigger = true) {
+            const from = this.location;
+            const direction = 
+            // we are considering delta === 0 going forward, but in abstract mode
+            // using 0 for the delta doesn't make sense like it does in html5 where
+            // it reloads the page
+            delta < 0 ? NavigationDirection.back : NavigationDirection.forward;
+            position = Math.max(0, Math.min(position + delta, queue.length - 1));
+            if (shouldTrigger) {
+                triggerListeners(this.location, from, {
+                    direction,
+                    delta,
+                });
+            }
+        },
+    };
+    Object.defineProperty(routerHistory, 'location', {
+        enumerable: true,
+        get: () => queue[position],
+    });
+    return routerHistory;
+}
+
+/**
+ * Creates a hash history. Useful for web applications with no host (e.g. `file://`) or when configuring a server to
+ * handle any URL is not possible.
+ *
+ * @param base - optional base to provide. Defaults to `location.pathname + location.search` If there is a `<base>` tag
+ * in the `head`, its value will be ignored in favor of this parameter **but note it affects all the history.pushState()
+ * calls**, meaning that if you use a `<base>` tag, it's `href` value **has to match this parameter** (ignoring anything
+ * after the `#`).
+ *
+ * @example
+ * ```js
+ * // at https://example.com/folder
+ * createWebHashHistory() // gives a url of `https://example.com/folder#`
+ * createWebHashHistory('/folder/') // gives a url of `https://example.com/folder/#`
+ * // if the `#` is provided in the base, it won't be added by `createWebHashHistory`
+ * createWebHashHistory('/folder/#/app/') // gives a url of `https://example.com/folder/#/app/`
+ * // you should avoid doing this because it changes the original url and breaks copying urls
+ * createWebHashHistory('/other-folder/') // gives a url of `https://example.com/other-folder/#`
+ *
+ * // at file:///usr/etc/folder/index.html
+ * // for locations with no `host`, the base is ignored
+ * createWebHashHistory('/iAmIgnored') // gives a url of `file:///usr/etc/folder/index.html#`
+ * ```
+ */
+function createWebHashHistory(base) {
+    // Make sure this implementation is fine in terms of encoding, specially for IE11
+    // for `file://`, directly use the pathname and ignore the base
+    // location.pathname contains an initial `/` even at the root: `https://example.com`
+    base = location.host ? base || location.pathname + location.search : '';
+    // allow the user to provide a `#` in the middle: `/base/#/app`
+    if (!base.includes('#'))
+        base += '#';
+    if (( true) && !base.endsWith('#/') && !base.endsWith('#')) {
+        warn(`A hash base must end with a "#":\n"${base}" should be "${base.replace(/#.*$/, '#')}".`);
+    }
+    return createWebHistory(base);
+}
+
+function isRouteLocation(route) {
+    return typeof route === 'string' || (route && typeof route === 'object');
+}
+function isRouteName(name) {
+    return typeof name === 'string' || typeof name === 'symbol';
+}
+
+/**
+ * Initial route location where the router is. Can be used in navigation guards
+ * to differentiate the initial navigation.
+ *
+ * @example
+ * ```js
+ * import { START_LOCATION } from 'vue-router'
+ *
+ * router.beforeEach((to, from) => {
+ *   if (from === START_LOCATION) {
+ *     // initial navigation
+ *   }
+ * })
+ * ```
+ */
+const START_LOCATION_NORMALIZED = {
+    path: '/',
+    name: undefined,
+    params: {},
+    query: {},
+    hash: '',
+    fullPath: '/',
+    matched: [],
+    meta: {},
+    redirectedFrom: undefined,
+};
+
+const NavigationFailureSymbol = Symbol(( true) ? 'navigation failure' : 0);
+/**
+ * Enumeration with all possible types for navigation failures. Can be passed to
+ * {@link isNavigationFailure} to check for specific failures.
+ */
+var NavigationFailureType;
+(function (NavigationFailureType) {
+    /**
+     * An aborted navigation is a navigation that failed because a navigation
+     * guard returned `false` or called `next(false)`
+     */
+    NavigationFailureType[NavigationFailureType["aborted"] = 4] = "aborted";
+    /**
+     * A cancelled navigation is a navigation that failed because a more recent
+     * navigation finished started (not necessarily finished).
+     */
+    NavigationFailureType[NavigationFailureType["cancelled"] = 8] = "cancelled";
+    /**
+     * A duplicated navigation is a navigation that failed because it was
+     * initiated while already being at the exact same location.
+     */
+    NavigationFailureType[NavigationFailureType["duplicated"] = 16] = "duplicated";
+})(NavigationFailureType || (NavigationFailureType = {}));
+// DEV only debug messages
+const ErrorTypeMessages = {
+    [1 /* ErrorTypes.MATCHER_NOT_FOUND */]({ location, currentLocation }) {
+        return `No match for\n ${JSON.stringify(location)}${currentLocation
+            ? '\nwhile being at\n' + JSON.stringify(currentLocation)
+            : ''}`;
+    },
+    [2 /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */]({ from, to, }) {
+        return `Redirected from "${from.fullPath}" to "${stringifyRoute(to)}" via a navigation guard.`;
+    },
+    [4 /* ErrorTypes.NAVIGATION_ABORTED */]({ from, to }) {
+        return `Navigation aborted from "${from.fullPath}" to "${to.fullPath}" via a navigation guard.`;
+    },
+    [8 /* ErrorTypes.NAVIGATION_CANCELLED */]({ from, to }) {
+        return `Navigation cancelled from "${from.fullPath}" to "${to.fullPath}" with a new navigation.`;
+    },
+    [16 /* ErrorTypes.NAVIGATION_DUPLICATED */]({ from, to }) {
+        return `Avoided redundant navigation to current location: "${from.fullPath}".`;
+    },
+};
+function createRouterError(type, params) {
+    // keep full error messages in cjs versions
+    if (true) {
+        return assign(new Error(ErrorTypeMessages[type](params)), {
+            type,
+            [NavigationFailureSymbol]: true,
+        }, params);
+    }
+    else {}
+}
+function isNavigationFailure(error, type) {
+    return (error instanceof Error &&
+        NavigationFailureSymbol in error &&
+        (type == null || !!(error.type & type)));
+}
+const propertiesToLog = ['params', 'query', 'hash'];
+function stringifyRoute(to) {
+    if (typeof to === 'string')
+        return to;
+    if ('path' in to)
+        return to.path;
+    const location = {};
+    for (const key of propertiesToLog) {
+        if (key in to)
+            location[key] = to[key];
+    }
+    return JSON.stringify(location, null, 2);
+}
+
+// default pattern for a param: non-greedy everything but /
+const BASE_PARAM_PATTERN = '[^/]+?';
+const BASE_PATH_PARSER_OPTIONS = {
+    sensitive: false,
+    strict: false,
+    start: true,
+    end: true,
+};
+// Special Regex characters that must be escaped in static tokens
+const REGEX_CHARS_RE = /[.+*?^${}()[\]/\\]/g;
+/**
+ * Creates a path parser from an array of Segments (a segment is an array of Tokens)
+ *
+ * @param segments - array of segments returned by tokenizePath
+ * @param extraOptions - optional options for the regexp
+ * @returns a PathParser
+ */
+function tokensToParser(segments, extraOptions) {
+    const options = assign({}, BASE_PATH_PARSER_OPTIONS, extraOptions);
+    // the amount of scores is the same as the length of segments except for the root segment "/"
+    const score = [];
+    // the regexp as a string
+    let pattern = options.start ? '^' : '';
+    // extracted keys
+    const keys = [];
+    for (const segment of segments) {
+        // the root segment needs special treatment
+        const segmentScores = segment.length ? [] : [90 /* PathScore.Root */];
+        // allow trailing slash
+        if (options.strict && !segment.length)
+            pattern += '/';
+        for (let tokenIndex = 0; tokenIndex < segment.length; tokenIndex++) {
+            const token = segment[tokenIndex];
+            // resets the score if we are inside a sub-segment /:a-other-:b
+            let subSegmentScore = 40 /* PathScore.Segment */ +
+                (options.sensitive ? 0.25 /* PathScore.BonusCaseSensitive */ : 0);
+            if (token.type === 0 /* TokenType.Static */) {
+                // prepend the slash if we are starting a new segment
+                if (!tokenIndex)
+                    pattern += '/';
+                pattern += token.value.replace(REGEX_CHARS_RE, '\\$&');
+                subSegmentScore += 40 /* PathScore.Static */;
+            }
+            else if (token.type === 1 /* TokenType.Param */) {
+                const { value, repeatable, optional, regexp } = token;
+                keys.push({
+                    name: value,
+                    repeatable,
+                    optional,
+                });
+                const re = regexp ? regexp : BASE_PARAM_PATTERN;
+                // the user provided a custom regexp /:id(\\d+)
+                if (re !== BASE_PARAM_PATTERN) {
+                    subSegmentScore += 10 /* PathScore.BonusCustomRegExp */;
+                    // make sure the regexp is valid before using it
+                    try {
+                        new RegExp(`(${re})`);
+                    }
+                    catch (err) {
+                        throw new Error(`Invalid custom RegExp for param "${value}" (${re}): ` +
+                            err.message);
+                    }
+                }
+                // when we repeat we must take care of the repeating leading slash
+                let subPattern = repeatable ? `((?:${re})(?:/(?:${re}))*)` : `(${re})`;
+                // prepend the slash if we are starting a new segment
+                if (!tokenIndex)
+                    subPattern =
+                        // avoid an optional / if there are more segments e.g. /:p?-static
+                        // or /:p?-:p2
+                        optional && segment.length < 2
+                            ? `(?:/${subPattern})`
+                            : '/' + subPattern;
+                if (optional)
+                    subPattern += '?';
+                pattern += subPattern;
+                subSegmentScore += 20 /* PathScore.Dynamic */;
+                if (optional)
+                    subSegmentScore += -8 /* PathScore.BonusOptional */;
+                if (repeatable)
+                    subSegmentScore += -20 /* PathScore.BonusRepeatable */;
+                if (re === '.*')
+                    subSegmentScore += -50 /* PathScore.BonusWildcard */;
+            }
+            segmentScores.push(subSegmentScore);
+        }
+        // an empty array like /home/ -> [[{home}], []]
+        // if (!segment.length) pattern += '/'
+        score.push(segmentScores);
+    }
+    // only apply the strict bonus to the last score
+    if (options.strict && options.end) {
+        const i = score.length - 1;
+        score[i][score[i].length - 1] += 0.7000000000000001 /* PathScore.BonusStrict */;
+    }
+    // TODO: dev only warn double trailing slash
+    if (!options.strict)
+        pattern += '/?';
+    if (options.end)
+        pattern += '$';
+    // allow paths like /dynamic to only match dynamic or dynamic/... but not dynamic_something_else
+    else if (options.strict)
+        pattern += '(?:/|$)';
+    const re = new RegExp(pattern, options.sensitive ? '' : 'i');
+    function parse(path) {
+        const match = path.match(re);
+        const params = {};
+        if (!match)
+            return null;
+        for (let i = 1; i < match.length; i++) {
+            const value = match[i] || '';
+            const key = keys[i - 1];
+            params[key.name] = value && key.repeatable ? value.split('/') : value;
+        }
+        return params;
+    }
+    function stringify(params) {
+        let path = '';
+        // for optional parameters to allow to be empty
+        let avoidDuplicatedSlash = false;
+        for (const segment of segments) {
+            if (!avoidDuplicatedSlash || !path.endsWith('/'))
+                path += '/';
+            avoidDuplicatedSlash = false;
+            for (const token of segment) {
+                if (token.type === 0 /* TokenType.Static */) {
+                    path += token.value;
+                }
+                else if (token.type === 1 /* TokenType.Param */) {
+                    const { value, repeatable, optional } = token;
+                    const param = value in params ? params[value] : '';
+                    if (isArray(param) && !repeatable) {
+                        throw new Error(`Provided param "${value}" is an array but it is not repeatable (* or + modifiers)`);
+                    }
+                    const text = isArray(param)
+                        ? param.join('/')
+                        : param;
+                    if (!text) {
+                        if (optional) {
+                            // if we have more than one optional param like /:a?-static we don't need to care about the optional param
+                            if (segment.length < 2) {
+                                // remove the last slash as we could be at the end
+                                if (path.endsWith('/'))
+                                    path = path.slice(0, -1);
+                                // do not append a slash on the next iteration
+                                else
+                                    avoidDuplicatedSlash = true;
+                            }
+                        }
+                        else
+                            throw new Error(`Missing required param "${value}"`);
+                    }
+                    path += text;
+                }
+            }
+        }
+        // avoid empty path when we have multiple optional params
+        return path || '/';
+    }
+    return {
+        re,
+        score,
+        keys,
+        parse,
+        stringify,
+    };
+}
+/**
+ * Compares an array of numbers as used in PathParser.score and returns a
+ * number. This function can be used to `sort` an array
+ *
+ * @param a - first array of numbers
+ * @param b - second array of numbers
+ * @returns 0 if both are equal, < 0 if a should be sorted first, > 0 if b
+ * should be sorted first
+ */
+function compareScoreArray(a, b) {
+    let i = 0;
+    while (i < a.length && i < b.length) {
+        const diff = b[i] - a[i];
+        // only keep going if diff === 0
+        if (diff)
+            return diff;
+        i++;
+    }
+    // if the last subsegment was Static, the shorter segments should be sorted first
+    // otherwise sort the longest segment first
+    if (a.length < b.length) {
+        return a.length === 1 && a[0] === 40 /* PathScore.Static */ + 40 /* PathScore.Segment */
+            ? -1
+            : 1;
+    }
+    else if (a.length > b.length) {
+        return b.length === 1 && b[0] === 40 /* PathScore.Static */ + 40 /* PathScore.Segment */
+            ? 1
+            : -1;
+    }
+    return 0;
+}
+/**
+ * Compare function that can be used with `sort` to sort an array of PathParser
+ *
+ * @param a - first PathParser
+ * @param b - second PathParser
+ * @returns 0 if both are equal, < 0 if a should be sorted first, > 0 if b
+ */
+function comparePathParserScore(a, b) {
+    let i = 0;
+    const aScore = a.score;
+    const bScore = b.score;
+    while (i < aScore.length && i < bScore.length) {
+        const comp = compareScoreArray(aScore[i], bScore[i]);
+        // do not return if both are equal
+        if (comp)
+            return comp;
+        i++;
+    }
+    if (Math.abs(bScore.length - aScore.length) === 1) {
+        if (isLastScoreNegative(aScore))
+            return 1;
+        if (isLastScoreNegative(bScore))
+            return -1;
+    }
+    // if a and b share the same score entries but b has more, sort b first
+    return bScore.length - aScore.length;
+    // this is the ternary version
+    // return aScore.length < bScore.length
+    //   ? 1
+    //   : aScore.length > bScore.length
+    //   ? -1
+    //   : 0
+}
+/**
+ * This allows detecting splats at the end of a path: /home/:id(.*)*
+ *
+ * @param score - score to check
+ * @returns true if the last entry is negative
+ */
+function isLastScoreNegative(score) {
+    const last = score[score.length - 1];
+    return score.length > 0 && last[last.length - 1] < 0;
+}
+
+const ROOT_TOKEN = {
+    type: 0 /* TokenType.Static */,
+    value: '',
+};
+const VALID_PARAM_RE = /[a-zA-Z0-9_]/;
+// After some profiling, the cache seems to be unnecessary because tokenizePath
+// (the slowest part of adding a route) is very fast
+// const tokenCache = new Map<string, Token[][]>()
+function tokenizePath(path) {
+    if (!path)
+        return [[]];
+    if (path === '/')
+        return [[ROOT_TOKEN]];
+    if (!path.startsWith('/')) {
+        throw new Error(( true)
+            ? `Route paths should start with a "/": "${path}" should be "/${path}".`
+            : 0);
+    }
+    // if (tokenCache.has(path)) return tokenCache.get(path)!
+    function crash(message) {
+        throw new Error(`ERR (${state})/"${buffer}": ${message}`);
+    }
+    let state = 0 /* TokenizerState.Static */;
+    let previousState = state;
+    const tokens = [];
+    // the segment will always be valid because we get into the initial state
+    // with the leading /
+    let segment;
+    function finalizeSegment() {
+        if (segment)
+            tokens.push(segment);
+        segment = [];
+    }
+    // index on the path
+    let i = 0;
+    // char at index
+    let char;
+    // buffer of the value read
+    let buffer = '';
+    // custom regexp for a param
+    let customRe = '';
+    function consumeBuffer() {
+        if (!buffer)
+            return;
+        if (state === 0 /* TokenizerState.Static */) {
+            segment.push({
+                type: 0 /* TokenType.Static */,
+                value: buffer,
+            });
+        }
+        else if (state === 1 /* TokenizerState.Param */ ||
+            state === 2 /* TokenizerState.ParamRegExp */ ||
+            state === 3 /* TokenizerState.ParamRegExpEnd */) {
+            if (segment.length > 1 && (char === '*' || char === '+'))
+                crash(`A repeatable param (${buffer}) must be alone in its segment. eg: '/:ids+.`);
+            segment.push({
+                type: 1 /* TokenType.Param */,
+                value: buffer,
+                regexp: customRe,
+                repeatable: char === '*' || char === '+',
+                optional: char === '*' || char === '?',
+            });
+        }
+        else {
+            crash('Invalid state to consume buffer');
+        }
+        buffer = '';
+    }
+    function addCharToBuffer() {
+        buffer += char;
+    }
+    while (i < path.length) {
+        char = path[i++];
+        if (char === '\\' && state !== 2 /* TokenizerState.ParamRegExp */) {
+            previousState = state;
+            state = 4 /* TokenizerState.EscapeNext */;
+            continue;
+        }
+        switch (state) {
+            case 0 /* TokenizerState.Static */:
+                if (char === '/') {
+                    if (buffer) {
+                        consumeBuffer();
+                    }
+                    finalizeSegment();
+                }
+                else if (char === ':') {
+                    consumeBuffer();
+                    state = 1 /* TokenizerState.Param */;
+                }
+                else {
+                    addCharToBuffer();
+                }
+                break;
+            case 4 /* TokenizerState.EscapeNext */:
+                addCharToBuffer();
+                state = previousState;
+                break;
+            case 1 /* TokenizerState.Param */:
+                if (char === '(') {
+                    state = 2 /* TokenizerState.ParamRegExp */;
+                }
+                else if (VALID_PARAM_RE.test(char)) {
+                    addCharToBuffer();
+                }
+                else {
+                    consumeBuffer();
+                    state = 0 /* TokenizerState.Static */;
+                    // go back one character if we were not modifying
+                    if (char !== '*' && char !== '?' && char !== '+')
+                        i--;
+                }
+                break;
+            case 2 /* TokenizerState.ParamRegExp */:
+                // TODO: is it worth handling nested regexp? like :p(?:prefix_([^/]+)_suffix)
+                // it already works by escaping the closing )
+                // https://paths.esm.dev/?p=AAMeJbiAwQEcDKbAoAAkP60PG2R6QAvgNaA6AFACM2ABuQBB#
+                // is this really something people need since you can also write
+                // /prefix_:p()_suffix
+                if (char === ')') {
+                    // handle the escaped )
+                    if (customRe[customRe.length - 1] == '\\')
+                        customRe = customRe.slice(0, -1) + char;
+                    else
+                        state = 3 /* TokenizerState.ParamRegExpEnd */;
+                }
+                else {
+                    customRe += char;
+                }
+                break;
+            case 3 /* TokenizerState.ParamRegExpEnd */:
+                // same as finalizing a param
+                consumeBuffer();
+                state = 0 /* TokenizerState.Static */;
+                // go back one character if we were not modifying
+                if (char !== '*' && char !== '?' && char !== '+')
+                    i--;
+                customRe = '';
+                break;
+            default:
+                crash('Unknown state');
+                break;
+        }
+    }
+    if (state === 2 /* TokenizerState.ParamRegExp */)
+        crash(`Unfinished custom RegExp for param "${buffer}"`);
+    consumeBuffer();
+    finalizeSegment();
+    // tokenCache.set(path, tokens)
+    return tokens;
+}
+
+function createRouteRecordMatcher(record, parent, options) {
+    const parser = tokensToParser(tokenizePath(record.path), options);
+    // warn against params with the same name
+    if ((true)) {
+        const existingKeys = new Set();
+        for (const key of parser.keys) {
+            if (existingKeys.has(key.name))
+                warn(`Found duplicated params with name "${key.name}" for path "${record.path}". Only the last one will be available on "$route.params".`);
+            existingKeys.add(key.name);
+        }
+    }
+    const matcher = assign(parser, {
+        record,
+        parent,
+        // these needs to be populated by the parent
+        children: [],
+        alias: [],
+    });
+    if (parent) {
+        // both are aliases or both are not aliases
+        // we don't want to mix them because the order is used when
+        // passing originalRecord in Matcher.addRoute
+        if (!matcher.record.aliasOf === !parent.record.aliasOf)
+            parent.children.push(matcher);
+    }
+    return matcher;
+}
+
+/**
+ * Creates a Router Matcher.
+ *
+ * @internal
+ * @param routes - array of initial routes
+ * @param globalOptions - global route options
+ */
+function createRouterMatcher(routes, globalOptions) {
+    // normalized ordered array of matchers
+    const matchers = [];
+    const matcherMap = new Map();
+    globalOptions = mergeOptions({ strict: false, end: true, sensitive: false }, globalOptions);
+    function getRecordMatcher(name) {
+        return matcherMap.get(name);
+    }
+    function addRoute(record, parent, originalRecord) {
+        // used later on to remove by name
+        const isRootAdd = !originalRecord;
+        const mainNormalizedRecord = normalizeRouteRecord(record);
+        if ((true)) {
+            checkChildMissingNameWithEmptyPath(mainNormalizedRecord, parent);
+        }
+        // we might be the child of an alias
+        mainNormalizedRecord.aliasOf = originalRecord && originalRecord.record;
+        const options = mergeOptions(globalOptions, record);
+        // generate an array of records to correctly handle aliases
+        const normalizedRecords = [
+            mainNormalizedRecord,
+        ];
+        if ('alias' in record) {
+            const aliases = typeof record.alias === 'string' ? [record.alias] : record.alias;
+            for (const alias of aliases) {
+                normalizedRecords.push(assign({}, mainNormalizedRecord, {
+                    // this allows us to hold a copy of the `components` option
+                    // so that async components cache is hold on the original record
+                    components: originalRecord
+                        ? originalRecord.record.components
+                        : mainNormalizedRecord.components,
+                    path: alias,
+                    // we might be the child of an alias
+                    aliasOf: originalRecord
+                        ? originalRecord.record
+                        : mainNormalizedRecord,
+                    // the aliases are always of the same kind as the original since they
+                    // are defined on the same record
+                }));
+            }
+        }
+        let matcher;
+        let originalMatcher;
+        for (const normalizedRecord of normalizedRecords) {
+            const { path } = normalizedRecord;
+            // Build up the path for nested routes if the child isn't an absolute
+            // route. Only add the / delimiter if the child path isn't empty and if the
+            // parent path doesn't have a trailing slash
+            if (parent && path[0] !== '/') {
+                const parentPath = parent.record.path;
+                const connectingSlash = parentPath[parentPath.length - 1] === '/' ? '' : '/';
+                normalizedRecord.path =
+                    parent.record.path + (path && connectingSlash + path);
+            }
+            if (( true) && normalizedRecord.path === '*') {
+                throw new Error('Catch all routes ("*") must now be defined using a param with a custom regexp.\n' +
+                    'See more at https://next.router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes.');
+            }
+            // create the object beforehand, so it can be passed to children
+            matcher = createRouteRecordMatcher(normalizedRecord, parent, options);
+            if (( true) && parent && path[0] === '/')
+                checkMissingParamsInAbsolutePath(matcher, parent);
+            // if we are an alias we must tell the original record that we exist,
+            // so we can be removed
+            if (originalRecord) {
+                originalRecord.alias.push(matcher);
+                if ((true)) {
+                    checkSameParams(originalRecord, matcher);
+                }
+            }
+            else {
+                // otherwise, the first record is the original and others are aliases
+                originalMatcher = originalMatcher || matcher;
+                if (originalMatcher !== matcher)
+                    originalMatcher.alias.push(matcher);
+                // remove the route if named and only for the top record (avoid in nested calls)
+                // this works because the original record is the first one
+                if (isRootAdd && record.name && !isAliasRecord(matcher))
+                    removeRoute(record.name);
+            }
+            if (mainNormalizedRecord.children) {
+                const children = mainNormalizedRecord.children;
+                for (let i = 0; i < children.length; i++) {
+                    addRoute(children[i], matcher, originalRecord && originalRecord.children[i]);
+                }
+            }
+            // if there was no original record, then the first one was not an alias and all
+            // other aliases (if any) need to reference this record when adding children
+            originalRecord = originalRecord || matcher;
+            // TODO: add normalized records for more flexibility
+            // if (parent && isAliasRecord(originalRecord)) {
+            //   parent.children.push(originalRecord)
+            // }
+            // Avoid adding a record that doesn't display anything. This allows passing through records without a component to
+            // not be reached and pass through the catch all route
+            if ((matcher.record.components &&
+                Object.keys(matcher.record.components).length) ||
+                matcher.record.name ||
+                matcher.record.redirect) {
+                insertMatcher(matcher);
+            }
+        }
+        return originalMatcher
+            ? () => {
+                // since other matchers are aliases, they should be removed by the original matcher
+                removeRoute(originalMatcher);
+            }
+            : noop;
+    }
+    function removeRoute(matcherRef) {
+        if (isRouteName(matcherRef)) {
+            const matcher = matcherMap.get(matcherRef);
+            if (matcher) {
+                matcherMap.delete(matcherRef);
+                matchers.splice(matchers.indexOf(matcher), 1);
+                matcher.children.forEach(removeRoute);
+                matcher.alias.forEach(removeRoute);
+            }
+        }
+        else {
+            const index = matchers.indexOf(matcherRef);
+            if (index > -1) {
+                matchers.splice(index, 1);
+                if (matcherRef.record.name)
+                    matcherMap.delete(matcherRef.record.name);
+                matcherRef.children.forEach(removeRoute);
+                matcherRef.alias.forEach(removeRoute);
+            }
+        }
+    }
+    function getRoutes() {
+        return matchers;
+    }
+    function insertMatcher(matcher) {
+        let i = 0;
+        while (i < matchers.length &&
+            comparePathParserScore(matcher, matchers[i]) >= 0 &&
+            // Adding children with empty path should still appear before the parent
+            // https://github.com/vuejs/router/issues/1124
+            (matcher.record.path !== matchers[i].record.path ||
+                !isRecordChildOf(matcher, matchers[i])))
+            i++;
+        matchers.splice(i, 0, matcher);
+        // only add the original record to the name map
+        if (matcher.record.name && !isAliasRecord(matcher))
+            matcherMap.set(matcher.record.name, matcher);
+    }
+    function resolve(location, currentLocation) {
+        let matcher;
+        let params = {};
+        let path;
+        let name;
+        if ('name' in location && location.name) {
+            matcher = matcherMap.get(location.name);
+            if (!matcher)
+                throw createRouterError(1 /* ErrorTypes.MATCHER_NOT_FOUND */, {
+                    location,
+                });
+            // warn if the user is passing invalid params so they can debug it better when they get removed
+            if ((true)) {
+                const invalidParams = Object.keys(location.params || {}).filter(paramName => !matcher.keys.find(k => k.name === paramName));
+                if (invalidParams.length) {
+                    warn(`Discarded invalid param(s) "${invalidParams.join('", "')}" when navigating. See https://github.com/vuejs/router/blob/main/packages/router/CHANGELOG.md#414-2022-08-22 for more details.`);
+                }
+            }
+            name = matcher.record.name;
+            params = assign(
+            // paramsFromLocation is a new object
+            paramsFromLocation(currentLocation.params, 
+            // only keep params that exist in the resolved location
+            // TODO: only keep optional params coming from a parent record
+            matcher.keys.filter(k => !k.optional).map(k => k.name)), 
+            // discard any existing params in the current location that do not exist here
+            // #1497 this ensures better active/exact matching
+            location.params &&
+                paramsFromLocation(location.params, matcher.keys.map(k => k.name)));
+            // throws if cannot be stringified
+            path = matcher.stringify(params);
+        }
+        else if ('path' in location) {
+            // no need to resolve the path with the matcher as it was provided
+            // this also allows the user to control the encoding
+            path = location.path;
+            if (( true) && !path.startsWith('/')) {
+                warn(`The Matcher cannot resolve relative paths but received "${path}". Unless you directly called \`matcher.resolve("${path}")\`, this is probably a bug in vue-router. Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/router.`);
+            }
+            matcher = matchers.find(m => m.re.test(path));
+            // matcher should have a value after the loop
+            if (matcher) {
+                // we know the matcher works because we tested the regexp
+                params = matcher.parse(path);
+                name = matcher.record.name;
+            }
+            // location is a relative path
+        }
+        else {
+            // match by name or path of current route
+            matcher = currentLocation.name
+                ? matcherMap.get(currentLocation.name)
+                : matchers.find(m => m.re.test(currentLocation.path));
+            if (!matcher)
+                throw createRouterError(1 /* ErrorTypes.MATCHER_NOT_FOUND */, {
+                    location,
+                    currentLocation,
+                });
+            name = matcher.record.name;
+            // since we are navigating to the same location, we don't need to pick the
+            // params like when `name` is provided
+            params = assign({}, currentLocation.params, location.params);
+            path = matcher.stringify(params);
+        }
+        const matched = [];
+        let parentMatcher = matcher;
+        while (parentMatcher) {
+            // reversed order so parents are at the beginning
+            matched.unshift(parentMatcher.record);
+            parentMatcher = parentMatcher.parent;
+        }
+        return {
+            name,
+            path,
+            params,
+            matched,
+            meta: mergeMetaFields(matched),
+        };
+    }
+    // add initial routes
+    routes.forEach(route => addRoute(route));
+    return { addRoute, resolve, removeRoute, getRoutes, getRecordMatcher };
+}
+function paramsFromLocation(params, keys) {
+    const newParams = {};
+    for (const key of keys) {
+        if (key in params)
+            newParams[key] = params[key];
+    }
+    return newParams;
+}
+/**
+ * Normalizes a RouteRecordRaw. Creates a copy
+ *
+ * @param record
+ * @returns the normalized version
+ */
+function normalizeRouteRecord(record) {
+    return {
+        path: record.path,
+        redirect: record.redirect,
+        name: record.name,
+        meta: record.meta || {},
+        aliasOf: undefined,
+        beforeEnter: record.beforeEnter,
+        props: normalizeRecordProps(record),
+        children: record.children || [],
+        instances: {},
+        leaveGuards: new Set(),
+        updateGuards: new Set(),
+        enterCallbacks: {},
+        components: 'components' in record
+            ? record.components || null
+            : record.component && { default: record.component },
+    };
+}
+/**
+ * Normalize the optional `props` in a record to always be an object similar to
+ * components. Also accept a boolean for components.
+ * @param record
+ */
+function normalizeRecordProps(record) {
+    const propsObject = {};
+    // props does not exist on redirect records, but we can set false directly
+    const props = record.props || false;
+    if ('component' in record) {
+        propsObject.default = props;
+    }
+    else {
+        // NOTE: we could also allow a function to be applied to every component.
+        // Would need user feedback for use cases
+        for (const name in record.components)
+            propsObject[name] = typeof props === 'boolean' ? props : props[name];
+    }
+    return propsObject;
+}
+/**
+ * Checks if a record or any of its parent is an alias
+ * @param record
+ */
+function isAliasRecord(record) {
+    while (record) {
+        if (record.record.aliasOf)
+            return true;
+        record = record.parent;
+    }
+    return false;
+}
+/**
+ * Merge meta fields of an array of records
+ *
+ * @param matched - array of matched records
+ */
+function mergeMetaFields(matched) {
+    return matched.reduce((meta, record) => assign(meta, record.meta), {});
+}
+function mergeOptions(defaults, partialOptions) {
+    const options = {};
+    for (const key in defaults) {
+        options[key] = key in partialOptions ? partialOptions[key] : defaults[key];
+    }
+    return options;
+}
+function isSameParam(a, b) {
+    return (a.name === b.name &&
+        a.optional === b.optional &&
+        a.repeatable === b.repeatable);
+}
+/**
+ * Check if a path and its alias have the same required params
+ *
+ * @param a - original record
+ * @param b - alias record
+ */
+function checkSameParams(a, b) {
+    for (const key of a.keys) {
+        if (!key.optional && !b.keys.find(isSameParam.bind(null, key)))
+            return warn(`Alias "${b.record.path}" and the original record: "${a.record.path}" must have the exact same param named "${key.name}"`);
+    }
+    for (const key of b.keys) {
+        if (!key.optional && !a.keys.find(isSameParam.bind(null, key)))
+            return warn(`Alias "${b.record.path}" and the original record: "${a.record.path}" must have the exact same param named "${key.name}"`);
+    }
+}
+/**
+ * A route with a name and a child with an empty path without a name should warn when adding the route
+ *
+ * @param mainNormalizedRecord - RouteRecordNormalized
+ * @param parent - RouteRecordMatcher
+ */
+function checkChildMissingNameWithEmptyPath(mainNormalizedRecord, parent) {
+    if (parent &&
+        parent.record.name &&
+        !mainNormalizedRecord.name &&
+        !mainNormalizedRecord.path) {
+        warn(`The route named "${String(parent.record.name)}" has a child without a name and an empty path. Using that name won't render the empty path child so you probably want to move the name to the child instead. If this is intentional, add a name to the child route to remove the warning.`);
+    }
+}
+function checkMissingParamsInAbsolutePath(record, parent) {
+    for (const key of parent.keys) {
+        if (!record.keys.find(isSameParam.bind(null, key)))
+            return warn(`Absolute path "${record.record.path}" must have the exact same param named "${key.name}" as its parent "${parent.record.path}".`);
+    }
+}
+function isRecordChildOf(record, parent) {
+    return parent.children.some(child => child === record || isRecordChildOf(record, child));
+}
+
+/**
+ * Encoding Rules ␣ = Space Path: ␣ " < > # ? { } Query: ␣ " < > # & = Hash: ␣ "
+ * < > `
+ *
+ * On top of that, the RFC3986 (https://tools.ietf.org/html/rfc3986#section-2.2)
+ * defines some extra characters to be encoded. Most browsers do not encode them
+ * in encodeURI https://github.com/whatwg/url/issues/369, so it may be safer to
+ * also encode `!'()*`. Leaving un-encoded only ASCII alphanumeric(`a-zA-Z0-9`)
+ * plus `-._~`. This extra safety should be applied to query by patching the
+ * string returned by encodeURIComponent encodeURI also encodes `[\]^`. `\`
+ * should be encoded to avoid ambiguity. Browsers (IE, FF, C) transform a `\`
+ * into a `/` if directly typed in. The _backtick_ (`````) should also be
+ * encoded everywhere because some browsers like FF encode it when directly
+ * written while others don't. Safari and IE don't encode ``"<>{}``` in hash.
+ */
+// const EXTRA_RESERVED_RE = /[!'()*]/g
+// const encodeReservedReplacer = (c: string) => '%' + c.charCodeAt(0).toString(16)
+const HASH_RE = /#/g; // %23
+const AMPERSAND_RE = /&/g; // %26
+const SLASH_RE = /\//g; // %2F
+const EQUAL_RE = /=/g; // %3D
+const IM_RE = /\?/g; // %3F
+const PLUS_RE = /\+/g; // %2B
+/**
+ * NOTE: It's not clear to me if we should encode the + symbol in queries, it
+ * seems to be less flexible than not doing so and I can't find out the legacy
+ * systems requiring this for regular requests like text/html. In the standard,
+ * the encoding of the plus character is only mentioned for
+ * application/x-www-form-urlencoded
+ * (https://url.spec.whatwg.org/#urlencoded-parsing) and most browsers seems lo
+ * leave the plus character as is in queries. To be more flexible, we allow the
+ * plus character on the query, but it can also be manually encoded by the user.
+ *
+ * Resources:
+ * - https://url.spec.whatwg.org/#urlencoded-parsing
+ * - https://stackoverflow.com/questions/1634271/url-encoding-the-space-character-or-20
+ */
+const ENC_BRACKET_OPEN_RE = /%5B/g; // [
+const ENC_BRACKET_CLOSE_RE = /%5D/g; // ]
+const ENC_CARET_RE = /%5E/g; // ^
+const ENC_BACKTICK_RE = /%60/g; // `
+const ENC_CURLY_OPEN_RE = /%7B/g; // {
+const ENC_PIPE_RE = /%7C/g; // |
+const ENC_CURLY_CLOSE_RE = /%7D/g; // }
+const ENC_SPACE_RE = /%20/g; // }
+/**
+ * Encode characters that need to be encoded on the path, search and hash
+ * sections of the URL.
+ *
+ * @internal
+ * @param text - string to encode
+ * @returns encoded string
+ */
+function commonEncode(text) {
+    return encodeURI('' + text)
+        .replace(ENC_PIPE_RE, '|')
+        .replace(ENC_BRACKET_OPEN_RE, '[')
+        .replace(ENC_BRACKET_CLOSE_RE, ']');
+}
+/**
+ * Encode characters that need to be encoded on the hash section of the URL.
+ *
+ * @param text - string to encode
+ * @returns encoded string
+ */
+function encodeHash(text) {
+    return commonEncode(text)
+        .replace(ENC_CURLY_OPEN_RE, '{')
+        .replace(ENC_CURLY_CLOSE_RE, '}')
+        .replace(ENC_CARET_RE, '^');
+}
+/**
+ * Encode characters that need to be encoded query values on the query
+ * section of the URL.
+ *
+ * @param text - string to encode
+ * @returns encoded string
+ */
+function encodeQueryValue(text) {
+    return (commonEncode(text)
+        // Encode the space as +, encode the + to differentiate it from the space
+        .replace(PLUS_RE, '%2B')
+        .replace(ENC_SPACE_RE, '+')
+        .replace(HASH_RE, '%23')
+        .replace(AMPERSAND_RE, '%26')
+        .replace(ENC_BACKTICK_RE, '`')
+        .replace(ENC_CURLY_OPEN_RE, '{')
+        .replace(ENC_CURLY_CLOSE_RE, '}')
+        .replace(ENC_CARET_RE, '^'));
+}
+/**
+ * Like `encodeQueryValue` but also encodes the `=` character.
+ *
+ * @param text - string to encode
+ */
+function encodeQueryKey(text) {
+    return encodeQueryValue(text).replace(EQUAL_RE, '%3D');
+}
+/**
+ * Encode characters that need to be encoded on the path section of the URL.
+ *
+ * @param text - string to encode
+ * @returns encoded string
+ */
+function encodePath(text) {
+    return commonEncode(text).replace(HASH_RE, '%23').replace(IM_RE, '%3F');
+}
+/**
+ * Encode characters that need to be encoded on the path section of the URL as a
+ * param. This function encodes everything {@link encodePath} does plus the
+ * slash (`/`) character. If `text` is `null` or `undefined`, returns an empty
+ * string instead.
+ *
+ * @param text - string to encode
+ * @returns encoded string
+ */
+function encodeParam(text) {
+    return text == null ? '' : encodePath(text).replace(SLASH_RE, '%2F');
+}
+/**
+ * Decode text using `decodeURIComponent`. Returns the original text if it
+ * fails.
+ *
+ * @param text - string to decode
+ * @returns decoded string
+ */
+function decode(text) {
+    try {
+        return decodeURIComponent('' + text);
+    }
+    catch (err) {
+        ( true) && warn(`Error decoding "${text}". Using original value`);
+    }
+    return '' + text;
+}
+
+/**
+ * Transforms a queryString into a {@link LocationQuery} object. Accept both, a
+ * version with the leading `?` and without Should work as URLSearchParams
+
+ * @internal
+ *
+ * @param search - search string to parse
+ * @returns a query object
+ */
+function parseQuery(search) {
+    const query = {};
+    // avoid creating an object with an empty key and empty value
+    // because of split('&')
+    if (search === '' || search === '?')
+        return query;
+    const hasLeadingIM = search[0] === '?';
+    const searchParams = (hasLeadingIM ? search.slice(1) : search).split('&');
+    for (let i = 0; i < searchParams.length; ++i) {
+        // pre decode the + into space
+        const searchParam = searchParams[i].replace(PLUS_RE, ' ');
+        // allow the = character
+        const eqPos = searchParam.indexOf('=');
+        const key = decode(eqPos < 0 ? searchParam : searchParam.slice(0, eqPos));
+        const value = eqPos < 0 ? null : decode(searchParam.slice(eqPos + 1));
+        if (key in query) {
+            // an extra variable for ts types
+            let currentValue = query[key];
+            if (!isArray(currentValue)) {
+                currentValue = query[key] = [currentValue];
+            }
+            currentValue.push(value);
+        }
+        else {
+            query[key] = value;
+        }
+    }
+    return query;
+}
+/**
+ * Stringifies a {@link LocationQueryRaw} object. Like `URLSearchParams`, it
+ * doesn't prepend a `?`
+ *
+ * @internal
+ *
+ * @param query - query object to stringify
+ * @returns string version of the query without the leading `?`
+ */
+function stringifyQuery(query) {
+    let search = '';
+    for (let key in query) {
+        const value = query[key];
+        key = encodeQueryKey(key);
+        if (value == null) {
+            // only null adds the value
+            if (value !== undefined) {
+                search += (search.length ? '&' : '') + key;
+            }
+            continue;
+        }
+        // keep null values
+        const values = isArray(value)
+            ? value.map(v => v && encodeQueryValue(v))
+            : [value && encodeQueryValue(value)];
+        values.forEach(value => {
+            // skip undefined values in arrays as if they were not present
+            // smaller code than using filter
+            if (value !== undefined) {
+                // only append & with non-empty search
+                search += (search.length ? '&' : '') + key;
+                if (value != null)
+                    search += '=' + value;
+            }
+        });
+    }
+    return search;
+}
+/**
+ * Transforms a {@link LocationQueryRaw} into a {@link LocationQuery} by casting
+ * numbers into strings, removing keys with an undefined value and replacing
+ * undefined with null in arrays
+ *
+ * @param query - query object to normalize
+ * @returns a normalized query object
+ */
+function normalizeQuery(query) {
+    const normalizedQuery = {};
+    for (const key in query) {
+        const value = query[key];
+        if (value !== undefined) {
+            normalizedQuery[key] = isArray(value)
+                ? value.map(v => (v == null ? null : '' + v))
+                : value == null
+                    ? value
+                    : '' + value;
+        }
+    }
+    return normalizedQuery;
+}
+
+/**
+ * RouteRecord being rendered by the closest ancestor Router View. Used for
+ * `onBeforeRouteUpdate` and `onBeforeRouteLeave`. rvlm stands for Router View
+ * Location Matched
+ *
+ * @internal
+ */
+const matchedRouteKey = Symbol(( true) ? 'router view location matched' : 0);
+/**
+ * Allows overriding the router view depth to control which component in
+ * `matched` is rendered. rvd stands for Router View Depth
+ *
+ * @internal
+ */
+const viewDepthKey = Symbol(( true) ? 'router view depth' : 0);
+/**
+ * Allows overriding the router instance returned by `useRouter` in tests. r
+ * stands for router
+ *
+ * @internal
+ */
+const routerKey = Symbol(( true) ? 'router' : 0);
+/**
+ * Allows overriding the current route returned by `useRoute` in tests. rl
+ * stands for route location
+ *
+ * @internal
+ */
+const routeLocationKey = Symbol(( true) ? 'route location' : 0);
+/**
+ * Allows overriding the current route used by router-view. Internally this is
+ * used when the `route` prop is passed.
+ *
+ * @internal
+ */
+const routerViewLocationKey = Symbol(( true) ? 'router view location' : 0);
+
+/**
+ * Create a list of callbacks that can be reset. Used to create before and after navigation guards list
+ */
+function useCallbacks() {
+    let handlers = [];
+    function add(handler) {
+        handlers.push(handler);
+        return () => {
+            const i = handlers.indexOf(handler);
+            if (i > -1)
+                handlers.splice(i, 1);
+        };
+    }
+    function reset() {
+        handlers = [];
+    }
+    return {
+        add,
+        list: () => handlers,
+        reset,
+    };
+}
+
+function registerGuard(record, name, guard) {
+    const removeFromList = () => {
+        record[name].delete(guard);
+    };
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onUnmounted)(removeFromList);
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onDeactivated)(removeFromList);
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onActivated)(() => {
+        record[name].add(guard);
+    });
+    record[name].add(guard);
+}
+/**
+ * Add a navigation guard that triggers whenever the component for the current
+ * location is about to be left. Similar to {@link beforeRouteLeave} but can be
+ * used in any component. The guard is removed when the component is unmounted.
+ *
+ * @param leaveGuard - {@link NavigationGuard}
+ */
+function onBeforeRouteLeave(leaveGuard) {
+    if (( true) && !(0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)()) {
+        warn('getCurrentInstance() returned null. onBeforeRouteLeave() must be called at the top of a setup function');
+        return;
+    }
+    const activeRecord = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(matchedRouteKey, 
+    // to avoid warning
+    {}).value;
+    if (!activeRecord) {
+        ( true) &&
+            warn('No active route record was found when calling `onBeforeRouteLeave()`. Make sure you call this function inside a component child of <router-view>. Maybe you called it inside of App.vue?');
+        return;
+    }
+    registerGuard(activeRecord, 'leaveGuards', leaveGuard);
+}
+/**
+ * Add a navigation guard that triggers whenever the current location is about
+ * to be updated. Similar to {@link beforeRouteUpdate} but can be used in any
+ * component. The guard is removed when the component is unmounted.
+ *
+ * @param updateGuard - {@link NavigationGuard}
+ */
+function onBeforeRouteUpdate(updateGuard) {
+    if (( true) && !(0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)()) {
+        warn('getCurrentInstance() returned null. onBeforeRouteUpdate() must be called at the top of a setup function');
+        return;
+    }
+    const activeRecord = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(matchedRouteKey, 
+    // to avoid warning
+    {}).value;
+    if (!activeRecord) {
+        ( true) &&
+            warn('No active route record was found when calling `onBeforeRouteUpdate()`. Make sure you call this function inside a component child of <router-view>. Maybe you called it inside of App.vue?');
+        return;
+    }
+    registerGuard(activeRecord, 'updateGuards', updateGuard);
+}
+function guardToPromiseFn(guard, to, from, record, name) {
+    // keep a reference to the enterCallbackArray to prevent pushing callbacks if a new navigation took place
+    const enterCallbackArray = record &&
+        // name is defined if record is because of the function overload
+        (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
+    return () => new Promise((resolve, reject) => {
+        const next = (valid) => {
+            if (valid === false) {
+                reject(createRouterError(4 /* ErrorTypes.NAVIGATION_ABORTED */, {
+                    from,
+                    to,
+                }));
+            }
+            else if (valid instanceof Error) {
+                reject(valid);
+            }
+            else if (isRouteLocation(valid)) {
+                reject(createRouterError(2 /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */, {
+                    from: to,
+                    to: valid,
+                }));
+            }
+            else {
+                if (enterCallbackArray &&
+                    // since enterCallbackArray is truthy, both record and name also are
+                    record.enterCallbacks[name] === enterCallbackArray &&
+                    typeof valid === 'function') {
+                    enterCallbackArray.push(valid);
+                }
+                resolve();
+            }
+        };
+        // wrapping with Promise.resolve allows it to work with both async and sync guards
+        const guardReturn = guard.call(record && record.instances[name], to, from, ( true) ? canOnlyBeCalledOnce(next, to, from) : 0);
+        let guardCall = Promise.resolve(guardReturn);
+        if (guard.length < 3)
+            guardCall = guardCall.then(next);
+        if (( true) && guard.length > 2) {
+            const message = `The "next" callback was never called inside of ${guard.name ? '"' + guard.name + '"' : ''}:\n${guard.toString()}\n. If you are returning a value instead of calling "next", make sure to remove the "next" parameter from your function.`;
+            if (typeof guardReturn === 'object' && 'then' in guardReturn) {
+                guardCall = guardCall.then(resolvedValue => {
+                    // @ts-expect-error: _called is added at canOnlyBeCalledOnce
+                    if (!next._called) {
+                        warn(message);
+                        return Promise.reject(new Error('Invalid navigation guard'));
+                    }
+                    return resolvedValue;
+                });
+            }
+            else if (guardReturn !== undefined) {
+                // @ts-expect-error: _called is added at canOnlyBeCalledOnce
+                if (!next._called) {
+                    warn(message);
+                    reject(new Error('Invalid navigation guard'));
+                    return;
+                }
+            }
+        }
+        guardCall.catch(err => reject(err));
+    });
+}
+function canOnlyBeCalledOnce(next, to, from) {
+    let called = 0;
+    return function () {
+        if (called++ === 1)
+            warn(`The "next" callback was called more than once in one navigation guard when going from "${from.fullPath}" to "${to.fullPath}". It should be called exactly one time in each navigation guard. This will fail in production.`);
+        // @ts-expect-error: we put it in the original one because it's easier to check
+        next._called = true;
+        if (called === 1)
+            next.apply(null, arguments);
+    };
+}
+function extractComponentsGuards(matched, guardType, to, from) {
+    const guards = [];
+    for (const record of matched) {
+        if (( true) && !record.components && !record.children.length) {
+            warn(`Record with path "${record.path}" is either missing a "component(s)"` +
+                ` or "children" property.`);
+        }
+        for (const name in record.components) {
+            let rawComponent = record.components[name];
+            if ((true)) {
+                if (!rawComponent ||
+                    (typeof rawComponent !== 'object' &&
+                        typeof rawComponent !== 'function')) {
+                    warn(`Component "${name}" in record with path "${record.path}" is not` +
+                        ` a valid component. Received "${String(rawComponent)}".`);
+                    // throw to ensure we stop here but warn to ensure the message isn't
+                    // missed by the user
+                    throw new Error('Invalid route component');
+                }
+                else if ('then' in rawComponent) {
+                    // warn if user wrote import('/component.vue') instead of () =>
+                    // import('./component.vue')
+                    warn(`Component "${name}" in record with path "${record.path}" is a ` +
+                        `Promise instead of a function that returns a Promise. Did you ` +
+                        `write "import('./MyPage.vue')" instead of ` +
+                        `"() => import('./MyPage.vue')" ? This will break in ` +
+                        `production if not fixed.`);
+                    const promise = rawComponent;
+                    rawComponent = () => promise;
+                }
+                else if (rawComponent.__asyncLoader &&
+                    // warn only once per component
+                    !rawComponent.__warnedDefineAsync) {
+                    rawComponent.__warnedDefineAsync = true;
+                    warn(`Component "${name}" in record with path "${record.path}" is defined ` +
+                        `using "defineAsyncComponent()". ` +
+                        `Write "() => import('./MyPage.vue')" instead of ` +
+                        `"defineAsyncComponent(() => import('./MyPage.vue'))".`);
+                }
+            }
+            // skip update and leave guards if the route component is not mounted
+            if (guardType !== 'beforeRouteEnter' && !record.instances[name])
+                continue;
+            if (isRouteComponent(rawComponent)) {
+                // __vccOpts is added by vue-class-component and contain the regular options
+                const options = rawComponent.__vccOpts || rawComponent;
+                const guard = options[guardType];
+                guard && guards.push(guardToPromiseFn(guard, to, from, record, name));
+            }
+            else {
+                // start requesting the chunk already
+                let componentPromise = rawComponent();
+                if (( true) && !('catch' in componentPromise)) {
+                    warn(`Component "${name}" in record with path "${record.path}" is a function that does not return a Promise. If you were passing a functional component, make sure to add a "displayName" to the component. This will break in production if not fixed.`);
+                    componentPromise = Promise.resolve(componentPromise);
+                }
+                guards.push(() => componentPromise.then(resolved => {
+                    if (!resolved)
+                        return Promise.reject(new Error(`Couldn't resolve component "${name}" at "${record.path}"`));
+                    const resolvedComponent = isESModule(resolved)
+                        ? resolved.default
+                        : resolved;
+                    // replace the function with the resolved component
+                    // cannot be null or undefined because we went into the for loop
+                    record.components[name] = resolvedComponent;
+                    // __vccOpts is added by vue-class-component and contain the regular options
+                    const options = resolvedComponent.__vccOpts || resolvedComponent;
+                    const guard = options[guardType];
+                    return guard && guardToPromiseFn(guard, to, from, record, name)();
+                }));
+            }
+        }
+    }
+    return guards;
+}
+/**
+ * Allows differentiating lazy components from functional components and vue-class-component
+ * @internal
+ *
+ * @param component
+ */
+function isRouteComponent(component) {
+    return (typeof component === 'object' ||
+        'displayName' in component ||
+        'props' in component ||
+        '__vccOpts' in component);
+}
+/**
+ * Ensures a route is loaded, so it can be passed as o prop to `<RouterView>`.
+ *
+ * @param route - resolved route to load
+ */
+function loadRouteLocation(route) {
+    return route.matched.every(record => record.redirect)
+        ? Promise.reject(new Error('Cannot load a route that redirects.'))
+        : Promise.all(route.matched.map(record => record.components &&
+            Promise.all(Object.keys(record.components).reduce((promises, name) => {
+                const rawComponent = record.components[name];
+                if (typeof rawComponent === 'function' &&
+                    !('displayName' in rawComponent)) {
+                    promises.push(rawComponent().then(resolved => {
+                        if (!resolved)
+                            return Promise.reject(new Error(`Couldn't resolve component "${name}" at "${record.path}". Ensure you passed a function that returns a promise.`));
+                        const resolvedComponent = isESModule(resolved)
+                            ? resolved.default
+                            : resolved;
+                        // replace the function with the resolved component
+                        // cannot be null or undefined because we went into the for loop
+                        record.components[name] = resolvedComponent;
+                        return;
+                    }));
+                }
+                return promises;
+            }, [])))).then(() => route);
+}
+
+// TODO: we could allow currentRoute as a prop to expose `isActive` and
+// `isExactActive` behavior should go through an RFC
+function useLink(props) {
+    const router = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routerKey);
+    const currentRoute = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routeLocationKey);
+    const route = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => router.resolve((0,vue__WEBPACK_IMPORTED_MODULE_0__.unref)(props.to)));
+    const activeRecordIndex = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+        const { matched } = route.value;
+        const { length } = matched;
+        const routeMatched = matched[length - 1];
+        const currentMatched = currentRoute.matched;
+        if (!routeMatched || !currentMatched.length)
+            return -1;
+        const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
+        if (index > -1)
+            return index;
+        // possible parent record
+        const parentRecordPath = getOriginalPath(matched[length - 2]);
+        return (
+        // we are dealing with nested routes
+        length > 1 &&
+            // if the parent and matched route have the same path, this link is
+            // referring to the empty child. Or we currently are on a different
+            // child of the same parent
+            getOriginalPath(routeMatched) === parentRecordPath &&
+            // avoid comparing the child with its parent
+            currentMatched[currentMatched.length - 1].path !== parentRecordPath
+            ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2]))
+            : index);
+    });
+    const isActive = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => activeRecordIndex.value > -1 &&
+        includesParams(currentRoute.params, route.value.params));
+    const isExactActive = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => activeRecordIndex.value > -1 &&
+        activeRecordIndex.value === currentRoute.matched.length - 1 &&
+        isSameRouteLocationParams(currentRoute.params, route.value.params));
+    function navigate(e = {}) {
+        if (guardEvent(e)) {
+            return router[(0,vue__WEBPACK_IMPORTED_MODULE_0__.unref)(props.replace) ? 'replace' : 'push']((0,vue__WEBPACK_IMPORTED_MODULE_0__.unref)(props.to)
+            // avoid uncaught errors are they are logged anyway
+            ).catch(noop);
+        }
+        return Promise.resolve();
+    }
+    // devtools only
+    if (( true) && isBrowser) {
+        const instance = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)();
+        if (instance) {
+            const linkContextDevtools = {
+                route: route.value,
+                isActive: isActive.value,
+                isExactActive: isExactActive.value,
+            };
+            // @ts-expect-error: this is internal
+            instance.__vrl_devtools = instance.__vrl_devtools || [];
+            // @ts-expect-error: this is internal
+            instance.__vrl_devtools.push(linkContextDevtools);
+            (0,vue__WEBPACK_IMPORTED_MODULE_0__.watchEffect)(() => {
+                linkContextDevtools.route = route.value;
+                linkContextDevtools.isActive = isActive.value;
+                linkContextDevtools.isExactActive = isExactActive.value;
+            }, { flush: 'post' });
+        }
+    }
+    /**
+     * NOTE: update {@link _RouterLinkI}'s `$slots` type when updating this
+     */
+    return {
+        route,
+        href: (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => route.value.href),
+        isActive,
+        isExactActive,
+        navigate,
+    };
+}
+const RouterLinkImpl = /*#__PURE__*/ (0,vue__WEBPACK_IMPORTED_MODULE_0__.defineComponent)({
+    name: 'RouterLink',
+    compatConfig: { MODE: 3 },
+    props: {
+        to: {
+            type: [String, Object],
+            required: true,
+        },
+        replace: Boolean,
+        activeClass: String,
+        // inactiveClass: String,
+        exactActiveClass: String,
+        custom: Boolean,
+        ariaCurrentValue: {
+            type: String,
+            default: 'page',
+        },
+    },
+    useLink,
+    setup(props, { slots }) {
+        const link = (0,vue__WEBPACK_IMPORTED_MODULE_0__.reactive)(useLink(props));
+        const { options } = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routerKey);
+        const elClass = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => ({
+            [getLinkClass(props.activeClass, options.linkActiveClass, 'router-link-active')]: link.isActive,
+            // [getLinkClass(
+            //   props.inactiveClass,
+            //   options.linkInactiveClass,
+            //   'router-link-inactive'
+            // )]: !link.isExactActive,
+            [getLinkClass(props.exactActiveClass, options.linkExactActiveClass, 'router-link-exact-active')]: link.isExactActive,
+        }));
+        return () => {
+            const children = slots.default && slots.default(link);
+            return props.custom
+                ? children
+                : (0,vue__WEBPACK_IMPORTED_MODULE_0__.h)('a', {
+                    'aria-current': link.isExactActive
+                        ? props.ariaCurrentValue
+                        : null,
+                    href: link.href,
+                    // this would override user added attrs but Vue will still add
+                    // the listener, so we end up triggering both
+                    onClick: link.navigate,
+                    class: elClass.value,
+                }, children);
+        };
+    },
+});
+// export the public type for h/tsx inference
+// also to avoid inline import() in generated d.ts files
+/**
+ * Component to render a link that triggers a navigation on click.
+ */
+const RouterLink = RouterLinkImpl;
+function guardEvent(e) {
+    // don't redirect with control keys
+    if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey)
+        return;
+    // don't redirect when preventDefault called
+    if (e.defaultPrevented)
+        return;
+    // don't redirect on right click
+    if (e.button !== undefined && e.button !== 0)
+        return;
+    // don't redirect if `target="_blank"`
+    // @ts-expect-error getAttribute does exist
+    if (e.currentTarget && e.currentTarget.getAttribute) {
+        // @ts-expect-error getAttribute exists
+        const target = e.currentTarget.getAttribute('target');
+        if (/\b_blank\b/i.test(target))
+            return;
+    }
+    // this may be a Weex event which doesn't have this method
+    if (e.preventDefault)
+        e.preventDefault();
+    return true;
+}
+function includesParams(outer, inner) {
+    for (const key in inner) {
+        const innerValue = inner[key];
+        const outerValue = outer[key];
+        if (typeof innerValue === 'string') {
+            if (innerValue !== outerValue)
+                return false;
+        }
+        else {
+            if (!isArray(outerValue) ||
+                outerValue.length !== innerValue.length ||
+                innerValue.some((value, i) => value !== outerValue[i]))
+                return false;
+        }
+    }
+    return true;
+}
+/**
+ * Get the original path value of a record by following its aliasOf
+ * @param record
+ */
+function getOriginalPath(record) {
+    return record ? (record.aliasOf ? record.aliasOf.path : record.path) : '';
+}
+/**
+ * Utility class to get the active class based on defaults.
+ * @param propClass
+ * @param globalClass
+ * @param defaultClass
+ */
+const getLinkClass = (propClass, globalClass, defaultClass) => propClass != null
+    ? propClass
+    : globalClass != null
+        ? globalClass
+        : defaultClass;
+
+const RouterViewImpl = /*#__PURE__*/ (0,vue__WEBPACK_IMPORTED_MODULE_0__.defineComponent)({
+    name: 'RouterView',
+    // #674 we manually inherit them
+    inheritAttrs: false,
+    props: {
+        name: {
+            type: String,
+            default: 'default',
+        },
+        route: Object,
+    },
+    // Better compat for @vue/compat users
+    // https://github.com/vuejs/router/issues/1315
+    compatConfig: { MODE: 3 },
+    setup(props, { attrs, slots }) {
+        ( true) && warnDeprecatedUsage();
+        const injectedRoute = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routerViewLocationKey);
+        const routeToDisplay = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => props.route || injectedRoute.value);
+        const injectedDepth = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(viewDepthKey, 0);
+        // The depth changes based on empty components option, which allows passthrough routes e.g. routes with children
+        // that are used to reuse the `path` property
+        const depth = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+            let initialDepth = (0,vue__WEBPACK_IMPORTED_MODULE_0__.unref)(injectedDepth);
+            const { matched } = routeToDisplay.value;
+            let matchedRoute;
+            while ((matchedRoute = matched[initialDepth]) &&
+                !matchedRoute.components) {
+                initialDepth++;
+            }
+            return initialDepth;
+        });
+        const matchedRouteRef = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => routeToDisplay.value.matched[depth.value]);
+        (0,vue__WEBPACK_IMPORTED_MODULE_0__.provide)(viewDepthKey, (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => depth.value + 1));
+        (0,vue__WEBPACK_IMPORTED_MODULE_0__.provide)(matchedRouteKey, matchedRouteRef);
+        (0,vue__WEBPACK_IMPORTED_MODULE_0__.provide)(routerViewLocationKey, routeToDisplay);
+        const viewRef = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)();
+        // watch at the same time the component instance, the route record we are
+        // rendering, and the name
+        (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(() => [viewRef.value, matchedRouteRef.value, props.name], ([instance, to, name], [oldInstance, from, oldName]) => {
+            // copy reused instances
+            if (to) {
+                // this will update the instance for new instances as well as reused
+                // instances when navigating to a new route
+                to.instances[name] = instance;
+                // the component instance is reused for a different route or name, so
+                // we copy any saved update or leave guards. With async setup, the
+                // mounting component will mount before the matchedRoute changes,
+                // making instance === oldInstance, so we check if guards have been
+                // added before. This works because we remove guards when
+                // unmounting/deactivating components
+                if (from && from !== to && instance && instance === oldInstance) {
+                    if (!to.leaveGuards.size) {
+                        to.leaveGuards = from.leaveGuards;
+                    }
+                    if (!to.updateGuards.size) {
+                        to.updateGuards = from.updateGuards;
+                    }
+                }
+            }
+            // trigger beforeRouteEnter next callbacks
+            if (instance &&
+                to &&
+                // if there is no instance but to and from are the same this might be
+                // the first visit
+                (!from || !isSameRouteRecord(to, from) || !oldInstance)) {
+                (to.enterCallbacks[name] || []).forEach(callback => callback(instance));
+            }
+        }, { flush: 'post' });
+        return () => {
+            const route = routeToDisplay.value;
+            // we need the value at the time we render because when we unmount, we
+            // navigated to a different location so the value is different
+            const currentName = props.name;
+            const matchedRoute = matchedRouteRef.value;
+            const ViewComponent = matchedRoute && matchedRoute.components[currentName];
+            if (!ViewComponent) {
+                return normalizeSlot(slots.default, { Component: ViewComponent, route });
+            }
+            // props from route configuration
+            const routePropsOption = matchedRoute.props[currentName];
+            const routeProps = routePropsOption
+                ? routePropsOption === true
+                    ? route.params
+                    : typeof routePropsOption === 'function'
+                        ? routePropsOption(route)
+                        : routePropsOption
+                : null;
+            const onVnodeUnmounted = vnode => {
+                // remove the instance reference to prevent leak
+                if (vnode.component.isUnmounted) {
+                    matchedRoute.instances[currentName] = null;
+                }
+            };
+            const component = (0,vue__WEBPACK_IMPORTED_MODULE_0__.h)(ViewComponent, assign({}, routeProps, attrs, {
+                onVnodeUnmounted,
+                ref: viewRef,
+            }));
+            if (( true) &&
+                isBrowser &&
+                component.ref) {
+                // TODO: can display if it's an alias, its props
+                const info = {
+                    depth: depth.value,
+                    name: matchedRoute.name,
+                    path: matchedRoute.path,
+                    meta: matchedRoute.meta,
+                };
+                const internalInstances = isArray(component.ref)
+                    ? component.ref.map(r => r.i)
+                    : [component.ref.i];
+                internalInstances.forEach(instance => {
+                    // @ts-expect-error
+                    instance.__vrv_devtools = info;
+                });
+            }
+            return (
+            // pass the vnode to the slot as a prop.
+            // h and <component :is="..."> both accept vnodes
+            normalizeSlot(slots.default, { Component: component, route }) ||
+                component);
+        };
+    },
+});
+function normalizeSlot(slot, data) {
+    if (!slot)
+        return null;
+    const slotContent = slot(data);
+    return slotContent.length === 1 ? slotContent[0] : slotContent;
+}
+// export the public type for h/tsx inference
+// also to avoid inline import() in generated d.ts files
+/**
+ * Component to display the current route the user is at.
+ */
+const RouterView = RouterViewImpl;
+// warn against deprecated usage with <transition> & <keep-alive>
+// due to functional component being no longer eager in Vue 3
+function warnDeprecatedUsage() {
+    const instance = (0,vue__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)();
+    const parentName = instance.parent && instance.parent.type.name;
+    if (parentName &&
+        (parentName === 'KeepAlive' || parentName.includes('Transition'))) {
+        const comp = parentName === 'KeepAlive' ? 'keep-alive' : 'transition';
+        warn(`<router-view> can no longer be used directly inside <transition> or <keep-alive>.\n` +
+            `Use slot props instead:\n\n` +
+            `<router-view v-slot="{ Component }">\n` +
+            `  <${comp}>\n` +
+            `    <component :is="Component" />\n` +
+            `  </${comp}>\n` +
+            `</router-view>`);
+    }
+}
+
+/**
+ * Copies a route location and removes any problematic properties that cannot be shown in devtools (e.g. Vue instances).
+ *
+ * @param routeLocation - routeLocation to format
+ * @param tooltip - optional tooltip
+ * @returns a copy of the routeLocation
+ */
+function formatRouteLocation(routeLocation, tooltip) {
+    const copy = assign({}, routeLocation, {
+        // remove variables that can contain vue instances
+        matched: routeLocation.matched.map(matched => omit(matched, ['instances', 'children', 'aliasOf'])),
+    });
+    return {
+        _custom: {
+            type: null,
+            readOnly: true,
+            display: routeLocation.fullPath,
+            tooltip,
+            value: copy,
+        },
+    };
+}
+function formatDisplay(display) {
+    return {
+        _custom: {
+            display,
+        },
+    };
+}
+// to support multiple router instances
+let routerId = 0;
+function addDevtools(app, router, matcher) {
+    // Take over router.beforeEach and afterEach
+    // make sure we are not registering the devtool twice
+    if (router.__hasDevtools)
+        return;
+    router.__hasDevtools = true;
+    // increment to support multiple router instances
+    const id = routerId++;
+    (0,_vue_devtools_api__WEBPACK_IMPORTED_MODULE_1__.setupDevtoolsPlugin)({
+        id: 'org.vuejs.router' + (id ? '.' + id : ''),
+        label: 'Vue Router',
+        packageName: 'vue-router',
+        homepage: 'https://router.vuejs.org',
+        logo: 'https://router.vuejs.org/logo.png',
+        componentStateTypes: ['Routing'],
+        app,
+    }, api => {
+        if (typeof api.now !== 'function') {
+            console.warn('[Vue Router]: You seem to be using an outdated version of Vue Devtools. Are you still using the Beta release instead of the stable one? You can find the links at https://devtools.vuejs.org/guide/installation.html.');
+        }
+        // display state added by the router
+        api.on.inspectComponent((payload, ctx) => {
+            if (payload.instanceData) {
+                payload.instanceData.state.push({
+                    type: 'Routing',
+                    key: '$route',
+                    editable: false,
+                    value: formatRouteLocation(router.currentRoute.value, 'Current Route'),
+                });
+            }
+        });
+        // mark router-link as active and display tags on router views
+        api.on.visitComponentTree(({ treeNode: node, componentInstance }) => {
+            if (componentInstance.__vrv_devtools) {
+                const info = componentInstance.__vrv_devtools;
+                node.tags.push({
+                    label: (info.name ? `${info.name.toString()}: ` : '') + info.path,
+                    textColor: 0,
+                    tooltip: 'This component is rendered by &lt;router-view&gt;',
+                    backgroundColor: PINK_500,
+                });
+            }
+            // if multiple useLink are used
+            if (isArray(componentInstance.__vrl_devtools)) {
+                componentInstance.__devtoolsApi = api;
+                componentInstance.__vrl_devtools.forEach(devtoolsData => {
+                    let backgroundColor = ORANGE_400;
+                    let tooltip = '';
+                    if (devtoolsData.isExactActive) {
+                        backgroundColor = LIME_500;
+                        tooltip = 'This is exactly active';
+                    }
+                    else if (devtoolsData.isActive) {
+                        backgroundColor = BLUE_600;
+                        tooltip = 'This link is active';
+                    }
+                    node.tags.push({
+                        label: devtoolsData.route.path,
+                        textColor: 0,
+                        tooltip,
+                        backgroundColor,
+                    });
+                });
+            }
+        });
+        (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(router.currentRoute, () => {
+            // refresh active state
+            refreshRoutesView();
+            api.notifyComponentUpdate();
+            api.sendInspectorTree(routerInspectorId);
+            api.sendInspectorState(routerInspectorId);
+        });
+        const navigationsLayerId = 'router:navigations:' + id;
+        api.addTimelineLayer({
+            id: navigationsLayerId,
+            label: `Router${id ? ' ' + id : ''} Navigations`,
+            color: 0x40a8c4,
+        });
+        // const errorsLayerId = 'router:errors'
+        // api.addTimelineLayer({
+        //   id: errorsLayerId,
+        //   label: 'Router Errors',
+        //   color: 0xea5455,
+        // })
+        router.onError((error, to) => {
+            api.addTimelineEvent({
+                layerId: navigationsLayerId,
+                event: {
+                    title: 'Error during Navigation',
+                    subtitle: to.fullPath,
+                    logType: 'error',
+                    time: api.now(),
+                    data: { error },
+                    groupId: to.meta.__navigationId,
+                },
+            });
+        });
+        // attached to `meta` and used to group events
+        let navigationId = 0;
+        router.beforeEach((to, from) => {
+            const data = {
+                guard: formatDisplay('beforeEach'),
+                from: formatRouteLocation(from, 'Current Location during this navigation'),
+                to: formatRouteLocation(to, 'Target location'),
+            };
+            // Used to group navigations together, hide from devtools
+            Object.defineProperty(to.meta, '__navigationId', {
+                value: navigationId++,
+            });
+            api.addTimelineEvent({
+                layerId: navigationsLayerId,
+                event: {
+                    time: api.now(),
+                    title: 'Start of navigation',
+                    subtitle: to.fullPath,
+                    data,
+                    groupId: to.meta.__navigationId,
+                },
+            });
+        });
+        router.afterEach((to, from, failure) => {
+            const data = {
+                guard: formatDisplay('afterEach'),
+            };
+            if (failure) {
+                data.failure = {
+                    _custom: {
+                        type: Error,
+                        readOnly: true,
+                        display: failure ? failure.message : '',
+                        tooltip: 'Navigation Failure',
+                        value: failure,
+                    },
+                };
+                data.status = formatDisplay('❌');
+            }
+            else {
+                data.status = formatDisplay('✅');
+            }
+            // we set here to have the right order
+            data.from = formatRouteLocation(from, 'Current Location during this navigation');
+            data.to = formatRouteLocation(to, 'Target location');
+            api.addTimelineEvent({
+                layerId: navigationsLayerId,
+                event: {
+                    title: 'End of navigation',
+                    subtitle: to.fullPath,
+                    time: api.now(),
+                    data,
+                    logType: failure ? 'warning' : 'default',
+                    groupId: to.meta.__navigationId,
+                },
+            });
+        });
+        /**
+         * Inspector of Existing routes
+         */
+        const routerInspectorId = 'router-inspector:' + id;
+        api.addInspector({
+            id: routerInspectorId,
+            label: 'Routes' + (id ? ' ' + id : ''),
+            icon: 'book',
+            treeFilterPlaceholder: 'Search routes',
+        });
+        function refreshRoutesView() {
+            // the routes view isn't active
+            if (!activeRoutesPayload)
+                return;
+            const payload = activeRoutesPayload;
+            // children routes will appear as nested
+            let routes = matcher.getRoutes().filter(route => !route.parent);
+            // reset match state to false
+            routes.forEach(resetMatchStateOnRouteRecord);
+            // apply a match state if there is a payload
+            if (payload.filter) {
+                routes = routes.filter(route => 
+                // save matches state based on the payload
+                isRouteMatching(route, payload.filter.toLowerCase()));
+            }
+            // mark active routes
+            routes.forEach(route => markRouteRecordActive(route, router.currentRoute.value));
+            payload.rootNodes = routes.map(formatRouteRecordForInspector);
+        }
+        let activeRoutesPayload;
+        api.on.getInspectorTree(payload => {
+            activeRoutesPayload = payload;
+            if (payload.app === app && payload.inspectorId === routerInspectorId) {
+                refreshRoutesView();
+            }
+        });
+        /**
+         * Display information about the currently selected route record
+         */
+        api.on.getInspectorState(payload => {
+            if (payload.app === app && payload.inspectorId === routerInspectorId) {
+                const routes = matcher.getRoutes();
+                const route = routes.find(route => route.record.__vd_id === payload.nodeId);
+                if (route) {
+                    payload.state = {
+                        options: formatRouteRecordMatcherForStateInspector(route),
+                    };
+                }
+            }
+        });
+        api.sendInspectorTree(routerInspectorId);
+        api.sendInspectorState(routerInspectorId);
+    });
+}
+function modifierForKey(key) {
+    if (key.optional) {
+        return key.repeatable ? '*' : '?';
+    }
+    else {
+        return key.repeatable ? '+' : '';
+    }
+}
+function formatRouteRecordMatcherForStateInspector(route) {
+    const { record } = route;
+    const fields = [
+        { editable: false, key: 'path', value: record.path },
+    ];
+    if (record.name != null) {
+        fields.push({
+            editable: false,
+            key: 'name',
+            value: record.name,
+        });
+    }
+    fields.push({ editable: false, key: 'regexp', value: route.re });
+    if (route.keys.length) {
+        fields.push({
+            editable: false,
+            key: 'keys',
+            value: {
+                _custom: {
+                    type: null,
+                    readOnly: true,
+                    display: route.keys
+                        .map(key => `${key.name}${modifierForKey(key)}`)
+                        .join(' '),
+                    tooltip: 'Param keys',
+                    value: route.keys,
+                },
+            },
+        });
+    }
+    if (record.redirect != null) {
+        fields.push({
+            editable: false,
+            key: 'redirect',
+            value: record.redirect,
+        });
+    }
+    if (route.alias.length) {
+        fields.push({
+            editable: false,
+            key: 'aliases',
+            value: route.alias.map(alias => alias.record.path),
+        });
+    }
+    if (Object.keys(route.record.meta).length) {
+        fields.push({
+            editable: false,
+            key: 'meta',
+            value: route.record.meta,
+        });
+    }
+    fields.push({
+        key: 'score',
+        editable: false,
+        value: {
+            _custom: {
+                type: null,
+                readOnly: true,
+                display: route.score.map(score => score.join(', ')).join(' | '),
+                tooltip: 'Score used to sort routes',
+                value: route.score,
+            },
+        },
+    });
+    return fields;
+}
+/**
+ * Extracted from tailwind palette
+ */
+const PINK_500 = 0xec4899;
+const BLUE_600 = 0x2563eb;
+const LIME_500 = 0x84cc16;
+const CYAN_400 = 0x22d3ee;
+const ORANGE_400 = 0xfb923c;
+// const GRAY_100 = 0xf4f4f5
+const DARK = 0x666666;
+function formatRouteRecordForInspector(route) {
+    const tags = [];
+    const { record } = route;
+    if (record.name != null) {
+        tags.push({
+            label: String(record.name),
+            textColor: 0,
+            backgroundColor: CYAN_400,
+        });
+    }
+    if (record.aliasOf) {
+        tags.push({
+            label: 'alias',
+            textColor: 0,
+            backgroundColor: ORANGE_400,
+        });
+    }
+    if (route.__vd_match) {
+        tags.push({
+            label: 'matches',
+            textColor: 0,
+            backgroundColor: PINK_500,
+        });
+    }
+    if (route.__vd_exactActive) {
+        tags.push({
+            label: 'exact',
+            textColor: 0,
+            backgroundColor: LIME_500,
+        });
+    }
+    if (route.__vd_active) {
+        tags.push({
+            label: 'active',
+            textColor: 0,
+            backgroundColor: BLUE_600,
+        });
+    }
+    if (record.redirect) {
+        tags.push({
+            label: typeof record.redirect === 'string'
+                ? `redirect: ${record.redirect}`
+                : 'redirects',
+            textColor: 0xffffff,
+            backgroundColor: DARK,
+        });
+    }
+    // add an id to be able to select it. Using the `path` is not possible because
+    // empty path children would collide with their parents
+    let id = record.__vd_id;
+    if (id == null) {
+        id = String(routeRecordId++);
+        record.__vd_id = id;
+    }
+    return {
+        id,
+        label: record.path,
+        tags,
+        children: route.children.map(formatRouteRecordForInspector),
+    };
+}
+//  incremental id for route records and inspector state
+let routeRecordId = 0;
+const EXTRACT_REGEXP_RE = /^\/(.*)\/([a-z]*)$/;
+function markRouteRecordActive(route, currentRoute) {
+    // no route will be active if matched is empty
+    // reset the matching state
+    const isExactActive = currentRoute.matched.length &&
+        isSameRouteRecord(currentRoute.matched[currentRoute.matched.length - 1], route.record);
+    route.__vd_exactActive = route.__vd_active = isExactActive;
+    if (!isExactActive) {
+        route.__vd_active = currentRoute.matched.some(match => isSameRouteRecord(match, route.record));
+    }
+    route.children.forEach(childRoute => markRouteRecordActive(childRoute, currentRoute));
+}
+function resetMatchStateOnRouteRecord(route) {
+    route.__vd_match = false;
+    route.children.forEach(resetMatchStateOnRouteRecord);
+}
+function isRouteMatching(route, filter) {
+    const found = String(route.re).match(EXTRACT_REGEXP_RE);
+    route.__vd_match = false;
+    if (!found || found.length < 3) {
+        return false;
+    }
+    // use a regexp without $ at the end to match nested routes better
+    const nonEndingRE = new RegExp(found[1].replace(/\$$/, ''), found[2]);
+    if (nonEndingRE.test(filter)) {
+        // mark children as matches
+        route.children.forEach(child => isRouteMatching(child, filter));
+        // exception case: `/`
+        if (route.record.path !== '/' || filter === '/') {
+            route.__vd_match = route.re.test(filter);
+            return true;
+        }
+        // hide the / route
+        return false;
+    }
+    const path = route.record.path.toLowerCase();
+    const decodedPath = decode(path);
+    // also allow partial matching on the path
+    if (!filter.startsWith('/') &&
+        (decodedPath.includes(filter) || path.includes(filter)))
+        return true;
+    if (decodedPath.startsWith(filter) || path.startsWith(filter))
+        return true;
+    if (route.record.name && String(route.record.name).includes(filter))
+        return true;
+    return route.children.some(child => isRouteMatching(child, filter));
+}
+function omit(obj, keys) {
+    const ret = {};
+    for (const key in obj) {
+        if (!keys.includes(key)) {
+            // @ts-expect-error
+            ret[key] = obj[key];
+        }
+    }
+    return ret;
+}
+
+/**
+ * Creates a Router instance that can be used by a Vue app.
+ *
+ * @param options - {@link RouterOptions}
+ */
+function createRouter(options) {
+    const matcher = createRouterMatcher(options.routes, options);
+    const parseQuery$1 = options.parseQuery || parseQuery;
+    const stringifyQuery$1 = options.stringifyQuery || stringifyQuery;
+    const routerHistory = options.history;
+    if (( true) && !routerHistory)
+        throw new Error('Provide the "history" option when calling "createRouter()":' +
+            ' https://next.router.vuejs.org/api/#history.');
+    const beforeGuards = useCallbacks();
+    const beforeResolveGuards = useCallbacks();
+    const afterGuards = useCallbacks();
+    const currentRoute = (0,vue__WEBPACK_IMPORTED_MODULE_0__.shallowRef)(START_LOCATION_NORMALIZED);
+    let pendingLocation = START_LOCATION_NORMALIZED;
+    // leave the scrollRestoration if no scrollBehavior is provided
+    if (isBrowser && options.scrollBehavior && 'scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+    const normalizeParams = applyToParams.bind(null, paramValue => '' + paramValue);
+    const encodeParams = applyToParams.bind(null, encodeParam);
+    const decodeParams = 
+    // @ts-expect-error: intentionally avoid the type check
+    applyToParams.bind(null, decode);
+    function addRoute(parentOrRoute, route) {
+        let parent;
+        let record;
+        if (isRouteName(parentOrRoute)) {
+            parent = matcher.getRecordMatcher(parentOrRoute);
+            record = route;
+        }
+        else {
+            record = parentOrRoute;
+        }
+        return matcher.addRoute(record, parent);
+    }
+    function removeRoute(name) {
+        const recordMatcher = matcher.getRecordMatcher(name);
+        if (recordMatcher) {
+            matcher.removeRoute(recordMatcher);
+        }
+        else if ((true)) {
+            warn(`Cannot remove non-existent route "${String(name)}"`);
+        }
+    }
+    function getRoutes() {
+        return matcher.getRoutes().map(routeMatcher => routeMatcher.record);
+    }
+    function hasRoute(name) {
+        return !!matcher.getRecordMatcher(name);
+    }
+    function resolve(rawLocation, currentLocation) {
+        // const objectLocation = routerLocationAsObject(rawLocation)
+        // we create a copy to modify it later
+        currentLocation = assign({}, currentLocation || currentRoute.value);
+        if (typeof rawLocation === 'string') {
+            const locationNormalized = parseURL(parseQuery$1, rawLocation, currentLocation.path);
+            const matchedRoute = matcher.resolve({ path: locationNormalized.path }, currentLocation);
+            const href = routerHistory.createHref(locationNormalized.fullPath);
+            if ((true)) {
+                if (href.startsWith('//'))
+                    warn(`Location "${rawLocation}" resolved to "${href}". A resolved location cannot start with multiple slashes.`);
+                else if (!matchedRoute.matched.length) {
+                    warn(`No match found for location with path "${rawLocation}"`);
+                }
+            }
+            // locationNormalized is always a new object
+            return assign(locationNormalized, matchedRoute, {
+                params: decodeParams(matchedRoute.params),
+                hash: decode(locationNormalized.hash),
+                redirectedFrom: undefined,
+                href,
+            });
+        }
+        let matcherLocation;
+        // path could be relative in object as well
+        if ('path' in rawLocation) {
+            if (( true) &&
+                'params' in rawLocation &&
+                !('name' in rawLocation) &&
+                // @ts-expect-error: the type is never
+                Object.keys(rawLocation.params).length) {
+                warn(`Path "${
+                // @ts-expect-error: the type is never
+                rawLocation.path}" was passed with params but they will be ignored. Use a named route alongside params instead.`);
+            }
+            matcherLocation = assign({}, rawLocation, {
+                path: parseURL(parseQuery$1, rawLocation.path, currentLocation.path).path,
+            });
+        }
+        else {
+            // remove any nullish param
+            const targetParams = assign({}, rawLocation.params);
+            for (const key in targetParams) {
+                if (targetParams[key] == null) {
+                    delete targetParams[key];
+                }
+            }
+            // pass encoded values to the matcher, so it can produce encoded path and fullPath
+            matcherLocation = assign({}, rawLocation, {
+                params: encodeParams(rawLocation.params),
+            });
+            // current location params are decoded, we need to encode them in case the
+            // matcher merges the params
+            currentLocation.params = encodeParams(currentLocation.params);
+        }
+        const matchedRoute = matcher.resolve(matcherLocation, currentLocation);
+        const hash = rawLocation.hash || '';
+        if (( true) && hash && !hash.startsWith('#')) {
+            warn(`A \`hash\` should always start with the character "#". Replace "${hash}" with "#${hash}".`);
+        }
+        // the matcher might have merged current location params, so
+        // we need to run the decoding again
+        matchedRoute.params = normalizeParams(decodeParams(matchedRoute.params));
+        const fullPath = stringifyURL(stringifyQuery$1, assign({}, rawLocation, {
+            hash: encodeHash(hash),
+            path: matchedRoute.path,
+        }));
+        const href = routerHistory.createHref(fullPath);
+        if ((true)) {
+            if (href.startsWith('//')) {
+                warn(`Location "${rawLocation}" resolved to "${href}". A resolved location cannot start with multiple slashes.`);
+            }
+            else if (!matchedRoute.matched.length) {
+                warn(`No match found for location with path "${'path' in rawLocation ? rawLocation.path : rawLocation}"`);
+            }
+        }
+        return assign({
+            fullPath,
+            // keep the hash encoded so fullPath is effectively path + encodedQuery +
+            // hash
+            hash,
+            query: 
+            // if the user is using a custom query lib like qs, we might have
+            // nested objects, so we keep the query as is, meaning it can contain
+            // numbers at `$route.query`, but at the point, the user will have to
+            // use their own type anyway.
+            // https://github.com/vuejs/router/issues/328#issuecomment-649481567
+            stringifyQuery$1 === stringifyQuery
+                ? normalizeQuery(rawLocation.query)
+                : (rawLocation.query || {}),
+        }, matchedRoute, {
+            redirectedFrom: undefined,
+            href,
+        });
+    }
+    function locationAsObject(to) {
+        return typeof to === 'string'
+            ? parseURL(parseQuery$1, to, currentRoute.value.path)
+            : assign({}, to);
+    }
+    function checkCanceledNavigation(to, from) {
+        if (pendingLocation !== to) {
+            return createRouterError(8 /* ErrorTypes.NAVIGATION_CANCELLED */, {
+                from,
+                to,
+            });
+        }
+    }
+    function push(to) {
+        return pushWithRedirect(to);
+    }
+    function replace(to) {
+        return push(assign(locationAsObject(to), { replace: true }));
+    }
+    function handleRedirectRecord(to) {
+        const lastMatched = to.matched[to.matched.length - 1];
+        if (lastMatched && lastMatched.redirect) {
+            const { redirect } = lastMatched;
+            let newTargetLocation = typeof redirect === 'function' ? redirect(to) : redirect;
+            if (typeof newTargetLocation === 'string') {
+                newTargetLocation =
+                    newTargetLocation.includes('?') || newTargetLocation.includes('#')
+                        ? (newTargetLocation = locationAsObject(newTargetLocation))
+                        : // force empty params
+                            { path: newTargetLocation };
+                // @ts-expect-error: force empty params when a string is passed to let
+                // the router parse them again
+                newTargetLocation.params = {};
+            }
+            if (( true) &&
+                !('path' in newTargetLocation) &&
+                !('name' in newTargetLocation)) {
+                warn(`Invalid redirect found:\n${JSON.stringify(newTargetLocation, null, 2)}\n when navigating to "${to.fullPath}". A redirect must contain a name or path. This will break in production.`);
+                throw new Error('Invalid redirect');
+            }
+            return assign({
+                query: to.query,
+                hash: to.hash,
+                // avoid transferring params if the redirect has a path
+                params: 'path' in newTargetLocation ? {} : to.params,
+            }, newTargetLocation);
+        }
+    }
+    function pushWithRedirect(to, redirectedFrom) {
+        const targetLocation = (pendingLocation = resolve(to));
+        const from = currentRoute.value;
+        const data = to.state;
+        const force = to.force;
+        // to could be a string where `replace` is a function
+        const replace = to.replace === true;
+        const shouldRedirect = handleRedirectRecord(targetLocation);
+        if (shouldRedirect)
+            return pushWithRedirect(assign(locationAsObject(shouldRedirect), {
+                state: typeof shouldRedirect === 'object'
+                    ? assign({}, data, shouldRedirect.state)
+                    : data,
+                force,
+                replace,
+            }), 
+            // keep original redirectedFrom if it exists
+            redirectedFrom || targetLocation);
+        // if it was a redirect we already called `pushWithRedirect` above
+        const toLocation = targetLocation;
+        toLocation.redirectedFrom = redirectedFrom;
+        let failure;
+        if (!force && isSameRouteLocation(stringifyQuery$1, from, targetLocation)) {
+            failure = createRouterError(16 /* ErrorTypes.NAVIGATION_DUPLICATED */, { to: toLocation, from });
+            // trigger scroll to allow scrolling to the same anchor
+            handleScroll(from, from, 
+            // this is a push, the only way for it to be triggered from a
+            // history.listen is with a redirect, which makes it become a push
+            true, 
+            // This cannot be the first navigation because the initial location
+            // cannot be manually navigated to
+            false);
+        }
+        return (failure ? Promise.resolve(failure) : navigate(toLocation, from))
+            .catch((error) => isNavigationFailure(error)
+            ? // navigation redirects still mark the router as ready
+                isNavigationFailure(error, 2 /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */)
+                    ? error
+                    : markAsReady(error) // also returns the error
+            : // reject any unknown error
+                triggerError(error, toLocation, from))
+            .then((failure) => {
+            if (failure) {
+                if (isNavigationFailure(failure, 2 /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */)) {
+                    if (( true) &&
+                        // we are redirecting to the same location we were already at
+                        isSameRouteLocation(stringifyQuery$1, resolve(failure.to), toLocation) &&
+                        // and we have done it a couple of times
+                        redirectedFrom &&
+                        // @ts-expect-error: added only in dev
+                        (redirectedFrom._count = redirectedFrom._count
+                            ? // @ts-expect-error
+                                redirectedFrom._count + 1
+                            : 1) > 10) {
+                        warn(`Detected an infinite redirection in a navigation guard when going from "${from.fullPath}" to "${toLocation.fullPath}". Aborting to avoid a Stack Overflow. This will break in production if not fixed.`);
+                        return Promise.reject(new Error('Infinite redirect in navigation guard'));
+                    }
+                    return pushWithRedirect(
+                    // keep options
+                    assign({
+                        // preserve an existing replacement but allow the redirect to override it
+                        replace,
+                    }, locationAsObject(failure.to), {
+                        state: typeof failure.to === 'object'
+                            ? assign({}, data, failure.to.state)
+                            : data,
+                        force,
+                    }), 
+                    // preserve the original redirectedFrom if any
+                    redirectedFrom || toLocation);
+                }
+            }
+            else {
+                // if we fail we don't finalize the navigation
+                failure = finalizeNavigation(toLocation, from, true, replace, data);
+            }
+            triggerAfterEach(toLocation, from, failure);
+            return failure;
+        });
+    }
+    /**
+     * Helper to reject and skip all navigation guards if a new navigation happened
+     * @param to
+     * @param from
+     */
+    function checkCanceledNavigationAndReject(to, from) {
+        const error = checkCanceledNavigation(to, from);
+        return error ? Promise.reject(error) : Promise.resolve();
+    }
+    // TODO: refactor the whole before guards by internally using router.beforeEach
+    function navigate(to, from) {
+        let guards;
+        const [leavingRecords, updatingRecords, enteringRecords] = extractChangingRecords(to, from);
+        // all components here have been resolved once because we are leaving
+        guards = extractComponentsGuards(leavingRecords.reverse(), 'beforeRouteLeave', to, from);
+        // leavingRecords is already reversed
+        for (const record of leavingRecords) {
+            record.leaveGuards.forEach(guard => {
+                guards.push(guardToPromiseFn(guard, to, from));
+            });
+        }
+        const canceledNavigationCheck = checkCanceledNavigationAndReject.bind(null, to, from);
+        guards.push(canceledNavigationCheck);
+        // run the queue of per route beforeRouteLeave guards
+        return (runGuardQueue(guards)
+            .then(() => {
+            // check global guards beforeEach
+            guards = [];
+            for (const guard of beforeGuards.list()) {
+                guards.push(guardToPromiseFn(guard, to, from));
+            }
+            guards.push(canceledNavigationCheck);
+            return runGuardQueue(guards);
+        })
+            .then(() => {
+            // check in components beforeRouteUpdate
+            guards = extractComponentsGuards(updatingRecords, 'beforeRouteUpdate', to, from);
+            for (const record of updatingRecords) {
+                record.updateGuards.forEach(guard => {
+                    guards.push(guardToPromiseFn(guard, to, from));
+                });
+            }
+            guards.push(canceledNavigationCheck);
+            // run the queue of per route beforeEnter guards
+            return runGuardQueue(guards);
+        })
+            .then(() => {
+            // check the route beforeEnter
+            guards = [];
+            for (const record of to.matched) {
+                // do not trigger beforeEnter on reused views
+                if (record.beforeEnter && !from.matched.includes(record)) {
+                    if (isArray(record.beforeEnter)) {
+                        for (const beforeEnter of record.beforeEnter)
+                            guards.push(guardToPromiseFn(beforeEnter, to, from));
+                    }
+                    else {
+                        guards.push(guardToPromiseFn(record.beforeEnter, to, from));
+                    }
+                }
+            }
+            guards.push(canceledNavigationCheck);
+            // run the queue of per route beforeEnter guards
+            return runGuardQueue(guards);
+        })
+            .then(() => {
+            // NOTE: at this point to.matched is normalized and does not contain any () => Promise<Component>
+            // clear existing enterCallbacks, these are added by extractComponentsGuards
+            to.matched.forEach(record => (record.enterCallbacks = {}));
+            // check in-component beforeRouteEnter
+            guards = extractComponentsGuards(enteringRecords, 'beforeRouteEnter', to, from);
+            guards.push(canceledNavigationCheck);
+            // run the queue of per route beforeEnter guards
+            return runGuardQueue(guards);
+        })
+            .then(() => {
+            // check global guards beforeResolve
+            guards = [];
+            for (const guard of beforeResolveGuards.list()) {
+                guards.push(guardToPromiseFn(guard, to, from));
+            }
+            guards.push(canceledNavigationCheck);
+            return runGuardQueue(guards);
+        })
+            // catch any navigation canceled
+            .catch(err => isNavigationFailure(err, 8 /* ErrorTypes.NAVIGATION_CANCELLED */)
+            ? err
+            : Promise.reject(err)));
+    }
+    function triggerAfterEach(to, from, failure) {
+        // navigation is confirmed, call afterGuards
+        // TODO: wrap with error handlers
+        for (const guard of afterGuards.list())
+            guard(to, from, failure);
+    }
+    /**
+     * - Cleans up any navigation guards
+     * - Changes the url if necessary
+     * - Calls the scrollBehavior
+     */
+    function finalizeNavigation(toLocation, from, isPush, replace, data) {
+        // a more recent navigation took place
+        const error = checkCanceledNavigation(toLocation, from);
+        if (error)
+            return error;
+        // only consider as push if it's not the first navigation
+        const isFirstNavigation = from === START_LOCATION_NORMALIZED;
+        const state = !isBrowser ? {} : history.state;
+        // change URL only if the user did a push/replace and if it's not the initial navigation because
+        // it's just reflecting the url
+        if (isPush) {
+            // on the initial navigation, we want to reuse the scroll position from
+            // history state if it exists
+            if (replace || isFirstNavigation)
+                routerHistory.replace(toLocation.fullPath, assign({
+                    scroll: isFirstNavigation && state && state.scroll,
+                }, data));
+            else
+                routerHistory.push(toLocation.fullPath, data);
+        }
+        // accept current navigation
+        currentRoute.value = toLocation;
+        handleScroll(toLocation, from, isPush, isFirstNavigation);
+        markAsReady();
+    }
+    let removeHistoryListener;
+    // attach listener to history to trigger navigations
+    function setupListeners() {
+        // avoid setting up listeners twice due to an invalid first navigation
+        if (removeHistoryListener)
+            return;
+        removeHistoryListener = routerHistory.listen((to, _from, info) => {
+            if (!router.listening)
+                return;
+            // cannot be a redirect route because it was in history
+            const toLocation = resolve(to);
+            // due to dynamic routing, and to hash history with manual navigation
+            // (manually changing the url or calling history.hash = '#/somewhere'),
+            // there could be a redirect record in history
+            const shouldRedirect = handleRedirectRecord(toLocation);
+            if (shouldRedirect) {
+                pushWithRedirect(assign(shouldRedirect, { replace: true }), toLocation).catch(noop);
+                return;
+            }
+            pendingLocation = toLocation;
+            const from = currentRoute.value;
+            // TODO: should be moved to web history?
+            if (isBrowser) {
+                saveScrollPosition(getScrollKey(from.fullPath, info.delta), computeScrollPosition());
+            }
+            navigate(toLocation, from)
+                .catch((error) => {
+                if (isNavigationFailure(error, 4 /* ErrorTypes.NAVIGATION_ABORTED */ | 8 /* ErrorTypes.NAVIGATION_CANCELLED */)) {
+                    return error;
+                }
+                if (isNavigationFailure(error, 2 /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */)) {
+                    // Here we could call if (info.delta) routerHistory.go(-info.delta,
+                    // false) but this is bug prone as we have no way to wait the
+                    // navigation to be finished before calling pushWithRedirect. Using
+                    // a setTimeout of 16ms seems to work but there is no guarantee for
+                    // it to work on every browser. So instead we do not restore the
+                    // history entry and trigger a new navigation as requested by the
+                    // navigation guard.
+                    // the error is already handled by router.push we just want to avoid
+                    // logging the error
+                    pushWithRedirect(error.to, toLocation
+                    // avoid an uncaught rejection, let push call triggerError
+                    )
+                        .then(failure => {
+                        // manual change in hash history #916 ending up in the URL not
+                        // changing, but it was changed by the manual url change, so we
+                        // need to manually change it ourselves
+                        if (isNavigationFailure(failure, 4 /* ErrorTypes.NAVIGATION_ABORTED */ |
+                            16 /* ErrorTypes.NAVIGATION_DUPLICATED */) &&
+                            !info.delta &&
+                            info.type === NavigationType.pop) {
+                            routerHistory.go(-1, false);
+                        }
+                    })
+                        .catch(noop);
+                    // avoid the then branch
+                    return Promise.reject();
+                }
+                // do not restore history on unknown direction
+                if (info.delta) {
+                    routerHistory.go(-info.delta, false);
+                }
+                // unrecognized error, transfer to the global handler
+                return triggerError(error, toLocation, from);
+            })
+                .then((failure) => {
+                failure =
+                    failure ||
+                        finalizeNavigation(
+                        // after navigation, all matched components are resolved
+                        toLocation, from, false);
+                // revert the navigation
+                if (failure) {
+                    if (info.delta &&
+                        // a new navigation has been triggered, so we do not want to revert, that will change the current history
+                        // entry while a different route is displayed
+                        !isNavigationFailure(failure, 8 /* ErrorTypes.NAVIGATION_CANCELLED */)) {
+                        routerHistory.go(-info.delta, false);
+                    }
+                    else if (info.type === NavigationType.pop &&
+                        isNavigationFailure(failure, 4 /* ErrorTypes.NAVIGATION_ABORTED */ | 16 /* ErrorTypes.NAVIGATION_DUPLICATED */)) {
+                        // manual change in hash history #916
+                        // it's like a push but lacks the information of the direction
+                        routerHistory.go(-1, false);
+                    }
+                }
+                triggerAfterEach(toLocation, from, failure);
+            })
+                .catch(noop);
+        });
+    }
+    // Initialization and Errors
+    let readyHandlers = useCallbacks();
+    let errorHandlers = useCallbacks();
+    let ready;
+    /**
+     * Trigger errorHandlers added via onError and throws the error as well
+     *
+     * @param error - error to throw
+     * @param to - location we were navigating to when the error happened
+     * @param from - location we were navigating from when the error happened
+     * @returns the error as a rejected promise
+     */
+    function triggerError(error, to, from) {
+        markAsReady(error);
+        const list = errorHandlers.list();
+        if (list.length) {
+            list.forEach(handler => handler(error, to, from));
+        }
+        else {
+            if ((true)) {
+                warn('uncaught error during route navigation:');
+            }
+            console.error(error);
+        }
+        return Promise.reject(error);
+    }
+    function isReady() {
+        if (ready && currentRoute.value !== START_LOCATION_NORMALIZED)
+            return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            readyHandlers.add([resolve, reject]);
+        });
+    }
+    function markAsReady(err) {
+        if (!ready) {
+            // still not ready if an error happened
+            ready = !err;
+            setupListeners();
+            readyHandlers
+                .list()
+                .forEach(([resolve, reject]) => (err ? reject(err) : resolve()));
+            readyHandlers.reset();
+        }
+        return err;
+    }
+    // Scroll behavior
+    function handleScroll(to, from, isPush, isFirstNavigation) {
+        const { scrollBehavior } = options;
+        if (!isBrowser || !scrollBehavior)
+            return Promise.resolve();
+        const scrollPosition = (!isPush && getSavedScrollPosition(getScrollKey(to.fullPath, 0))) ||
+            ((isFirstNavigation || !isPush) &&
+                history.state &&
+                history.state.scroll) ||
+            null;
+        return (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)()
+            .then(() => scrollBehavior(to, from, scrollPosition))
+            .then(position => position && scrollToPosition(position))
+            .catch(err => triggerError(err, to, from));
+    }
+    const go = (delta) => routerHistory.go(delta);
+    let started;
+    const installedApps = new Set();
+    const router = {
+        currentRoute,
+        listening: true,
+        addRoute,
+        removeRoute,
+        hasRoute,
+        getRoutes,
+        resolve,
+        options,
+        push,
+        replace,
+        go,
+        back: () => go(-1),
+        forward: () => go(1),
+        beforeEach: beforeGuards.add,
+        beforeResolve: beforeResolveGuards.add,
+        afterEach: afterGuards.add,
+        onError: errorHandlers.add,
+        isReady,
+        install(app) {
+            const router = this;
+            app.component('RouterLink', RouterLink);
+            app.component('RouterView', RouterView);
+            app.config.globalProperties.$router = router;
+            Object.defineProperty(app.config.globalProperties, '$route', {
+                enumerable: true,
+                get: () => (0,vue__WEBPACK_IMPORTED_MODULE_0__.unref)(currentRoute),
+            });
+            // this initial navigation is only necessary on client, on server it doesn't
+            // make sense because it will create an extra unnecessary navigation and could
+            // lead to problems
+            if (isBrowser &&
+                // used for the initial navigation client side to avoid pushing
+                // multiple times when the router is used in multiple apps
+                !started &&
+                currentRoute.value === START_LOCATION_NORMALIZED) {
+                // see above
+                started = true;
+                push(routerHistory.location).catch(err => {
+                    if ((true))
+                        warn('Unexpected error when starting the router:', err);
+                });
+            }
+            const reactiveRoute = {};
+            for (const key in START_LOCATION_NORMALIZED) {
+                // @ts-expect-error: the key matches
+                reactiveRoute[key] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => currentRoute.value[key]);
+            }
+            app.provide(routerKey, router);
+            app.provide(routeLocationKey, (0,vue__WEBPACK_IMPORTED_MODULE_0__.reactive)(reactiveRoute));
+            app.provide(routerViewLocationKey, currentRoute);
+            const unmountApp = app.unmount;
+            installedApps.add(app);
+            app.unmount = function () {
+                installedApps.delete(app);
+                // the router is not attached to an app anymore
+                if (installedApps.size < 1) {
+                    // invalidate the current navigation
+                    pendingLocation = START_LOCATION_NORMALIZED;
+                    removeHistoryListener && removeHistoryListener();
+                    removeHistoryListener = null;
+                    currentRoute.value = START_LOCATION_NORMALIZED;
+                    started = false;
+                    ready = false;
+                }
+                unmountApp();
+            };
+            // TODO: this probably needs to be updated so it can be used by vue-termui
+            if (( true) && isBrowser) {
+                addDevtools(app, router, matcher);
+            }
+        },
+    };
+    return router;
+}
+function runGuardQueue(guards) {
+    return guards.reduce((promise, guard) => promise.then(() => guard()), Promise.resolve());
+}
+function extractChangingRecords(to, from) {
+    const leavingRecords = [];
+    const updatingRecords = [];
+    const enteringRecords = [];
+    const len = Math.max(from.matched.length, to.matched.length);
+    for (let i = 0; i < len; i++) {
+        const recordFrom = from.matched[i];
+        if (recordFrom) {
+            if (to.matched.find(record => isSameRouteRecord(record, recordFrom)))
+                updatingRecords.push(recordFrom);
+            else
+                leavingRecords.push(recordFrom);
+        }
+        const recordTo = to.matched[i];
+        if (recordTo) {
+            // the type doesn't matter because we are comparing per reference
+            if (!from.matched.find(record => isSameRouteRecord(record, recordTo))) {
+                enteringRecords.push(recordTo);
+            }
+        }
+    }
+    return [leavingRecords, updatingRecords, enteringRecords];
+}
+
+/**
+ * Returns the router instance. Equivalent to using `$router` inside
+ * templates.
+ */
+function useRouter() {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routerKey);
+}
+/**
+ * Returns the current route location. Equivalent to using `$route` inside
+ * templates.
+ */
+function useRoute() {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(routeLocationKey);
+}
+
+
+
+
 /***/ })
 
 /******/ 	});
@@ -41276,6 +48023,39 @@ const toFiniteNumber = (value, defaultValue) => {
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/ensure chunk */
+/******/ 	(() => {
+/******/ 		__webpack_require__.f = {};
+/******/ 		// This file contains only the entry chunk.
+/******/ 		// The chunk loading function for additional chunks
+/******/ 		__webpack_require__.e = (chunkId) => {
+/******/ 			return Promise.all(Object.keys(__webpack_require__.f).reduce((promises, key) => {
+/******/ 				__webpack_require__.f[key](chunkId, promises);
+/******/ 				return promises;
+/******/ 			}, []));
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/get javascript chunk filename */
+/******/ 	(() => {
+/******/ 		// This function allow to reference async chunks
+/******/ 		__webpack_require__.u = (chunkId) => {
+/******/ 			// return url for filenames not based on template
+/******/ 			if ({"resources_js_pages_layout_master_vue":1,"resources_js_pages_home_index_vue":1}[chunkId]) return "js/" + chunkId + ".js";
+/******/ 			// return url for filenames based on template
+/******/ 			return undefined;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/get mini-css chunk filename */
+/******/ 	(() => {
+/******/ 		// This function allow to reference all chunks
+/******/ 		__webpack_require__.miniCssF = (chunkId) => {
+/******/ 			// return url for filenames based on template
+/******/ 			return "" + chunkId + ".css";
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
 /******/ 		__webpack_require__.g = (function() {
@@ -41291,6 +48071,52 @@ const toFiniteNumber = (value, defaultValue) => {
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/load script */
+/******/ 	(() => {
+/******/ 		var inProgress = {};
+/******/ 		var dataWebpackPrefix = "subscription-management-system:";
+/******/ 		// loadScript function to load a script via script tag
+/******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
+/******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
+/******/ 			var script, needAttach;
+/******/ 			if(key !== undefined) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				for(var i = 0; i < scripts.length; i++) {
+/******/ 					var s = scripts[i];
+/******/ 					if(s.getAttribute("src") == url || s.getAttribute("data-webpack") == dataWebpackPrefix + key) { script = s; break; }
+/******/ 				}
+/******/ 			}
+/******/ 			if(!script) {
+/******/ 				needAttach = true;
+/******/ 				script = document.createElement('script');
+/******/ 		
+/******/ 				script.charset = 'utf-8';
+/******/ 				script.timeout = 120;
+/******/ 				if (__webpack_require__.nc) {
+/******/ 					script.setAttribute("nonce", __webpack_require__.nc);
+/******/ 				}
+/******/ 				script.setAttribute("data-webpack", dataWebpackPrefix + key);
+/******/ 				script.src = url;
+/******/ 			}
+/******/ 			inProgress[url] = [done];
+/******/ 			var onScriptComplete = (prev, event) => {
+/******/ 				// avoid mem leaks in IE.
+/******/ 				script.onerror = script.onload = null;
+/******/ 				clearTimeout(timeout);
+/******/ 				var doneFns = inProgress[url];
+/******/ 				delete inProgress[url];
+/******/ 				script.parentNode && script.parentNode.removeChild(script);
+/******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
+/******/ 				if(prev) return prev(event);
+/******/ 			}
+/******/ 			;
+/******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
+/******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
+/******/ 			script.onload = onScriptComplete.bind(null, script.onload);
+/******/ 			needAttach && document.head.appendChild(script);
+/******/ 		};
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
@@ -41313,6 +48139,11 @@ const toFiniteNumber = (value, defaultValue) => {
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		__webpack_require__.p = "/";
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/jsonp chunk loading */
 /******/ 	(() => {
 /******/ 		// no baseURI
@@ -41325,7 +48156,44 @@ const toFiniteNumber = (value, defaultValue) => {
 /******/ 			"css/app": 0
 /******/ 		};
 /******/ 		
-/******/ 		// no chunk on demand loading
+/******/ 		__webpack_require__.f.j = (chunkId, promises) => {
+/******/ 				// JSONP chunk loading for javascript
+/******/ 				var installedChunkData = __webpack_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
+/******/ 				if(installedChunkData !== 0) { // 0 means "already installed".
+/******/ 		
+/******/ 					// a Promise means "currently loading".
+/******/ 					if(installedChunkData) {
+/******/ 						promises.push(installedChunkData[2]);
+/******/ 					} else {
+/******/ 						if("css/app" != chunkId) {
+/******/ 							// setup Promise in chunk cache
+/******/ 							var promise = new Promise((resolve, reject) => (installedChunkData = installedChunks[chunkId] = [resolve, reject]));
+/******/ 							promises.push(installedChunkData[2] = promise);
+/******/ 		
+/******/ 							// start chunk loading
+/******/ 							var url = __webpack_require__.p + __webpack_require__.u(chunkId);
+/******/ 							// create error before stack unwound to get useful stacktrace later
+/******/ 							var error = new Error();
+/******/ 							var loadingEnded = (event) => {
+/******/ 								if(__webpack_require__.o(installedChunks, chunkId)) {
+/******/ 									installedChunkData = installedChunks[chunkId];
+/******/ 									if(installedChunkData !== 0) installedChunks[chunkId] = undefined;
+/******/ 									if(installedChunkData) {
+/******/ 										var errorType = event && (event.type === 'load' ? 'missing' : event.type);
+/******/ 										var realSrc = event && event.target && event.target.src;
+/******/ 										error.message = 'Loading chunk ' + chunkId + ' failed.\n(' + errorType + ': ' + realSrc + ')';
+/******/ 										error.name = 'ChunkLoadError';
+/******/ 										error.type = errorType;
+/******/ 										error.request = realSrc;
+/******/ 										installedChunkData[1](error);
+/******/ 									}
+/******/ 								}
+/******/ 							};
+/******/ 							__webpack_require__.l(url, loadingEnded, "chunk-" + chunkId, chunkId);
+/******/ 						} else installedChunks[chunkId] = 0;
+/******/ 					}
+/******/ 				}
+/******/ 		};
 /******/ 		
 /******/ 		// no prefetching
 /******/ 		
@@ -41365,6 +48233,11 @@ const toFiniteNumber = (value, defaultValue) => {
 /******/ 		var chunkLoadingGlobal = self["webpackChunksubscription_management_system"] = self["webpackChunksubscription_management_system"] || [];
 /******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
 /******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/nonce */
+/******/ 	(() => {
+/******/ 		__webpack_require__.nc = undefined;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
