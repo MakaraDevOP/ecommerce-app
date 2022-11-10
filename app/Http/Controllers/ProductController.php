@@ -15,7 +15,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $product= Product::all();
+        $response = [ 
+            'Product' => $product , 
+        ];
+        return  response($response, 200);
     }
 
     /**
@@ -33,10 +37,9 @@ class ProductController extends Controller
         $product =  Product::create([
         'name' =>$fields['name'],
         'type' =>$fields['type'],
-        'descripton' => $request->descripton,  
+        'description' => $request->description,  
         'is_active' => $request->is_active
        ]);
-
         $response = [ 
             'Product' => $product , 
         ];
@@ -52,7 +55,11 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        //
+        $product =  Product::where('id',$id)->first();
+        $response = [ 
+            'Product' => $product , 
+        ];
+        return  response($response, 200);
     }
 
     /**
@@ -64,7 +71,20 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $fields = $request->validate([
+            'name' =>'required|string',
+            'type' =>'required|string'
+        ]);
+        $product =  Product::where('id', $id)->update([
+        'name' =>$fields['name'],
+        'type' =>$fields['type'],
+        'description' => $request->description,  
+        'is_active' => $request->is_active
+       ]);
+        $response = [ 
+            'Product' => $product , 
+        ];
+        return  response($response, 201);
     }
 
     /**
@@ -75,6 +95,10 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Product::where('id',$id)->delete();
+        $response = [ 
+            'Message' => 'Successfully' , 
+        ];
+        return  response($response, 201);
     }
 }
