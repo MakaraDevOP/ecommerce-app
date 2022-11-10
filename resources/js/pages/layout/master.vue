@@ -4,7 +4,6 @@
     <div class="w-full border">
       <Header></Header>
       <div class="w-full h-full" style="height: calc(100vh - 3rem)">
-        <div>Hi</div>
         <router-view />
       </div>
     </div>
