@@ -27,13 +27,13 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name' =>$request->name,
-            'type' =>$request->type
+            'name' =>'required|string',
+            'type' =>'required|string'
         ]);
         $product =  Product::create([
         'name' =>$fields['name'],
         'type' =>$fields['type'],
-        'descripton' => $request->descripton,
+        'descripton' => $request->descripton,  
         'is_active' => $request->is_active
        ]);
 

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 
 // User 
 Route::post('/register' , [AuthController::class, 'register']);
@@ -14,10 +15,9 @@ Route::group(['middleware' => ['auth:sanctum']] , function(){
   Route::post('/logout' , [AuthController::class, 'logout']);
 
   // Product
-  Route::group('product', function(){
-
-    Route::post('/create' , [AuthController::class, 'logout']);
-  });
+  Route::prefix('product')->group(function () {
+    Route::post('/create' , [ProductController::class, 'store']);
+});
 
 
 });
