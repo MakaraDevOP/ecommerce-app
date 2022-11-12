@@ -15,6 +15,9 @@ return new class extends Migration
     {
         Schema::create('activations', function (Blueprint $table) {
             $table->id();
+            $table->integer('customer_id');
+            $table->string('details')->nullable();
+            $table->integer('is_active');
             $table->timestamps();
         });
     }

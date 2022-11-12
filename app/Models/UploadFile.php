@@ -5,13 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Activation extends Model
+class UploadFile extends Model
 {
     use HasFactory;
-    protected $table ='activations';
+    protected $table ='upload_files';
     protected $fillable = [
-        'customer_id',
-        'details',
-        'is_active'
+        'name',
+        'file_path',
+        'size',
+        'type',
+        'activation_id'
     ];
 }

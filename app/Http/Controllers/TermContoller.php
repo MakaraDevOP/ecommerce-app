@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Term;
 
-use App\Models\Product;
-
-class ProductController extends Controller
+class TermContoller extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,9 +14,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::all();
+        $term =  Term::all();
         $response = [ 
-            'Product' => $product , 
+            'term' => $term , 
         ];
         return  response($response, 200);
     }
@@ -32,16 +31,15 @@ class ProductController extends Controller
     {
         $fields = $request->validate([
             'name' =>'required|string',
-            'type' =>'required|string'
+            'term' =>'required|string',
         ]);
-        $product =  Product::create([
+        $term =  Term::create([
         'name' =>$fields['name'],
-        'type' =>$fields['type'],
-        'description' => $request->description,  
-        'is_active' => $request->is_active
+        'term' =>$fields['term'],
+        'description' => $request->description
        ]);
         $response = [ 
-            'product' => $product , 
+            'term' => $term , 
         ];
         return  response($response, 201);
     }
@@ -54,9 +52,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product =  Product::where('id',$id)->first();
+        $term =  Term::where('id',$id)->first();
         $response = [ 
-            'product' => $product , 
+            'term' => $term , 
         ];
         return  response($response, 200);
     }
@@ -72,16 +70,15 @@ class ProductController extends Controller
     {
         $fields = $request->validate([
             'name' =>'required|string',
-            'type' =>'required|string'
+            'term' =>'required|string',
         ]);
-        $product =  Product::where('id', $id)->update([
-            'name' =>$fields['name'],
-            'type' =>$fields['type'],
-            'description' => $request->description,  
-            'is_active' => $request->is_active
-        ]);
+        $term =  Term::where('id',$id)->update([
+        'name' =>$fields['name'],
+        'term' =>$fields['term'],
+        'description' => $request->description
+       ]);
         $response = [ 
-            'product' => $product , 
+            'term' => $term , 
         ];
         return  response($response, 201);
     }
@@ -94,9 +91,9 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        Product::where('id',$id)->delete();
+        $term =  Term::where('id',$id)->delete();
         $response = [ 
-            'message' => 'Successfully' , 
+            'term' => $term , 
         ];
         return  response($response, 201);
     }

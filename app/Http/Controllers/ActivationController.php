@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Product;
+use App\Models\Activation;
 
-class ProductController extends Controller
+class ActivationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,9 +15,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::all();
+         $activation = Activation::all();
         $response = [ 
-            'Product' => $product , 
+            'activation' => $activation , 
         ];
         return  response($response, 200);
     }
@@ -31,17 +31,15 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'customer_id' =>'required|exists:customers,id',
         ]);
-        $product =  Product::create([
-        'name' =>$fields['name'],
-        'type' =>$fields['type'],
-        'description' => $request->description,  
+        $activation=  Activation::create([
+        'customer_id' =>$fields['customer_id'],
+        'details' => $request->details,  
         'is_active' => $request->is_active
        ]);
         $response = [ 
-            'product' => $product , 
+            'activation' => $activation , 
         ];
         return  response($response, 201);
     }
@@ -54,9 +52,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product =  Product::where('id',$id)->first();
+        $activation=  Activation::where('id', $id)->first();
         $response = [ 
-            'product' => $product , 
+            'activation' => $activation , 
         ];
         return  response($response, 200);
     }
@@ -71,17 +69,15 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'customer_id' =>'required|string',
         ]);
-        $product =  Product::where('id', $id)->update([
-            'name' =>$fields['name'],
-            'type' =>$fields['type'],
-            'description' => $request->description,  
-            'is_active' => $request->is_active
-        ]);
+        $activation=  Activation::where('id', $id)->update([
+        'customer_id' =>$fields['customer_id'],
+        'details' => $request->details,  
+        'is_active' => $request->is_active
+       ]);
         $response = [ 
-            'product' => $product , 
+            'activation' => $activation , 
         ];
         return  response($response, 201);
     }
@@ -94,10 +90,10 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        Product::where('id',$id)->delete();
+        Activation::where('id', $id)->delete();
         $response = [ 
-            'message' => 'Successfully' , 
+            'message' => 'successfully' , 
         ];
-        return  response($response, 201);
+        return  response($response, 200);
     }
 }

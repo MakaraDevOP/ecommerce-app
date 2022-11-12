@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\Product;
-
-class ProductController extends Controller
+use App\Models\Preference;
+class PreferanceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,9 +13,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::all();
+        $preference =  Preference::all();
         $response = [ 
-            'Product' => $product , 
+            'preference' => $preference , 
         ];
         return  response($response, 200);
     }
@@ -31,17 +29,17 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'updated_by' =>'required|string',
         ]);
-        $product =  Product::create([
-        'name' =>$fields['name'],
-        'type' =>$fields['type'],
-        'description' => $request->description,  
-        'is_active' => $request->is_active
+        $preference =  Preference::create([
+        'updated_by' =>$fields['updated_by'],
+        'mail_to' => $request->mail_to,
+        'mail_cc' => $request->mail_cc,
+        'is_send_mail' => $request->is_send_mail,
+
        ]);
         $response = [ 
-            'product' => $product , 
+            'preference' => $preference , 
         ];
         return  response($response, 201);
     }
@@ -54,9 +52,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product =  Product::where('id',$id)->first();
+        $preference =  Preference::where('id', $id)->first();
         $response = [ 
-            'product' => $product , 
+            'preference' => $preference , 
         ];
         return  response($response, 200);
     }
@@ -71,17 +69,17 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'updated_by' =>'required|string',
         ]);
-        $product =  Product::where('id', $id)->update([
-            'name' =>$fields['name'],
-            'type' =>$fields['type'],
-            'description' => $request->description,  
-            'is_active' => $request->is_active
-        ]);
+        $preference =  Preference::where('id', $id)->update([
+        'updated_by' =>$fields['updated_by'],
+        'mail_to' => $request->mail_to,
+        'mail_cc' => $request->mail_cc,
+        'is_send_mail' => $request->is_send_mail,
+
+       ]);
         $response = [ 
-            'product' => $product , 
+            'preference' => $preference , 
         ];
         return  response($response, 201);
     }
@@ -94,9 +92,9 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        Product::where('id',$id)->delete();
+        $preference =  Preference::where('id', $id)->delete();
         $response = [ 
-            'message' => 'Successfully' , 
+            'preference' => $preference , 
         ];
         return  response($response, 201);
     }

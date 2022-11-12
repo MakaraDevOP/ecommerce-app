@@ -15,6 +15,10 @@ return new class extends Migration
     {
         Schema::create('preferences', function (Blueprint $table) {
             $table->id();
+            $table->string('mail_to');
+            $table->string('mail_cc');
+            $table->integer('updated_by');
+            $table->integer('is_send_mail');
             $table->timestamps();
         });
     }

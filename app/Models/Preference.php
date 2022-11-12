@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Preference extends Model
 {
     use HasFactory;
+    protected $table ='preferences';
+    protected $fillable = [
+        'mail_to',
+        'mail_cc',
+        'update_by',
+        'is_send_email'
+    ];
 }

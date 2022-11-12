@@ -13,18 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('upload_files', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name');
-            $table->string('province_city');
-            $table->string('detail_address');
-            $table->integer('parent_company_id')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email');
-            $table->integer('is_active');
+            $table->string('name');
+            $table->string('file_path');
+            $table->string('size');
+            $table->string('type');
+            $table->integer('activation_id');
             $table->timestamps();
         });
-    }                     
+    }
 
     /**
      * Reverse the migrations.
@@ -33,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('upload_files');
     }
 };
