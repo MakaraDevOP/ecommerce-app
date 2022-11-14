@@ -48,8 +48,6 @@ Route::prefix('v1')->group(function(){
       Route::put('/{id}/update' , [ContactController::class, 'update']);
       Route::delete('/{id}/destroy' , [ContactController::class, 'destroy']);
       Route::get('/get-all' , [ContactController::class, 'getContact']);
-
-
     });
      // Note
     Route::prefix('note')->group(function () {

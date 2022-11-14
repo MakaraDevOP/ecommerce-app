@@ -12,11 +12,8 @@ import "primevue/resources/themes/tailwind-light/theme.css";
 import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
 
-
 const app = createApp(App)
-
 app.component('wellcome', welcome)
 app.use(PrimeVue);
 app.use(router);
-
 app.mount('#app')
