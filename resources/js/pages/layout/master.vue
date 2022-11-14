@@ -1,11 +1,16 @@
 <template>
   <div class="flex flex-row">
-    <Siade></Siade>
-    <div class="w-full border">
-      <Header></Header>
-      <div class="w-full h-full" style="height: calc(100vh - 3rem)">
-        <router-view />
+    <div class="w-full ">
+      <div class="flex w-full ">
+        <Siade :dataSibar="isOpen"></Siade>
+        <div class="w-full border">
+          <Header :toggleSideBar="clickToggle"></Header>
+          <div class=" h-full" style="height: calc(100vh - 3rem)">
+            <router-view />
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -14,6 +19,17 @@ import Siade from "./../../components/sidebar.vue";
 import Header from "./../../components/header.vue";
 export default {
   components: { Siade, Header },
+  data() {
+    return {
+      isOpen: true
+    }
+  },
+  methods: {
+    clickToggle() {
+      this.isOpen = !this.isOpen
+      console.log("dataSibar");
+    }
+  }
 };
 </script>
 

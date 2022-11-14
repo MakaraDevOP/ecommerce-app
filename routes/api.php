@@ -13,12 +13,12 @@ use App\Http\Controllers\ActivationLineController;
 use App\Http\Controllers\PreferanceController;
 use App\Http\Controllers\UploadFileController;
 
-// User 
-Route::post('/register' , [AuthController::class, 'register']);
-Route::post('/login' , [AuthController::class, 'login']);
 
 //Version 1 API
 Route::prefix('v1')->group(function(){
+  // User 
+  Route::post('/register' , [AuthController::class, 'register']);
+  Route::post('/login' , [AuthController::class, 'login']);
   // Protection Auth
   Route::group(['middleware' => ['auth:sanctum']] , function(){
     Route::get('/user/get', [AuthController::class, 'get']);
