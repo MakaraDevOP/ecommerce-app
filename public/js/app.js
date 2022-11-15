@@ -17739,6 +17739,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var primevue_menu__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! primevue/menu */ "./node_modules/primevue/menu/menu.esm.js");
 /* harmony import */ var primevue_inputtext__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! primevue/inputtext */ "./node_modules/primevue/inputtext/inputtext.esm.js");
 /* harmony import */ var primevue_button__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! primevue/button */ "./node_modules/primevue/button/button.esm.js");
+/* harmony import */ var primevue_checkbox__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! primevue/checkbox */ "./node_modules/primevue/checkbox/checkbox.esm.js");
 /* provided dependency */ var process = __webpack_require__(/*! process/browser.js */ "./node_modules/process/browser.js");
 var _ref;
 
@@ -17765,12 +17766,14 @@ axios.defaults.baseURL = process.env.API_PATH !== 'production' ? 'http://127.0.0
 
 
 
+
 var app = (0,vue__WEBPACK_IMPORTED_MODULE_1__.createApp)(_App_vue__WEBPACK_IMPORTED_MODULE_2__["default"]);
 app.component('DataTable', primevue_datatable__WEBPACK_IMPORTED_MODULE_11__["default"]);
 app.component('Column', primevue_column__WEBPACK_IMPORTED_MODULE_12__["default"]);
 app.component('Menu', primevue_menu__WEBPACK_IMPORTED_MODULE_13__["default"]);
 app.component('InputText', primevue_inputtext__WEBPACK_IMPORTED_MODULE_14__["default"]);
 app.component('Button', primevue_button__WEBPACK_IMPORTED_MODULE_15__["default"]);
+app.component('Checkbox', primevue_checkbox__WEBPACK_IMPORTED_MODULE_16__["default"]);
 app.directive('tooltip', primevue_tooltip__WEBPACK_IMPORTED_MODULE_7__["default"]);
 app.use(primevue_config__WEBPACK_IMPORTED_MODULE_5__["default"]);
 app.use(_store_index__WEBPACK_IMPORTED_MODULE_4__["default"]);
@@ -38767,6 +38770,178 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ], 10, _hoisted_1)), [
     [_directive_ripple]
   ])
+}
+
+script.render = render;
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/checkbox/checkbox.esm.js":
+/*!********************************************************!*\
+  !*** ./node_modules/primevue/checkbox/checkbox.esm.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ script)
+/* harmony export */ });
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+
+var script = {
+    name: 'Checkbox',
+    emits: ['click', 'update:modelValue', 'change', 'input', 'focus', 'blur'],
+    props: {
+        value: null,
+        modelValue: null,
+        binary: Boolean,
+        name: {
+            type: String,
+            default: null
+        },
+        trueValue: {
+            type: null,
+            default: true
+        },
+        falseValue: {
+            type: null,
+            default: false
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+        readonly: {
+            type: Boolean,
+            default: false
+        },
+        required: {
+            type: Boolean,
+            default: false
+        },
+        tabindex: {
+            type: Number,
+            default: null
+        },
+        inputId: {
+            type: String,
+            default: null
+        },
+        inputClass: {
+            type: String,
+            default: null
+        },
+        inputStyle: {
+            type: null,
+            default: null
+        },
+        inputProps: {
+            type: null,
+            default: null
+        },
+        'aria-labelledby': {
+            type: String,
+            default: null
+        },
+        'aria-label': {
+            type: String,
+            default: null
+        }
+    },
+    data() {
+        return {
+            focused: false
+        };
+    },
+    methods: {
+        onClick(event) {
+            if (!this.disabled) {
+                let newModelValue;
+
+                if (this.binary) {
+                    newModelValue = this.checked ? this.falseValue : this.trueValue;
+                } else {
+                    if (this.checked) newModelValue = this.modelValue.filter((val) => !primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.equals(val, this.value));
+                    else newModelValue = this.modelValue ? [...this.modelValue, this.value] : [this.value];
+                }
+
+                this.$emit('click', event);
+                this.$emit('update:modelValue', newModelValue);
+                this.$emit('change', event);
+                this.$emit('input', newModelValue);
+                this.$refs.input.focus();
+            }
+        },
+        onFocus(event) {
+            this.focused = true;
+            this.$emit('focus', event);
+        },
+        onBlur(event) {
+            this.focused = false;
+            this.$emit('blur', event);
+        }
+    },
+    computed: {
+        checked() {
+            return this.binary ? this.modelValue === this.trueValue : primevue_utils__WEBPACK_IMPORTED_MODULE_0__.ObjectUtils.contains(this.value, this.modelValue);
+        },
+        containerClass() {
+            return [
+                'p-checkbox p-component',
+                {
+                    'p-checkbox-checked': this.checked,
+                    'p-checkbox-disabled': this.disabled,
+                    'p-checkbox-focused': this.focused
+                }
+            ];
+        }
+    }
+};
+
+const _hoisted_1 = { class: "p-hidden-accessible" };
+const _hoisted_2 = ["id", "value", "name", "checked", "tabindex", "disabled", "readonly", "required", "aria-labelledby", "aria-label"];
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_1__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_1__.createElementBlock)("div", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_1__.normalizeClass)($options.containerClass),
+    onClick: _cache[2] || (_cache[2] = $event => ($options.onClick($event)))
+  }, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_1__.createElementVNode)("div", _hoisted_1, [
+      (0,vue__WEBPACK_IMPORTED_MODULE_1__.createElementVNode)("input", (0,vue__WEBPACK_IMPORTED_MODULE_1__.mergeProps)({
+        ref: "input",
+        id: $props.inputId,
+        type: "checkbox",
+        value: $props.value,
+        class: $props.inputClass,
+        style: $props.inputStyle,
+        name: $props.name,
+        checked: $options.checked,
+        tabindex: $props.tabindex,
+        disabled: $props.disabled,
+        readonly: $props.readonly,
+        required: $props.required,
+        "aria-labelledby": _ctx.ariaLabelledby,
+        "aria-label": _ctx.ariaLabel,
+        onFocus: _cache[0] || (_cache[0] = $event => ($options.onFocus($event))),
+        onBlur: _cache[1] || (_cache[1] = $event => ($options.onBlur($event)))
+      }, $props.inputProps), null, 16, _hoisted_2)
+    ]),
+    (0,vue__WEBPACK_IMPORTED_MODULE_1__.createElementVNode)("div", {
+      ref: "box",
+      class: (0,vue__WEBPACK_IMPORTED_MODULE_1__.normalizeClass)(['p-checkbox-box', { 'p-highlight': $options.checked, 'p-disabled': $props.disabled, 'p-focus': $data.focused }])
+    }, [
+      (0,vue__WEBPACK_IMPORTED_MODULE_1__.createElementVNode)("span", {
+        class: (0,vue__WEBPACK_IMPORTED_MODULE_1__.normalizeClass)(['p-checkbox-icon', { 'pi pi-check': $options.checked }])
+      }, null, 2)
+    ], 2)
+  ], 2))
 }
 
 script.render = render;

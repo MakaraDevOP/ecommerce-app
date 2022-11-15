@@ -5,7 +5,9 @@
         </div>
         <div class="w-1/2">
             <div class="m-2 border p-2">
-                Testing
+                <div class="input-group">
+                    <Checkbox v-model="checked" :binary="true" />
+                </div>
             </div>
         </div>
     </div>

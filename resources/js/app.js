@@ -25,7 +25,7 @@ import Column from 'primevue/column';
 import Menu from "primevue/menu";
 import InputText from "primevue/inputtext";
 import Button from 'primevue/button';
-
+import CheckBox from 'primevue/checkbox'
 
 
 const app = createApp(App)
@@ -34,6 +34,7 @@ app.component('Column', Column)
 app.component('Menu', Menu)
 app.component('InputText', InputText)
 app.component('Button', Button)
+app.component('Checkbox',CheckBox)
 app.directive('tooltip', Tooltip);
 
 app.use(PrimeVue);
