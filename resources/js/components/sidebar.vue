@@ -40,7 +40,7 @@
         </div>
         <div class="menu-man text-left px-2 justify-self-end">
           <div class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi pi-slack" v-tooltip.right="'Setting'"></span> <span v-show="dataSibar">Setting</span></div>
+            <div class="px-2 flex space-x-2"><span class="pi pi-question" v-tooltip.right="'About Me'"></span> <span v-show="dataSibar">About Me</span></div>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@
     "dev": "npm run --max_old_space_size=8192 development",
     "development": "mix",
     "watch": "mix watch",
-    "eq":" npx tailwindcss -i ./resources/js/assets/css/app.css -o ./resources/js/dist/app.css --watch"
+    "eq": " npx tailwindcss -i ./resources/js/assets/css/app.css -o ./resources/js/dist/app.css --watch"
   },
   "devDependencies": {
     "axios": "^1.1.2",
@@ -20,7 +20,8 @@
     "primeicons": "^5.0.0",
     "primevue": "^3.15.0",
     "vue": "^3.2.36",
-    "vue-router": "^4.0.16"
+    "vue-router": "^4.0.16",
+    "vuex": "^4.0.2"
   },
   "name": "subscription-management-system",
   "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",

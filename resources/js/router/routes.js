@@ -9,11 +9,12 @@ export default [
                 component: import ('./../pages/home'),
                 path: "/home",
             },
-            {
-                name: "Login",
-                component: import ('./../pages/auth/login'),
-                path: "/login",
-            },
+          
         ]
+    },
+    {
+        name: "Login",
+        component: import ('./../pages/auth/login'),
+        path: "/login",
     },
 ]
