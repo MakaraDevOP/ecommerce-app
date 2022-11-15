@@ -27,9 +27,11 @@ php artisan migrate
 ```
 php artisan db:seed
 ```
-### compile style
+### Compile style
 ```
 npm run eq
 ```
+### UI interface
 
+![MicrosoftTeams-image (6)](https://user-images.githubusercontent.com/97021587/201824359-4bbbe298-2cea-47fc-9e2b-d552a89223be.png)
 
