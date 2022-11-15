@@ -21,7 +21,7 @@
             <router-link to="/" class="px-2 flex space-x-2"><span class="pi pi-microsoft" v-tooltip.right="'Dashboard'"></span> <span v-show="dataSibar">Dashboard</span></router-link>
           </div>
           <div class="   py-3 rounded-md cursor-pointer  text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi pi-user " v-tooltip.right="'User'"></span> <span v-show="dataSibar">User</span></div>
+            <router-link to="/user" class="px-2 flex space-x-2"><span class="pi pi-user " v-tooltip.right="'User'"></span> <span v-show="dataSibar">User</span></router-link>
           </div>
           <div class="   py-3 rounded-md cursor-pointer  text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
             <router-link to="/product" class="px-2 flex space-x-2"><span class="pi pi-cart-plus " v-tooltip.right="'Product'"></span> <span v-show="dataSibar">Product</span></router-link>

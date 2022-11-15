@@ -252,6 +252,7 @@ export default {
     }
   },
   methods: {
+    // GENERATE COLOR CODE
     getColorCode() {
       var colorCode = []
       var dynamicColors = function () {

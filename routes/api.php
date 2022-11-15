@@ -12,7 +12,7 @@ use App\Http\Controllers\ActivationController;
 use App\Http\Controllers\ActivationLineController;
 use App\Http\Controllers\PreferanceController;
 use App\Http\Controllers\UploadFileController;
-
+use App\Http\Controllers\Admin\UserController;
 
 //Version 1 API
 Route::prefix('v1')->group(function(){
@@ -73,13 +73,15 @@ Route::prefix('v1')->group(function(){
       Route::put('/{id}/update' , [ActivationController::class, 'update']);
       Route::delete('/{id}/destroy' , [ActivationController::class, 'destroy']);
     });
-    // ActivationLine  
-    Route::prefix('activation-line')->group(function () {
-      Route::get('/get' , [ActivationLineController::class, 'index']);
-      Route::post('/create' , [ActivationLineController::class, 'store']);
-      Route::get('/{id}/get' , [ActivationLineController::class, 'show']);
-      Route::put('/{id}/update' , [ActivationLineController::class, 'update']);
-      Route::delete('/{id}/destroy' , [ActivationLineController::class, 'destroy']);
+    
+    // Users  
+    Route::prefix('user')->group(function () {
+      Route::get('/get' , [UserController::class, 'index']);
+      Route::get('/create' , [UserController::class, 'create']);
+      Route::post('/create' , [UserController::class, 'store']);
+      Route::get('/{id}/get' , [UserController::class, 'show']);
+      Route::put('/{id}/update' , [UserController::class, 'update']);
+      Route::delete('/{id}/destroy' , [UserController::class, 'destroy']);
     });
   });
 });

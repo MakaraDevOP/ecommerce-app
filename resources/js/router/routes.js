@@ -16,6 +16,11 @@ export default [
                 path: "/home",
             },
             {
+                name: "User",
+                component: import ('./../pages/users'),
+                path: "/user",
+            },
+            {
                 name: "Product",
                 component: import ('./../pages/product'),
                 path: "/product",
