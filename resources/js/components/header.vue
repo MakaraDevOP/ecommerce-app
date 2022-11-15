@@ -1,8 +1,13 @@
 <template>
   <div class="border-b flex justify-between shadow-sm" style="height: 3rem">
     <div class="flex items-center justify-between  w-full p-button-sm">
-      <div @click="toggleSideBar" class="h-full px-5 hover:bg-gray-100 flex items-center">
-        <span class="pi pi-bars" style="font-size: 1rem"></span>
+      <div class="flex space-x-2 h-full">
+        <div @click="toggleSideBar" class="h-full px-5 hover:bg-gray-100 flex items-center cursor-pointer">
+          <span class="pi pi-bars" style="font-size: 1rem"></span>
+        </div>
+        <div class="py-1">
+          <InputText placeholder="Search" type="text" />
+        </div>
       </div>
       <div>
         <div class="px-4 flex justify-center items-center space-x-4">
@@ -20,10 +25,10 @@
 </template>
 
 <script>
-import Menu from "primevue/menu"
+
 import { mapGetters } from 'vuex'
 export default {
-  components: { Menu, mapGetters },
+  components: { mapGetters },
   props: {
     toggleSideBar: Function,
   },

@@ -15,6 +15,11 @@ export default [
                 component: import ('./../pages/home'),
                 path: "/home",
             },
+            {
+                name: "Product",
+                component: import ('./../pages/product'),
+                path: "/product",
+            },
         ]
     },
     {
