@@ -8,7 +8,8 @@
               <div class="text-left text-lg">
                 Products
               </div>
-              <div>
+              <div class="flex space-x-2">
+                <Button label="Export" icon="pi pi-plus" class="p-button-secondary p-button-sm" iconPos="left" />
                 <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" />
               </div>
             </div>
