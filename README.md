@@ -7,5 +7,31 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## Subscription APP - vue laravel
+# Subscription APP - Vue Laravel
+
+## Project setup
+```
+composer install
+```
+### install node 
+
+```
+npm install
+```
+### Make migrations 
+```
+php artisan migrate
+```
+### Make Seeder
+
+```
+php artisan db:seed
+```
+### Compile style
+```
+npm run eq
+```
+### UI interface
+
+![MicrosoftTeams-image (6)](https://user-images.githubusercontent.com/97021587/201824359-4bbbe298-2cea-47fc-9e2b-d552a89223be.png)
 
