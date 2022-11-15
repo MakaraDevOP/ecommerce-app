@@ -32,7 +32,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-        $user = User::where('email' ,$request->email)->first();
+        $user = User::where('email' ,$request->email)->with('roles.permissions')->first();
         if(!$user || !Hash::check($request->password , $user->password)){
             return response([
                 'message' => ' Bad creds'

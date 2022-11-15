@@ -49,7 +49,11 @@ export default {
   },
   methods: {
     login() {
-      this.$store.dispatch("auth/LOGIN_SYSTEM", this.objData)
+      this.$store.dispatch("auth/LOGIN_SYSTEM", this.objData).then(reponse => {
+        if (reponse.status == '201') {
+          this.$router.push('/');
+        }
+      })
     }
   }
 }

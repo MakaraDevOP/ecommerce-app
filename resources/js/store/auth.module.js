@@ -7,6 +7,9 @@ export const auth = {
     TOKEN: JSON.parse(localStorage.getItem('token'))??'',
     USER: JSON.parse(localStorage.getItem('user'))??'',
   },
+  getters: {
+    user:state=>state.USER
+  },
   mutations: {
     //LOGIN 
     SET_TOKEN(state, value) {
@@ -27,12 +30,12 @@ export const auth = {
   actions: {
     // LOGIN 
     async LOGIN_SYSTEM({commit}, payload) {
-
-      await axios.post('/login', payload).then((response) => {
+      const response = await axios.post('/login', payload).then(resp => {
         // SET STATE AND LOCAL STORE
-        commit('SET_TOKEN', response.data)
-        return response;
-      })
+        commit('SET_TOKEN', resp.data)
+        return resp;
+      });
+      return response;
     },
     async LOGOUT_SYSTEM({ commit }) {
       await axios.post('/logout', payload).then((response) => {

@@ -6,7 +6,7 @@
       </div>
       <div>
         <div class="px-4 flex justify-center items-center space-x-4">
-          <span class="text-gray-600 ">Makara</span>
+          <span class="text-gray-600 ">{{ user.email }}</span>
           <button class="p-panel-header-icon p-link mr-2" @click="toggle">
             <!-- <span class="pi pi-cog"></span> -->
             <img src="https://avatars.githubusercontent.com/u/97021587?v=4" class="p-1 w-8 h-8 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" alt="Avatar" />
@@ -21,8 +21,9 @@
 
 <script>
 import Menu from "primevue/menu"
+import { mapGetters } from 'vuex'
 export default {
-  components: { Menu },
+  components: { Menu, mapGetters },
   props: {
     toggleSideBar: Function,
   },
@@ -50,6 +51,11 @@ export default {
         },
       ]
     }
+  },
+  computed: {
+    ...mapGetters({
+      user: 'auth/user',
+    })
   },
   methods: {
     toggle(event) {
