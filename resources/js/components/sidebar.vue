@@ -1,15 +1,15 @@
 <template>
   <div class="bg-gray-800  text-white overflow-hidden" id="side-bar" :class="dataSibar == true ? 'side-bar-visible' : 'side-bar-close'">
     <div style="height: 3rem">
-      <div class="h-full flex justify-center items-center ">
-        <span class="font-semibold uppercase text-xl px-6" v-if="dataSibar">App Dev</span>
+      <div class="h-full flex justify-center items-center  ">
+        <span class="font-semibold uppercase text-xl px-6 whitespace-nowrap" v-if="dataSibar">App Dev</span>
         <div class="text-center flex justify-center items-center h-full" v-if="!dataSibar">
           <img src="https://avatars.githubusercontent.com/u/97021587?v=4" class="p-[2px] w-8 h-8 rounded-full ring-1 ring-gray-300 dark:ring-gray-500 " alt="Avatar" />
         </div>
       </div>
       <div class="flex flex-col justify-between h-[calc(100vh-3rem)] bg-gray-900">
 
-        <div class="menu-man text-left px-2  ">
+        <div class="menu-man text-left px-2 whitespace-nowrap ">
           <div class="profile flex justify-center items-center text-center p-5 " v-show="dataSibar">
             <div class="text-center ">
               <img src="https://avatars.githubusercontent.com/u/97021587?v=4" class="p-1 w-24 h-24 rounded-full ring-2 ring-gray-300 dark:ring-gray-500 mb-4" alt="Avatar" />
@@ -38,7 +38,7 @@
             <div class="px-2 flex space-x-2"><span class="pi pi-slack" v-tooltip.right="'Setting'"></span> <span v-show="dataSibar">Setting</span></div>
           </div>
         </div>
-        <div class="menu-man text-left px-2 justify-self-end">
+        <div class="menu-man text-left px-2 justify-self-end whitespace-nowrap">
           <div class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
             <div class="px-2 flex space-x-2"><span class="pi pi-question" v-tooltip.right="'About Me'"></span> <span v-show="dataSibar">About Me</span></div>
           </div>
