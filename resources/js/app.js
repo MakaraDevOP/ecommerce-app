@@ -21,7 +21,10 @@ axios.defaults.headers.common["Accept"] = "application/json";
 
 axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://127.0.0.1:8000/api/v1' : '';
 
+
+
 const app = createApp(App)
+
 app.component('wellcome', welcome)
 app.directive('tooltip', Tooltip);
 

@@ -27,6 +27,7 @@ class AuthController extends Controller
         ];
         return  response($response, 201);
     }
+
     public function login(Request $request){
         $request->validate([
             'email' => 'required|email',
@@ -45,12 +46,14 @@ class AuthController extends Controller
         ];
         return  response($response, 201);
     }
+
     public function logout(Request $request){
       auth()->user()->tokens()->delete();
       return response([
         'message' =>'Logged Out',
       ],200);
     }
+    
     public function get(){
         $user = User::with('roles.permissions')->get();
         return  response($user, 200);
