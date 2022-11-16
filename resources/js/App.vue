@@ -2,6 +2,10 @@
   <div style="height: 100vh; width: 100vw">
     <router-view />
   </div>
+  <!-- USING GLOBAL COMPONENTS -->
+  <Toast />
+  <ConfirmPopup></ConfirmPopup>
+  <!-- USING GLOBAL COMPONENTS -->
 </template>
 
 <script>

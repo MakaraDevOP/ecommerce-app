@@ -41,6 +41,16 @@
     font-size: 12px !important;
 
 }
+.p-button.p-button-sm .p-button-icon {
+    font-size: 12px !important;
+
+}
+.p-button.p-button-icon-only {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    padding: 0.75rem 0;
+     font-size: 12px !important;
+}
 .p-dropdown .p-dropdown-trigger {
     background: transparent;
     color: #71717A;
