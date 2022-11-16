@@ -26,7 +26,9 @@ import Menu from "primevue/menu";
 import InputText from "primevue/inputtext";
 import Button from 'primevue/button';
 import CheckBox from 'primevue/checkbox'
-
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import Dropdown from 'primevue/dropdown';
 
 const app = createApp(App)
 app.component('DataTable', DataTable)
@@ -34,7 +36,13 @@ app.component('Column', Column)
 app.component('Menu', Menu)
 app.component('InputText', InputText)
 app.component('Button', Button)
-app.component('Checkbox',CheckBox)
+app.component('Checkbox', CheckBox)
+app.component('Dialog', Dialog)
+app.component('Textarea', Textarea)
+app.component('Dropdown',Dropdown)
+
+
+
 app.directive('tooltip', Tooltip);
 
 app.use(PrimeVue);
