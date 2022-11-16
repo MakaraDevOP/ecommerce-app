@@ -3,10 +3,9 @@
     <div class="col-span-2 border rounded shadow bg-gray-50">
       <div>
         <DataTable :value="products" stripedRows responsiveLayout="scroll" class="p-datatable-sm">
-          <Column field="code" header="Code"></Column>
+          <Column field="type" header="Type"></Column>
           <Column field="name" header="Name"></Column>
-          <Column field="category" header="Category"></Column>
-          <Column field="quantity" header="Quantity"></Column>
+          <Column field="description" header="Description"></Column>
         </DataTable>
       </div>
     </div>
@@ -21,16 +20,17 @@
 import Chart from 'primevue/chart';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import { mapGetters } from "vuex"
 
 export default {
-  components: { Chart, DataTable, Column },
+  components: { Chart, DataTable, Column, mapGetters },
   data() {
     return {
       chartData: {
-        labels: ['FaceAzure Destop', 'FaceAzure Online', 'Quickbooks', 'Avast', 'TSPlus', 'Pro', 'Premire', 'HTML', 'CSS', 'JS', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        labels: [],
         datasets: [
           {
-            data: [300, 50, 100, 2, 40, 70, 80, 99, 200, 65, 59, 80, 81, 56, 55, 40, 65, 59, 80, 81, 56, 55, 10],
+            data: [300, 50, 100, 2, 40, 50],
             backgroundColor: [
               "rgb(28,100,147)",
               "rgb(12,38,128)",
@@ -250,6 +250,21 @@ export default {
         }
       }
     }
+  },
+  computed: {
+    ...mapGetters({
+      products: 'product/products',
+      product: 'product/product',
+      chartProduct: 'product/chartProduct'
+    })
+  },
+  watch: {
+    chartProduct() {
+      this.chartData.labels = this.chartProduct
+    }
+  },
+  mounted() {
+    this.$store.dispatch('product/GET_PRODUCT')
   },
   methods: {
     // GENERATE COLOR CODE

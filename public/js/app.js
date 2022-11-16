@@ -17867,7 +17867,9 @@ var _hoisted_1 = {
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_router_view = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("router-view");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_view)]);
+  var _component_Toast = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Toast");
+  var _component_ConfirmPopup = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("ConfirmPopup");
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_view)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" USING GLOBAL COMPONENTS "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Toast), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_ConfirmPopup), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" USING GLOBAL COMPONENTS ")], 64 /* STABLE_FRAGMENT */);
 }
 
 /***/ }),
@@ -17901,7 +17903,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var primevue_textarea__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! primevue/textarea */ "./node_modules/primevue/textarea/textarea.esm.js");
 /* harmony import */ var primevue_dropdown__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! primevue/dropdown */ "./node_modules/primevue/dropdown/dropdown.esm.js");
 /* harmony import */ var primevue_badge__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! primevue/badge */ "./node_modules/primevue/badge/badge.esm.js");
-/* harmony import */ var vee_validate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! vee-validate */ "./node_modules/vee-validate/dist/vee-validate.esm.js");
+/* harmony import */ var vee_validate__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! vee-validate */ "./node_modules/vee-validate/dist/vee-validate.esm.js");
+/* harmony import */ var primevue_toastservice__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! primevue/toastservice */ "./node_modules/primevue/toastservice/toastservice.esm.js");
+/* harmony import */ var primevue_toast__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! primevue/toast */ "./node_modules/primevue/toast/toast.esm.js");
+/* harmony import */ var primevue_confirmationservice__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! primevue/confirmationservice */ "./node_modules/primevue/confirmationservice/confirmationservice.esm.js");
+/* harmony import */ var primevue_confirmpopup__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! primevue/confirmpopup */ "./node_modules/primevue/confirmpopup/confirmpopup.esm.js");
 /* provided dependency */ var process = __webpack_require__(/*! process/browser.js */ "./node_modules/process/browser.js");
 var _ref;
 
@@ -17913,12 +17919,14 @@ axios.defaults.headers.common["Authorization"] = (_ref = "Bearer " + JSON.parse(
 axios.defaults.headers.common["content-type"] = "application/json";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.baseURL = process.env.API_PATH !== 'production' ? 'http://127.0.0.1:8000/api/v1' : '';
-//________________________________
+//__________________________________________________AXIOS_________________________________________________________________//
+
+//IMPORT STYLE
 
 
 
 
-
+//IMPORT COMPONENTS
 
 
 
@@ -17936,7 +17944,12 @@ axios.defaults.baseURL = process.env.API_PATH !== 'production' ? 'http://127.0.0
 
 // vue validation
 
+
+
+
+
 var app = (0,vue__WEBPACK_IMPORTED_MODULE_1__.createApp)(_App_vue__WEBPACK_IMPORTED_MODULE_2__["default"]);
+//COMPONENTS
 app.component('DataTable', primevue_datatable__WEBPACK_IMPORTED_MODULE_11__["default"]);
 app.component('Column', primevue_column__WEBPACK_IMPORTED_MODULE_12__["default"]);
 app.component('Menu', primevue_menu__WEBPACK_IMPORTED_MODULE_13__["default"]);
@@ -17949,10 +17962,15 @@ app.component('Dropdown', primevue_dropdown__WEBPACK_IMPORTED_MODULE_19__["defau
 app.component('Badge', primevue_badge__WEBPACK_IMPORTED_MODULE_20__["default"]);
 
 // vue validation
-app.component('Form', vee_validate__WEBPACK_IMPORTED_MODULE_21__.Form);
-app.component('Field', vee_validate__WEBPACK_IMPORTED_MODULE_21__.Field);
-app.component('ErrorMessage', vee_validate__WEBPACK_IMPORTED_MODULE_21__.ErrorMessage);
+app.component('Form', vee_validate__WEBPACK_IMPORTED_MODULE_25__.Form);
+app.component('Field', vee_validate__WEBPACK_IMPORTED_MODULE_25__.Field);
+app.component('ErrorMessage', vee_validate__WEBPACK_IMPORTED_MODULE_25__.ErrorMessage);
+app.component('Dropdown', primevue_dropdown__WEBPACK_IMPORTED_MODULE_19__["default"]);
+app.component('Toast', primevue_toast__WEBPACK_IMPORTED_MODULE_22__["default"]);
+app.component('ConfirmPopup', primevue_confirmpopup__WEBPACK_IMPORTED_MODULE_24__["default"]);
 app.directive('tooltip', primevue_tooltip__WEBPACK_IMPORTED_MODULE_10__["default"]);
+app.use(primevue_toastservice__WEBPACK_IMPORTED_MODULE_21__["default"]);
+app.use(primevue_confirmationservice__WEBPACK_IMPORTED_MODULE_23__["default"]);
 app.use(primevue_config__WEBPACK_IMPORTED_MODULE_8__["default"]);
 app.use(_store_index__WEBPACK_IMPORTED_MODULE_7__["default"]);
 app.use(_router__WEBPACK_IMPORTED_MODULE_9__["default"]);
@@ -18305,31 +18323,103 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return generator._invoke = function (innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; }(innerFn, self, context), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; this._invoke = function (method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); }; } function maybeInvokeDelegate(delegate, context) { var method = delegate.iterator[context.method]; if (undefined === method) { if (context.delegate = null, "throw" === context.method) { if (delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method)) return ContinueSentinel; context.method = "throw", context.arg = new TypeError("The iterator does not provide a 'throw' method"); } return ContinueSentinel; } var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) { if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; } return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, define(Gp, "constructor", GeneratorFunctionPrototype), define(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (object) { var keys = []; for (var key in object) { keys.push(key); } return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) { "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); } }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 var product = {
   namespaced: true,
   state: {
-    products: []
+    products: [],
+    // MODEL
+    product: {
+      name: "",
+      type: "Software",
+      description: "",
+      is_active: "1"
+    },
+    //DEFAULT
+    defaultProduct: {
+      name: "",
+      type: "Software",
+      description: "",
+      is_active: "1"
+    }
   },
   getters: {
-    product: function product(state) {
+    products: function products(state) {
       return state.products;
+    },
+    product: function product(state) {
+      return state.product;
+    },
+    chartProduct: function chartProduct(state) {
+      var obj = [];
+      var _iterator = _createForOfIteratorHelper(state.products),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var data = _step.value;
+          obj = [].concat(_toConsumableArray(obj), [data.name]);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return obj;
     }
   },
   mutations: {
     SET_PRODUCT: function SET_PRODUCT(state, data) {
       state.products = data;
+    },
+    SET_EDIT_PRODUCT: function SET_EDIT_PRODUCT(state, data) {
+      state.product = Object.assign({}, data);
+      state.product.is_active = state.product.is_active.toString();
+    },
+    ADD_PRODUCT: function ADD_PRODUCT(state) {
+      state.product = Object.assign({}, state.defaultProduct);
     }
   },
   actions: {
-    GET_PRODUCT: function GET_PRODUCT(_ref) {
+    GET_ID_PRODUCT: function GET_ID_PRODUCT(_ref, id) {
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var commit;
+        var commit, response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 commit = _ref.commit;
                 _context.next = 3;
+                return axios.get("/product/".concat(id, "/get")).then(function (response) {
+                  // SET STATE
+                  commit('SET_EDIT_PRODUCT', response.data.product);
+                  return response;
+                });
+              case 3:
+                response = _context.sent;
+                return _context.abrupt("return", response);
+              case 5:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }))();
+    },
+    GET_PRODUCT: function GET_PRODUCT(_ref2) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        var commit;
+        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                commit = _ref2.commit;
+                _context2.next = 3;
                 return axios.get('/product/get').then(function (response) {
                   // SET STATE AND LOCAL STORE
                   commit('SET_PRODUCT', response.data.Product);
@@ -18337,10 +18427,85 @@ var product = {
                 });
               case 3:
               case "end":
-                return _context.stop();
+                return _context2.stop();
             }
           }
-        }, _callee);
+        }, _callee2);
+      }))();
+    },
+    CREATE_PRODUCT: function CREATE_PRODUCT(_ref3) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+        var dispatch, state, response;
+        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                dispatch = _ref3.dispatch, state = _ref3.state;
+                _context3.next = 3;
+                return axios.post('/product/create', state.product).then(function (response) {
+                  // RE LOAD DATA
+                  dispatch('GET_PRODUCT');
+                  return response;
+                });
+              case 3:
+                response = _context3.sent;
+                return _context3.abrupt("return", response);
+              case 5:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3);
+      }))();
+    },
+    UPDATE_PRODUCT: function UPDATE_PRODUCT(_ref4) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+        var dispatch, state, response;
+        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                dispatch = _ref4.dispatch, state = _ref4.state;
+                _context4.next = 3;
+                return axios.put("/product/".concat(state.product.id, "/update"), state.product).then(function (response) {
+                  // RE LOAD DATA
+                  dispatch('GET_PRODUCT');
+                  return response;
+                });
+              case 3:
+                response = _context4.sent;
+                return _context4.abrupt("return", response);
+              case 5:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }))();
+    },
+    DESTROY_PRODUCT: function DESTROY_PRODUCT(_ref5, id) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
+        var dispatch, response;
+        return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                dispatch = _ref5.dispatch;
+                _context5.next = 3;
+                return axios["delete"]("/product/".concat(id, "/destroy")).then(function (response) {
+                  // RE LOAD DATA
+                  dispatch('GET_PRODUCT');
+                  return response;
+                });
+              case 3:
+                response = _context5.sent;
+                return _context5.abrupt("return", response);
+              case 5:
+              case "end":
+                return _context5.stop();
+            }
+          }
+        }, _callee5);
       }))();
     }
   }
@@ -20564,7 +20729,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/*\n! tailwindcss v3.2.1 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box;\n  /* 1 */\n  border-width: 0;\n  /* 2 */\n  border-style: solid;\n  /* 2 */\n  border-color: #e5e7eb;\n  /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n*/\n\nhtml {\n  line-height: 1.5;\n  /* 1 */\n  -webkit-text-size-adjust: 100%;\n  /* 2 */\n  -moz-tab-size: 4;\n  /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4;\n  /* 3 */\n  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  /* 4 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0;\n  /* 1 */\n  line-height: inherit;\n  /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0;\n  /* 1 */\n  color: inherit;\n  /* 2 */\n  border-top-width: 1px;\n  /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font family by default.\n2. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;\n  /* 1 */\n  font-size: 1em;\n  /* 2 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0;\n  /* 1 */\n  border-color: inherit;\n  /* 2 */\n  border-collapse: collapse;\n  /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit;\n  /* 1 */\n  font-size: 100%;\n  /* 1 */\n  font-weight: inherit;\n  /* 1 */\n  line-height: inherit;\n  /* 1 */\n  color: inherit;\n  /* 1 */\n  margin: 0;\n  /* 2 */\n  padding: 0;\n  /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\n[type='button'],\n[type='reset'],\n[type='submit'] {\n  -webkit-appearance: button;\n  /* 1 */\n  background-color: transparent;\n  /* 2 */\n  background-image: none;\n  /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield;\n  /* 1 */\n  outline-offset: -2px;\n  /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button;\n  /* 1 */\n  font: inherit;\n  /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1;\n  /* 1 */\n  color: #9ca3af;\n  /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1;\n  /* 1 */\n  color: #9ca3af;\n  /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block;\n  /* 1 */\n  vertical-align: middle;\n  /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden] {\n  display: none;\n}\n\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n}\n\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n}\n\n.select2-dropdown {\n  border-bottom-right-radius: 0.5rem;\n  border-bottom-left-radius: 0.5rem;\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.p-paginator .p-paginator-pages .p-paginator-page {\n  background-color: transparent;\n  border: 1px solid #d4d4d8;\n  color: #71717A;\n  min-width: 2rem  !important;\n  height: 2rem  !important;\n  margin: 0 0 0 -1px;\n  transition: none;\n  border-radius: 0;\n  font-size: 12px !important;\n}\n\n.p-paginator .p-paginator-first, .p-paginator .p-paginator-prev, .p-paginator .p-paginator-next, .p-paginator .p-paginator-last {\n  background-color: transparent;\n  border: 1px solid #d4d4d8;\n  color: #71717A;\n  min-width: 2rem !important;\n  height: 2rem !important;\n  margin: 0 0 0 -1px;\n  transition: none;\n  border-radius: 0;\n  font-size: 12px !important;\n}\n\n.p-button {\n  padding: 0.75rem 1rem;\n  font-size: 1rem;\n  transition: none;\n  border-radius: 5px !important;\n}\n\n.p-button.p-button-sm {\n  font-size: 13px !important;\n  padding: 6px 10px !important;\n}\n\n.p-paginator-icon{\n  font-size: 12px !important;\n}\n\n.p-dropdown .p-dropdown-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 2rem!important;\n  border-top-right-radius: 0.375rem;\n  border-bottom-right-radius: 0.375rem;\n}\n\n.p-component {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 12px !important;\n  font-weight: normal;\n}\n\n.p-paginator {\n  background: #ffffff;\n  color: #71717A;\n  border: solid #f4f4f5;\n  border-width: 0;\n  padding: 0.1rem 0.1rem !important;\n  border-radius: 0!important;\n}\n\n.p-dropdown .p-dropdown-trigger {\n  background: transparent;\n  color: #71717A;\n  width: 2rem!important;\n  height: 2rem!important;\n  border-top-right-radius: 0 !important;\n  border-bottom-right-radius: 0 !important;\n  font-size: 12px!important\n}\n\n.p-dropdown-trigger-icon{\n  font-size: 12px!important\n}\n\n.p-paginator .p-dropdown {\n  margin-left: 0.5rem;\n  margin-right: 0.5rem;\n  height: 2rem !important;\n  font-size: 12px!important;\n  display: flex!important;\n  justify-content: center!important;\n  justify-items : center!important;\n}\n\n.p-dropdown-label {\n  display: block;\n  white-space: nowrap;\n  font-size: 12px!important\n}\n\n.p-inputtext {\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\n  font-size: 1rem;\n  color: #3f3f46;\n  background: #ffffff;\n  padding: 0.5rem 0.3rem !important;\n  border: 1px solid #d4d4d8;\n  transition: none;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  border-radius: 0.375rem;\n}\n\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n\n.visible {\n  visibility: visible;\n}\n\n.collapse {\n  visibility: collapse;\n}\n\n.absolute {\n  position: absolute;\n}\n\n.relative {\n  position: relative;\n}\n\n.inset-y-0 {\n  top: 0px;\n  bottom: 0px;\n}\n\n.left-0 {\n  left: 0px;\n}\n\n.-left-1 {\n  left: -0.25rem;\n}\n\n.col-span-2 {\n  grid-column: span 2 / span 2;\n}\n\n.m-2 {\n  margin: 0.5rem;\n}\n\n.m-1 {\n  margin: 0.25rem;\n}\n\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n\n.my-5 {\n  margin-top: 1.25rem;\n  margin-bottom: 1.25rem;\n}\n\n.my-3 {\n  margin-top: 0.75rem;\n  margin-bottom: 0.75rem;\n}\n\n.my-2 {\n  margin-top: 0.5rem;\n  margin-bottom: 0.5rem;\n}\n\n.mx-2 {\n  margin-left: 0.5rem;\n  margin-right: 0.5rem;\n}\n\n.mx-3 {\n  margin-left: 0.75rem;\n  margin-right: 0.75rem;\n}\n\n.mr-2 {\n  margin-right: 0.5rem;\n}\n\n.mb-4 {\n  margin-bottom: 1rem;\n}\n\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n\n.mt-6 {\n  margin-top: 1.5rem;\n}\n\n.mt-2 {\n  margin-top: 0.5rem;\n}\n\n.mt-8 {\n  margin-top: 2rem;\n}\n\n.ml-2 {\n  margin-left: 0.5rem;\n}\n\n.mr-1 {\n  margin-right: 0.25rem;\n}\n\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n\n.mb-5 {\n  margin-bottom: 1.25rem;\n}\n\n.mb-0 {\n  margin-bottom: 0px;\n}\n\n.mr-3 {\n  margin-right: 0.75rem;\n}\n\n.block {\n  display: block;\n}\n\n.flex {\n  display: flex;\n}\n\n.table {\n  display: table;\n}\n\n.grid {\n  display: grid;\n}\n\n.contents {\n  display: contents;\n}\n\n.hidden {\n  display: none;\n}\n\n.h-full {\n  height: 100%;\n}\n\n.h-8 {\n  height: 2rem;\n}\n\n.h-\\[calc\\(100vh-3rem\\)\\] {\n  height: calc(100vh - 3rem);\n}\n\n.h-24 {\n  height: 6rem;\n}\n\n.h-14 {\n  height: 3.5rem;\n}\n\n.h-auto {\n  height: auto;\n}\n\n.h-12 {\n  height: 3rem;\n}\n\n.h-4 {\n  height: 1rem;\n}\n\n.h-5 {\n  height: 1.25rem;\n}\n\n.h-10 {\n  height: 2.5rem;\n}\n\n.h-40 {\n  height: 10rem;\n}\n\n.h-32 {\n  height: 8rem;\n}\n\n.h-screen {\n  height: 100vh;\n}\n\n.h-\\[calc\\(100vh-4\\.1rem\\)\\] {\n  height: calc(100vh - 4.1rem);\n}\n\n.min-h-full {\n  min-height: 100%;\n}\n\n.w-full {\n  width: 100%;\n}\n\n.w-8 {\n  width: 2rem;\n}\n\n.w-24 {\n  width: 6rem;\n}\n\n.w-1 {\n  width: 0.25rem;\n}\n\n.w-2 {\n  width: 0.5rem;\n}\n\n.w-96 {\n  width: 24rem;\n}\n\n.w-56 {\n  width: 14rem;\n}\n\n.w-64 {\n  width: 16rem;\n}\n\n.w-auto {\n  width: auto;\n}\n\n.w-4 {\n  width: 1rem;\n}\n\n.w-5 {\n  width: 1.25rem;\n}\n\n.w-32 {\n  width: 8rem;\n}\n\n.w-10 {\n  width: 2.5rem;\n}\n\n.w-40 {\n  width: 10rem;\n}\n\n.w-12 {\n  width: 3rem;\n}\n\n.w-1\\/2 {\n  width: 50%;\n}\n\n.w-1\\/4 {\n  width: 25%;\n}\n\n.w-2\\/4 {\n  width: 50%;\n}\n\n.max-w-md {\n  max-width: 28rem;\n}\n\n.flex-grow {\n  flex-grow: 1;\n}\n\n.border-collapse {\n  border-collapse: collapse;\n}\n\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.cursor-pointer {\n  cursor: pointer;\n}\n\n.resize {\n  resize: both;\n}\n\n.appearance-none {\n  -webkit-appearance: none;\n     -moz-appearance: none;\n          appearance: none;\n}\n\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n\n.grid-cols-3 {\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n\n.flex-row {\n  flex-direction: row;\n}\n\n.flex-col {\n  flex-direction: column;\n}\n\n.items-start {\n  align-items: flex-start;\n}\n\n.items-end {\n  align-items: flex-end;\n}\n\n.items-center {\n  align-items: center;\n}\n\n.justify-start {\n  justify-content: flex-start;\n}\n\n.justify-end {\n  justify-content: flex-end;\n}\n\n.justify-center {\n  justify-content: center;\n}\n\n.justify-between {\n  justify-content: space-between;\n}\n\n.gap-4 {\n  gap: 1rem;\n}\n\n.gap-8 {\n  gap: 2rem;\n}\n\n.gap-2 {\n  gap: 0.5rem;\n}\n\n.space-x-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-x-reverse: 0;\n  margin-right: calc(0.5rem * var(--tw-space-x-reverse));\n  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));\n}\n\n.space-x-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-x-reverse: 0;\n  margin-right: calc(1rem * var(--tw-space-x-reverse));\n  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));\n}\n\n.space-y-8 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(2rem * var(--tw-space-y-reverse));\n}\n\n.space-y-6 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));\n}\n\n.-space-y-px > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(-1px * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(-1px * var(--tw-space-y-reverse));\n}\n\n.self-start {\n  align-self: flex-start;\n}\n\n.self-end {\n  align-self: flex-end;\n}\n\n.justify-self-end {\n  justify-self: end;\n}\n\n.overflow-hidden {\n  overflow: hidden;\n}\n\n.overflow-x-auto {\n  overflow-x: auto;\n}\n\n.overflow-y-auto {\n  overflow-y: auto;\n}\n\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n\n.rounded-full {\n  border-radius: 9999px;\n}\n\n.rounded-sm {\n  border-radius: 0.125rem;\n}\n\n.rounded-md {\n  border-radius: 0.375rem;\n}\n\n.rounded-none {\n  border-radius: 0px;\n}\n\n.rounded {\n  border-radius: 0.25rem;\n}\n\n.rounded-b-lg {\n  border-bottom-right-radius: 0.5rem;\n  border-bottom-left-radius: 0.5rem;\n}\n\n.rounded-t-md {\n  border-top-left-radius: 0.375rem;\n  border-top-right-radius: 0.375rem;\n}\n\n.rounded-b-md {\n  border-bottom-right-radius: 0.375rem;\n  border-bottom-left-radius: 0.375rem;\n}\n\n.border {\n  border-width: 1px;\n}\n\n.border-2 {\n  border-width: 2px;\n}\n\n.border-b {\n  border-bottom-width: 1px;\n}\n\n.border-gray-300 {\n  --tw-border-opacity: 1;\n  border-color: rgb(209 213 219 / var(--tw-border-opacity));\n}\n\n.border-transparent {\n  border-color: transparent;\n}\n\n.bg-gray-800 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(31 41 55 / var(--tw-bg-opacity));\n}\n\n.bg-gray-900 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(17 24 39 / var(--tw-bg-opacity));\n}\n\n.bg-blue-400 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(96 165 250 / var(--tw-bg-opacity));\n}\n\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\n}\n\n.bg-white {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity));\n}\n\n.bg-gray-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(249 250 251 / var(--tw-bg-opacity));\n}\n\n.bg-indigo-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(79 70 229 / var(--tw-bg-opacity));\n}\n\n.bg-gray-400 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(156 163 175 / var(--tw-bg-opacity));\n}\n\n.bg-gray-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(75 85 99 / var(--tw-bg-opacity));\n}\n\n.bg-gray-700 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 65 81 / var(--tw-bg-opacity));\n}\n\n.bg-slate-800 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(30 41 59 / var(--tw-bg-opacity));\n}\n\n.bg-zinc-800 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(39 39 42 / var(--tw-bg-opacity));\n}\n\n.bg-gray-300 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(209 213 219 / var(--tw-bg-opacity));\n}\n\n.bg-slate-200 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(226 232 240 / var(--tw-bg-opacity));\n}\n\n.bg-slate-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(241 245 249 / var(--tw-bg-opacity));\n}\n\n.bg-slate-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(248 250 252 / var(--tw-bg-opacity));\n}\n\n.bg-red-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 68 68 / var(--tw-bg-opacity));\n}\n\n.bg-black {\n  --tw-bg-opacity: 1;\n  background-color: rgb(0 0 0 / var(--tw-bg-opacity));\n}\n\n.p-1 {\n  padding: 0.25rem;\n}\n\n.p-\\[2px\\] {\n  padding: 2px;\n}\n\n.p-5 {\n  padding: 1.25rem;\n}\n\n.p-3 {\n  padding: 0.75rem;\n}\n\n.p-8 {\n  padding: 2rem;\n}\n\n.p-2 {\n  padding: 0.5rem;\n}\n\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.py-5 {\n  padding-top: 1.25rem;\n  padding-bottom: 1.25rem;\n}\n\n.px-10 {\n  padding-left: 2.5rem;\n  padding-right: 2.5rem;\n}\n\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n\n.px-8 {\n  padding-left: 2rem;\n  padding-right: 2rem;\n}\n\n.pl-3 {\n  padding-left: 0.75rem;\n}\n\n.pb-5 {\n  padding-bottom: 1.25rem;\n}\n\n.pr-4 {\n  padding-right: 1rem;\n}\n\n.text-left {\n  text-align: left;\n}\n\n.text-center {\n  text-align: center;\n}\n\n.text-xs {\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.text-3xl {\n  font-size: 1.875rem;\n  line-height: 2.25rem;\n}\n\n.text-4xl {\n  font-size: 2.25rem;\n  line-height: 2.5rem;\n}\n\n.text-2xl {\n  font-size: 1.5rem;\n  line-height: 2rem;\n}\n\n.font-semibold {\n  font-weight: 600;\n}\n\n.font-medium {\n  font-weight: 500;\n}\n\n.font-bold {\n  font-weight: 700;\n}\n\n.font-normal {\n  font-weight: 400;\n}\n\n.uppercase {\n  text-transform: uppercase;\n}\n\n.leading-tight {\n  line-height: 1.25;\n}\n\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n\n.text-gray-600 {\n  --tw-text-opacity: 1;\n  color: rgb(75 85 99 / var(--tw-text-opacity));\n}\n\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity));\n}\n\n.text-gray-500 {\n  --tw-text-opacity: 1;\n  color: rgb(107 114 128 / var(--tw-text-opacity));\n}\n\n.text-gray-300 {\n  --tw-text-opacity: 1;\n  color: rgb(209 213 219 / var(--tw-text-opacity));\n}\n\n.text-sky-500 {\n  --tw-text-opacity: 1;\n  color: rgb(14 165 233 / var(--tw-text-opacity));\n}\n\n.text-sky-600 {\n  --tw-text-opacity: 1;\n  color: rgb(2 132 199 / var(--tw-text-opacity));\n}\n\n.text-gray-900 {\n  --tw-text-opacity: 1;\n  color: rgb(17 24 39 / var(--tw-text-opacity));\n}\n\n.text-indigo-600 {\n  --tw-text-opacity: 1;\n  color: rgb(79 70 229 / var(--tw-text-opacity));\n}\n\n.text-indigo-500 {\n  --tw-text-opacity: 1;\n  color: rgb(99 102 241 / var(--tw-text-opacity));\n}\n\n.text-indigo-400 {\n  --tw-text-opacity: 1;\n  color: rgb(129 140 248 / var(--tw-text-opacity));\n}\n\n.text-gray-100 {\n  --tw-text-opacity: 1;\n  color: rgb(243 244 246 / var(--tw-text-opacity));\n}\n\n.text-gray-200 {\n  --tw-text-opacity: 1;\n  color: rgb(229 231 235 / var(--tw-text-opacity));\n}\n\n.text-gray-400 {\n  --tw-text-opacity: 1;\n  color: rgb(156 163 175 / var(--tw-text-opacity));\n}\n\n.text-gray-800 {\n  --tw-text-opacity: 1;\n  color: rgb(31 41 55 / var(--tw-text-opacity));\n}\n\n.text-orange-600 {\n  --tw-text-opacity: 1;\n  color: rgb(234 88 12 / var(--tw-text-opacity));\n}\n\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity));\n}\n\n.underline {\n  text-decoration-line: underline;\n}\n\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.placeholder-gray-500::-moz-placeholder {\n  --tw-placeholder-opacity: 1;\n  color: rgb(107 114 128 / var(--tw-placeholder-opacity));\n}\n\n.placeholder-gray-500::placeholder {\n  --tw-placeholder-opacity: 1;\n  color: rgb(107 114 128 / var(--tw-placeholder-opacity));\n}\n\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-md {\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.outline {\n  outline-style: solid;\n}\n\n.ring-2 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.ring-1 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.ring-gray-300 {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(209 213 219 / var(--tw-ring-opacity));\n}\n\n.ring-gray-500 {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(107 114 128 / var(--tw-ring-opacity));\n}\n\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.hover\\:bg-gray-100:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\n}\n\n.hover\\:bg-gray-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 65 81 / var(--tw-bg-opacity));\n}\n\n.hover\\:text-white:hover {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity));\n}\n\n.focus\\:z-10:focus {\n  z-index: 10;\n}\n\n.focus\\:border-indigo-500:focus {\n  --tw-border-opacity: 1;\n  border-color: rgb(99 102 241 / var(--tw-border-opacity));\n}\n\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n\n.focus\\:ring-indigo-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(99 102 241 / var(--tw-ring-opacity));\n}\n\n@media (prefers-color-scheme: dark) {\n  .dark\\:ring-gray-500 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(107 114 128 / var(--tw-ring-opacity));\n  }\n}\n\n@media (min-width: 640px) {\n  .sm\\:px-6 {\n    padding-left: 1.5rem;\n    padding-right: 1.5rem;\n  }\n\n  .sm\\:text-sm {\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n  }\n}\n\n@media (min-width: 768px) {\n  .md\\:mb-5 {\n    margin-bottom: 1.25rem;\n  }\n\n  .md\\:mb-2 {\n    margin-bottom: 0.5rem;\n  }\n\n  .md\\:mb-0 {\n    margin-bottom: 0px;\n  }\n\n  .md\\:w-1\\/2 {\n    width: 50%;\n  }\n\n  .md\\:flex-row {\n    flex-direction: row;\n  }\n\n  .md\\:pr-4 {\n    padding-right: 1rem;\n  }\n}\n\n@media (min-width: 1024px) {\n  .lg\\:px-8 {\n    padding-left: 2rem;\n    padding-right: 2rem;\n  }\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "/*\r\n! tailwindcss v3.2.1 | MIT License | https://tailwindcss.com\r\n*/\r\n\r\n/*\r\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\r\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\r\n*/\r\n\r\n*,\r\n::before,\r\n::after {\r\n  box-sizing: border-box;\r\n  /* 1 */\r\n  border-width: 0;\r\n  /* 2 */\r\n  border-style: solid;\r\n  /* 2 */\r\n  border-color: #e5e7eb;\r\n  /* 2 */\r\n}\r\n\r\n::before,\r\n::after {\r\n  --tw-content: '';\r\n}\r\n\r\n/*\r\n1. Use a consistent sensible line-height in all browsers.\r\n2. Prevent adjustments of font size after orientation changes in iOS.\r\n3. Use a more readable tab size.\r\n4. Use the user's configured `sans` font-family by default.\r\n*/\r\n\r\nhtml {\r\n  line-height: 1.5;\r\n  /* 1 */\r\n  -webkit-text-size-adjust: 100%;\r\n  /* 2 */\r\n  -moz-tab-size: 4;\r\n  /* 3 */\r\n  -o-tab-size: 4;\r\n     tab-size: 4;\r\n  /* 3 */\r\n  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\r\n  /* 4 */\r\n}\r\n\r\n/*\r\n1. Remove the margin in all browsers.\r\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\r\n*/\r\n\r\nbody {\r\n  margin: 0;\r\n  /* 1 */\r\n  line-height: inherit;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\n1. Add the correct height in Firefox.\r\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\r\n3. Ensure horizontal rules are visible by default.\r\n*/\r\n\r\nhr {\r\n  height: 0;\r\n  /* 1 */\r\n  color: inherit;\r\n  /* 2 */\r\n  border-top-width: 1px;\r\n  /* 3 */\r\n}\r\n\r\n/*\r\nAdd the correct text decoration in Chrome, Edge, and Safari.\r\n*/\r\n\r\nabbr:where([title]) {\r\n  -webkit-text-decoration: underline dotted;\r\n          text-decoration: underline dotted;\r\n}\r\n\r\n/*\r\nRemove the default font size and weight for headings.\r\n*/\r\n\r\nh1,\r\nh2,\r\nh3,\r\nh4,\r\nh5,\r\nh6 {\r\n  font-size: inherit;\r\n  font-weight: inherit;\r\n}\r\n\r\n/*\r\nReset links to optimize for opt-in styling instead of opt-out.\r\n*/\r\n\r\na {\r\n  color: inherit;\r\n  text-decoration: inherit;\r\n}\r\n\r\n/*\r\nAdd the correct font weight in Edge and Safari.\r\n*/\r\n\r\nb,\r\nstrong {\r\n  font-weight: bolder;\r\n}\r\n\r\n/*\r\n1. Use the user's configured `mono` font family by default.\r\n2. Correct the odd `em` font sizing in all browsers.\r\n*/\r\n\r\ncode,\r\nkbd,\r\nsamp,\r\npre {\r\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;\r\n  /* 1 */\r\n  font-size: 1em;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nAdd the correct font size in all browsers.\r\n*/\r\n\r\nsmall {\r\n  font-size: 80%;\r\n}\r\n\r\n/*\r\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\r\n*/\r\n\r\nsub,\r\nsup {\r\n  font-size: 75%;\r\n  line-height: 0;\r\n  position: relative;\r\n  vertical-align: baseline;\r\n}\r\n\r\nsub {\r\n  bottom: -0.25em;\r\n}\r\n\r\nsup {\r\n  top: -0.5em;\r\n}\r\n\r\n/*\r\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\r\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\r\n3. Remove gaps between table borders by default.\r\n*/\r\n\r\ntable {\r\n  text-indent: 0;\r\n  /* 1 */\r\n  border-color: inherit;\r\n  /* 2 */\r\n  border-collapse: collapse;\r\n  /* 3 */\r\n}\r\n\r\n/*\r\n1. Change the font styles in all browsers.\r\n2. Remove the margin in Firefox and Safari.\r\n3. Remove default padding in all browsers.\r\n*/\r\n\r\nbutton,\r\ninput,\r\noptgroup,\r\nselect,\r\ntextarea {\r\n  font-family: inherit;\r\n  /* 1 */\r\n  font-size: 100%;\r\n  /* 1 */\r\n  font-weight: inherit;\r\n  /* 1 */\r\n  line-height: inherit;\r\n  /* 1 */\r\n  color: inherit;\r\n  /* 1 */\r\n  margin: 0;\r\n  /* 2 */\r\n  padding: 0;\r\n  /* 3 */\r\n}\r\n\r\n/*\r\nRemove the inheritance of text transform in Edge and Firefox.\r\n*/\r\n\r\nbutton,\r\nselect {\r\n  text-transform: none;\r\n}\r\n\r\n/*\r\n1. Correct the inability to style clickable types in iOS and Safari.\r\n2. Remove default button styles.\r\n*/\r\n\r\nbutton,\r\n[type='button'],\r\n[type='reset'],\r\n[type='submit'] {\r\n  -webkit-appearance: button;\r\n  /* 1 */\r\n  background-color: transparent;\r\n  /* 2 */\r\n  background-image: none;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nUse the modern Firefox focus style for all focusable elements.\r\n*/\r\n\r\n:-moz-focusring {\r\n  outline: auto;\r\n}\r\n\r\n/*\r\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\r\n*/\r\n\r\n:-moz-ui-invalid {\r\n  box-shadow: none;\r\n}\r\n\r\n/*\r\nAdd the correct vertical alignment in Chrome and Firefox.\r\n*/\r\n\r\nprogress {\r\n  vertical-align: baseline;\r\n}\r\n\r\n/*\r\nCorrect the cursor style of increment and decrement buttons in Safari.\r\n*/\r\n\r\n::-webkit-inner-spin-button,\r\n::-webkit-outer-spin-button {\r\n  height: auto;\r\n}\r\n\r\n/*\r\n1. Correct the odd appearance in Chrome and Safari.\r\n2. Correct the outline style in Safari.\r\n*/\r\n\r\n[type='search'] {\r\n  -webkit-appearance: textfield;\r\n  /* 1 */\r\n  outline-offset: -2px;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nRemove the inner padding in Chrome and Safari on macOS.\r\n*/\r\n\r\n::-webkit-search-decoration {\r\n  -webkit-appearance: none;\r\n}\r\n\r\n/*\r\n1. Correct the inability to style clickable types in iOS and Safari.\r\n2. Change font properties to `inherit` in Safari.\r\n*/\r\n\r\n::-webkit-file-upload-button {\r\n  -webkit-appearance: button;\r\n  /* 1 */\r\n  font: inherit;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nAdd the correct display in Chrome and Safari.\r\n*/\r\n\r\nsummary {\r\n  display: list-item;\r\n}\r\n\r\n/*\r\nRemoves the default spacing and border for appropriate elements.\r\n*/\r\n\r\nblockquote,\r\ndl,\r\ndd,\r\nh1,\r\nh2,\r\nh3,\r\nh4,\r\nh5,\r\nh6,\r\nhr,\r\nfigure,\r\np,\r\npre {\r\n  margin: 0;\r\n}\r\n\r\nfieldset {\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\nlegend {\r\n  padding: 0;\r\n}\r\n\r\nol,\r\nul,\r\nmenu {\r\n  list-style: none;\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\n\r\n/*\r\nPrevent resizing textareas horizontally by default.\r\n*/\r\n\r\ntextarea {\r\n  resize: vertical;\r\n}\r\n\r\n/*\r\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\r\n2. Set the default placeholder color to the user's configured gray 400 color.\r\n*/\r\n\r\ninput::-moz-placeholder, textarea::-moz-placeholder {\r\n  opacity: 1;\r\n  /* 1 */\r\n  color: #9ca3af;\r\n  /* 2 */\r\n}\r\n\r\ninput::placeholder,\r\ntextarea::placeholder {\r\n  opacity: 1;\r\n  /* 1 */\r\n  color: #9ca3af;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nSet the default cursor for buttons.\r\n*/\r\n\r\nbutton,\r\n[role=\"button\"] {\r\n  cursor: pointer;\r\n}\r\n\r\n/*\r\nMake sure disabled buttons don't get the pointer cursor.\r\n*/\r\n\r\n:disabled {\r\n  cursor: default;\r\n}\r\n\r\n/*\r\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\r\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\r\n   This can trigger a poorly considered lint error in some tools but is included by design.\r\n*/\r\n\r\nimg,\r\nsvg,\r\nvideo,\r\ncanvas,\r\naudio,\r\niframe,\r\nembed,\r\nobject {\r\n  display: block;\r\n  /* 1 */\r\n  vertical-align: middle;\r\n  /* 2 */\r\n}\r\n\r\n/*\r\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\r\n*/\r\n\r\nimg,\r\nvideo {\r\n  max-width: 100%;\r\n  height: auto;\r\n}\r\n\r\n/* Make elements with the HTML hidden attribute stay hidden by default */\r\n\r\n[hidden] {\r\n  display: none;\r\n}\r\n\r\n*, ::before, ::after {\r\n  --tw-border-spacing-x: 0;\r\n  --tw-border-spacing-y: 0;\r\n  --tw-translate-x: 0;\r\n  --tw-translate-y: 0;\r\n  --tw-rotate: 0;\r\n  --tw-skew-x: 0;\r\n  --tw-skew-y: 0;\r\n  --tw-scale-x: 1;\r\n  --tw-scale-y: 1;\r\n  --tw-pan-x:  ;\r\n  --tw-pan-y:  ;\r\n  --tw-pinch-zoom:  ;\r\n  --tw-scroll-snap-strictness: proximity;\r\n  --tw-ordinal:  ;\r\n  --tw-slashed-zero:  ;\r\n  --tw-numeric-figure:  ;\r\n  --tw-numeric-spacing:  ;\r\n  --tw-numeric-fraction:  ;\r\n  --tw-ring-inset:  ;\r\n  --tw-ring-offset-width: 0px;\r\n  --tw-ring-offset-color: #fff;\r\n  --tw-ring-color: rgb(59 130 246 / 0.5);\r\n  --tw-ring-offset-shadow: 0 0 #0000;\r\n  --tw-ring-shadow: 0 0 #0000;\r\n  --tw-shadow: 0 0 #0000;\r\n  --tw-shadow-colored: 0 0 #0000;\r\n  --tw-blur:  ;\r\n  --tw-brightness:  ;\r\n  --tw-contrast:  ;\r\n  --tw-grayscale:  ;\r\n  --tw-hue-rotate:  ;\r\n  --tw-invert:  ;\r\n  --tw-saturate:  ;\r\n  --tw-sepia:  ;\r\n  --tw-drop-shadow:  ;\r\n  --tw-backdrop-blur:  ;\r\n  --tw-backdrop-brightness:  ;\r\n  --tw-backdrop-contrast:  ;\r\n  --tw-backdrop-grayscale:  ;\r\n  --tw-backdrop-hue-rotate:  ;\r\n  --tw-backdrop-invert:  ;\r\n  --tw-backdrop-opacity:  ;\r\n  --tw-backdrop-saturate:  ;\r\n  --tw-backdrop-sepia:  ;\r\n}\r\n\r\n::backdrop {\r\n  --tw-border-spacing-x: 0;\r\n  --tw-border-spacing-y: 0;\r\n  --tw-translate-x: 0;\r\n  --tw-translate-y: 0;\r\n  --tw-rotate: 0;\r\n  --tw-skew-x: 0;\r\n  --tw-skew-y: 0;\r\n  --tw-scale-x: 1;\r\n  --tw-scale-y: 1;\r\n  --tw-pan-x:  ;\r\n  --tw-pan-y:  ;\r\n  --tw-pinch-zoom:  ;\r\n  --tw-scroll-snap-strictness: proximity;\r\n  --tw-ordinal:  ;\r\n  --tw-slashed-zero:  ;\r\n  --tw-numeric-figure:  ;\r\n  --tw-numeric-spacing:  ;\r\n  --tw-numeric-fraction:  ;\r\n  --tw-ring-inset:  ;\r\n  --tw-ring-offset-width: 0px;\r\n  --tw-ring-offset-color: #fff;\r\n  --tw-ring-color: rgb(59 130 246 / 0.5);\r\n  --tw-ring-offset-shadow: 0 0 #0000;\r\n  --tw-ring-shadow: 0 0 #0000;\r\n  --tw-shadow: 0 0 #0000;\r\n  --tw-shadow-colored: 0 0 #0000;\r\n  --tw-blur:  ;\r\n  --tw-brightness:  ;\r\n  --tw-contrast:  ;\r\n  --tw-grayscale:  ;\r\n  --tw-hue-rotate:  ;\r\n  --tw-invert:  ;\r\n  --tw-saturate:  ;\r\n  --tw-sepia:  ;\r\n  --tw-drop-shadow:  ;\r\n  --tw-backdrop-blur:  ;\r\n  --tw-backdrop-brightness:  ;\r\n  --tw-backdrop-contrast:  ;\r\n  --tw-backdrop-grayscale:  ;\r\n  --tw-backdrop-hue-rotate:  ;\r\n  --tw-backdrop-invert:  ;\r\n  --tw-backdrop-opacity:  ;\r\n  --tw-backdrop-saturate:  ;\r\n  --tw-backdrop-sepia:  ;\r\n}\r\n\r\n.select2-dropdown {\r\n  border-bottom-right-radius: 0.5rem;\r\n  border-bottom-left-radius: 0.5rem;\r\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\r\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\r\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\r\n}\r\n\r\n.p-paginator .p-paginator-pages .p-paginator-page {\r\n  background-color: transparent;\r\n  border: 1px solid #d4d4d8;\r\n  color: #71717A;\r\n  min-width: 2rem  !important;\r\n  height: 2rem  !important;\r\n  margin: 0 0 0 -1px;\r\n  transition: none;\r\n  border-radius: 0;\r\n  font-size: 12px !important;\r\n}\r\n\r\n.p-paginator .p-paginator-first, .p-paginator .p-paginator-prev, .p-paginator .p-paginator-next, .p-paginator .p-paginator-last {\r\n  background-color: transparent;\r\n  border: 1px solid #d4d4d8;\r\n  color: #71717A;\r\n  min-width: 2rem !important;\r\n  height: 2rem !important;\r\n  margin: 0 0 0 -1px;\r\n  transition: none;\r\n  border-radius: 0;\r\n  font-size: 12px !important;\r\n}\r\n\r\n.p-button {\r\n  padding: 0.75rem 1rem;\r\n  font-size: 1rem;\r\n  transition: none;\r\n  border-radius: 5px !important;\r\n}\r\n\r\n.p-button.p-button-sm {\r\n  font-size: 13px !important;\r\n  padding: 6px 10px !important;\r\n}\r\n\r\n.p-paginator-icon{\r\n  font-size: 12px !important;\r\n}\r\n\r\n.p-button.p-button-sm .p-button-icon {\r\n  font-size: 12px !important;\r\n}\r\n\r\n.p-button.p-button-icon-only {\r\n  width: 1.5rem !important;\r\n  height: 1.5rem !important;\r\n  padding: 0.75rem 0;\r\n  font-size: 12px !important;\r\n}\r\n\r\n.p-dropdown .p-dropdown-trigger {\r\n  background: transparent;\r\n  color: #71717A;\r\n  width: 2rem!important;\r\n  border-top-right-radius: 0.375rem;\r\n  border-bottom-right-radius: 0.375rem;\r\n}\r\n\r\n.p-component {\r\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\r\n  font-size: 12px !important;\r\n  font-weight: normal;\r\n}\r\n\r\n.p-paginator {\r\n  background: #ffffff;\r\n  color: #71717A;\r\n  border: solid #f4f4f5;\r\n  border-width: 0;\r\n  padding: 0.1rem 0.1rem !important;\r\n  border-radius: 0!important;\r\n}\r\n\r\n.p-dropdown .p-dropdown-trigger {\r\n  background: transparent;\r\n  color: #71717A;\r\n  width: 2rem!important;\r\n  height: 2rem!important;\r\n  border-top-right-radius: 0 !important;\r\n  border-bottom-right-radius: 0 !important;\r\n  font-size: 12px!important\r\n}\r\n\r\n.p-dropdown-trigger-icon{\r\n  font-size: 12px!important\r\n}\r\n\r\n.p-paginator .p-dropdown {\r\n  margin-left: 0.5rem;\r\n  margin-right: 0.5rem;\r\n  height: 2rem !important;\r\n  font-size: 12px!important;\r\n  display: flex!important;\r\n  justify-content: center!important;\r\n  justify-items : center!important;\r\n}\r\n\r\n.p-dropdown-label {\r\n  display: block;\r\n  white-space: nowrap;\r\n  font-size: 12px!important\r\n}\r\n\r\n.p-inputtext {\r\n  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\r\n  font-size: 1rem;\r\n  color: #3f3f46;\r\n  background: #ffffff;\r\n  padding: 0.5rem 0.3rem !important;\r\n  border: 1px solid #d4d4d8;\r\n  transition: none;\r\n  -webkit-appearance: none;\r\n  -moz-appearance: none;\r\n  appearance: none;\r\n  border-radius: 0.375rem;\r\n}\r\n\r\n.sr-only {\r\n  position: absolute;\r\n  width: 1px;\r\n  height: 1px;\r\n  padding: 0;\r\n  margin: -1px;\r\n  overflow: hidden;\r\n  clip: rect(0, 0, 0, 0);\r\n  white-space: nowrap;\r\n  border-width: 0;\r\n}\r\n\r\n.visible {\r\n  visibility: visible;\r\n}\r\n\r\n.collapse {\r\n  visibility: collapse;\r\n}\r\n\r\n.absolute {\r\n  position: absolute;\r\n}\r\n\r\n.relative {\r\n  position: relative;\r\n}\r\n\r\n.inset-y-0 {\r\n  top: 0px;\r\n  bottom: 0px;\r\n}\r\n\r\n.left-0 {\r\n  left: 0px;\r\n}\r\n\r\n.-left-1 {\r\n  left: -0.25rem;\r\n}\r\n\r\n.col-span-2 {\r\n  grid-column: span 2 / span 2;\r\n}\r\n\r\n.m-2 {\r\n  margin: 0.5rem;\r\n}\r\n\r\n.m-1 {\r\n  margin: 0.25rem;\r\n}\r\n\r\n.mx-auto {\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n}\r\n\r\n.my-5 {\r\n  margin-top: 1.25rem;\r\n  margin-bottom: 1.25rem;\r\n}\r\n\r\n.my-3 {\r\n  margin-top: 0.75rem;\r\n  margin-bottom: 0.75rem;\r\n}\r\n\r\n.my-2 {\r\n  margin-top: 0.5rem;\r\n  margin-bottom: 0.5rem;\r\n}\r\n\r\n.mx-2 {\r\n  margin-left: 0.5rem;\r\n  margin-right: 0.5rem;\r\n}\r\n\r\n.mx-3 {\r\n  margin-left: 0.75rem;\r\n  margin-right: 0.75rem;\r\n}\r\n\r\n.mr-2 {\r\n  margin-right: 0.5rem;\r\n}\r\n\r\n.mb-4 {\r\n  margin-bottom: 1rem;\r\n}\r\n\r\n.mb-2 {\r\n  margin-bottom: 0.5rem;\r\n}\r\n\r\n.mt-6 {\r\n  margin-top: 1.5rem;\r\n}\r\n\r\n.mt-2 {\r\n  margin-top: 0.5rem;\r\n}\r\n\r\n.mt-8 {\r\n  margin-top: 2rem;\r\n}\r\n\r\n.ml-2 {\r\n  margin-left: 0.5rem;\r\n}\r\n\r\n.mr-1 {\r\n  margin-right: 0.25rem;\r\n}\r\n\r\n.mb-3 {\r\n  margin-bottom: 0.75rem;\r\n}\r\n\r\n.mb-5 {\r\n  margin-bottom: 1.25rem;\r\n}\r\n\r\n.mb-0 {\r\n  margin-bottom: 0px;\r\n}\r\n\r\n.mr-3 {\r\n  margin-right: 0.75rem;\r\n}\r\n\r\n.block {\r\n  display: block;\r\n}\r\n\r\n.flex {\r\n  display: flex;\r\n}\r\n\r\n.table {\r\n  display: table;\r\n}\r\n\r\n.grid {\r\n  display: grid;\r\n}\r\n\r\n.contents {\r\n  display: contents;\r\n}\r\n\r\n.hidden {\r\n  display: none;\r\n}\r\n\r\n.h-full {\r\n  height: 100%;\r\n}\r\n\r\n.h-8 {\r\n  height: 2rem;\r\n}\r\n\r\n.h-\\[calc\\(100vh-3rem\\)\\] {\r\n  height: calc(100vh - 3rem);\r\n}\r\n\r\n.h-24 {\r\n  height: 6rem;\r\n}\r\n\r\n.h-14 {\r\n  height: 3.5rem;\r\n}\r\n\r\n.h-auto {\r\n  height: auto;\r\n}\r\n\r\n.h-12 {\r\n  height: 3rem;\r\n}\r\n\r\n.h-4 {\r\n  height: 1rem;\r\n}\r\n\r\n.h-5 {\r\n  height: 1.25rem;\r\n}\r\n\r\n.h-10 {\r\n  height: 2.5rem;\r\n}\r\n\r\n.h-40 {\r\n  height: 10rem;\r\n}\r\n\r\n.h-32 {\r\n  height: 8rem;\r\n}\r\n\r\n.h-screen {\r\n  height: 100vh;\r\n}\r\n\r\n.h-\\[calc\\(100vh-4\\.1rem\\)\\] {\r\n  height: calc(100vh - 4.1rem);\r\n}\r\n\r\n.min-h-full {\r\n  min-height: 100%;\r\n}\r\n\r\n.w-full {\r\n  width: 100%;\r\n}\r\n\r\n.w-8 {\r\n  width: 2rem;\r\n}\r\n\r\n.w-24 {\r\n  width: 6rem;\r\n}\r\n\r\n.w-1 {\r\n  width: 0.25rem;\r\n}\r\n\r\n.w-2 {\r\n  width: 0.5rem;\r\n}\r\n\r\n.w-96 {\r\n  width: 24rem;\r\n}\r\n\r\n.w-56 {\r\n  width: 14rem;\r\n}\r\n\r\n.w-64 {\r\n  width: 16rem;\r\n}\r\n\r\n.w-auto {\r\n  width: auto;\r\n}\r\n\r\n.w-4 {\r\n  width: 1rem;\r\n}\r\n\r\n.w-5 {\r\n  width: 1.25rem;\r\n}\r\n\r\n.w-32 {\r\n  width: 8rem;\r\n}\r\n\r\n.w-10 {\r\n  width: 2.5rem;\r\n}\r\n\r\n.w-40 {\r\n  width: 10rem;\r\n}\r\n\r\n.w-12 {\r\n  width: 3rem;\r\n}\r\n\r\n.w-1\\/2 {\r\n  width: 50%;\r\n}\r\n\r\n.w-1\\/4 {\r\n  width: 25%;\r\n}\r\n\r\n.w-2\\/4 {\r\n  width: 50%;\r\n}\r\n\r\n.max-w-md {\r\n  max-width: 28rem;\r\n}\r\n\r\n.flex-grow {\r\n  flex-grow: 1;\r\n}\r\n\r\n.border-collapse {\r\n  border-collapse: collapse;\r\n}\r\n\r\n.transform {\r\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\r\n}\r\n\r\n.cursor-pointer {\r\n  cursor: pointer;\r\n}\r\n\r\n.resize {\r\n  resize: both;\r\n}\r\n\r\n.appearance-none {\r\n  -webkit-appearance: none;\r\n     -moz-appearance: none;\r\n          appearance: none;\r\n}\r\n\r\n.grid-cols-2 {\r\n  grid-template-columns: repeat(2, minmax(0, 1fr));\r\n}\r\n\r\n.grid-cols-3 {\r\n  grid-template-columns: repeat(3, minmax(0, 1fr));\r\n}\r\n\r\n.flex-row {\r\n  flex-direction: row;\r\n}\r\n\r\n.flex-col {\r\n  flex-direction: column;\r\n}\r\n\r\n.items-start {\r\n  align-items: flex-start;\r\n}\r\n\r\n.items-end {\r\n  align-items: flex-end;\r\n}\r\n\r\n.items-center {\r\n  align-items: center;\r\n}\r\n\r\n.justify-start {\r\n  justify-content: flex-start;\r\n}\r\n\r\n.justify-end {\r\n  justify-content: flex-end;\r\n}\r\n\r\n.justify-center {\r\n  justify-content: center;\r\n}\r\n\r\n.justify-between {\r\n  justify-content: space-between;\r\n}\r\n\r\n.gap-4 {\r\n  gap: 1rem;\r\n}\r\n\r\n.gap-8 {\r\n  gap: 2rem;\r\n}\r\n\r\n.gap-2 {\r\n  gap: 0.5rem;\r\n}\r\n\r\n.space-x-2 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-x-reverse: 0;\r\n  margin-right: calc(0.5rem * var(--tw-space-x-reverse));\r\n  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));\r\n}\r\n\r\n.space-x-4 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-x-reverse: 0;\r\n  margin-right: calc(1rem * var(--tw-space-x-reverse));\r\n  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));\r\n}\r\n\r\n.space-y-8 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-y-reverse: 0;\r\n  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));\r\n  margin-bottom: calc(2rem * var(--tw-space-y-reverse));\r\n}\r\n\r\n.space-y-6 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-y-reverse: 0;\r\n  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));\r\n  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));\r\n}\r\n\r\n.-space-y-px > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-y-reverse: 0;\r\n  margin-top: calc(-1px * calc(1 - var(--tw-space-y-reverse)));\r\n  margin-bottom: calc(-1px * var(--tw-space-y-reverse));\r\n}\r\n\r\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-y-reverse: 0;\r\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\r\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\r\n}\r\n\r\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\r\n  --tw-space-y-reverse: 0;\r\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\r\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\r\n}\r\n\r\n.self-start {\r\n  align-self: flex-start;\r\n}\r\n\r\n.self-end {\r\n  align-self: flex-end;\r\n}\r\n\r\n.justify-self-end {\r\n  justify-self: end;\r\n}\r\n\r\n.overflow-hidden {\r\n  overflow: hidden;\r\n}\r\n\r\n.overflow-x-auto {\r\n  overflow-x: auto;\r\n}\r\n\r\n.overflow-y-auto {\r\n  overflow-y: auto;\r\n}\r\n\r\n.whitespace-nowrap {\r\n  white-space: nowrap;\r\n}\r\n\r\n.rounded-full {\r\n  border-radius: 9999px;\r\n}\r\n\r\n.rounded-sm {\r\n  border-radius: 0.125rem;\r\n}\r\n\r\n.rounded-md {\r\n  border-radius: 0.375rem;\r\n}\r\n\r\n.rounded-none {\r\n  border-radius: 0px;\r\n}\r\n\r\n.rounded {\r\n  border-radius: 0.25rem;\r\n}\r\n\r\n.rounded-b-lg {\r\n  border-bottom-right-radius: 0.5rem;\r\n  border-bottom-left-radius: 0.5rem;\r\n}\r\n\r\n.rounded-t-md {\r\n  border-top-left-radius: 0.375rem;\r\n  border-top-right-radius: 0.375rem;\r\n}\r\n\r\n.rounded-b-md {\r\n  border-bottom-right-radius: 0.375rem;\r\n  border-bottom-left-radius: 0.375rem;\r\n}\r\n\r\n.border {\r\n  border-width: 1px;\r\n}\r\n\r\n.border-2 {\r\n  border-width: 2px;\r\n}\r\n\r\n.border-b {\r\n  border-bottom-width: 1px;\r\n}\r\n\r\n.border-gray-300 {\r\n  --tw-border-opacity: 1;\r\n  border-color: rgb(209 213 219 / var(--tw-border-opacity));\r\n}\r\n\r\n.border-transparent {\r\n  border-color: transparent;\r\n}\r\n\r\n.bg-gray-800 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(31 41 55 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-900 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(17 24 39 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-blue-400 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(96 165 250 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-100 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-white {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-50 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(249 250 251 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-indigo-600 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(79 70 229 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-400 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(156 163 175 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-600 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(75 85 99 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-700 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(55 65 81 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-slate-800 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(30 41 59 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-zinc-800 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(39 39 42 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-gray-300 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(209 213 219 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-slate-200 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(226 232 240 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-slate-100 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(241 245 249 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-slate-50 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(248 250 252 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-red-500 {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(239 68 68 / var(--tw-bg-opacity));\r\n}\r\n\r\n.bg-black {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(0 0 0 / var(--tw-bg-opacity));\r\n}\r\n\r\n.p-1 {\r\n  padding: 0.25rem;\r\n}\r\n\r\n.p-\\[2px\\] {\r\n  padding: 2px;\r\n}\r\n\r\n.p-5 {\r\n  padding: 1.25rem;\r\n}\r\n\r\n.p-3 {\r\n  padding: 0.75rem;\r\n}\r\n\r\n.p-8 {\r\n  padding: 2rem;\r\n}\r\n\r\n.p-2 {\r\n  padding: 0.5rem;\r\n}\r\n\r\n.px-5 {\r\n  padding-left: 1.25rem;\r\n  padding-right: 1.25rem;\r\n}\r\n\r\n.py-1 {\r\n  padding-top: 0.25rem;\r\n  padding-bottom: 0.25rem;\r\n}\r\n\r\n.px-4 {\r\n  padding-left: 1rem;\r\n  padding-right: 1rem;\r\n}\r\n\r\n.px-6 {\r\n  padding-left: 1.5rem;\r\n  padding-right: 1.5rem;\r\n}\r\n\r\n.px-2 {\r\n  padding-left: 0.5rem;\r\n  padding-right: 0.5rem;\r\n}\r\n\r\n.py-3 {\r\n  padding-top: 0.75rem;\r\n  padding-bottom: 0.75rem;\r\n}\r\n\r\n.py-2 {\r\n  padding-top: 0.5rem;\r\n  padding-bottom: 0.5rem;\r\n}\r\n\r\n.px-3 {\r\n  padding-left: 0.75rem;\r\n  padding-right: 0.75rem;\r\n}\r\n\r\n.py-5 {\r\n  padding-top: 1.25rem;\r\n  padding-bottom: 1.25rem;\r\n}\r\n\r\n.px-10 {\r\n  padding-left: 2.5rem;\r\n  padding-right: 2.5rem;\r\n}\r\n\r\n.py-12 {\r\n  padding-top: 3rem;\r\n  padding-bottom: 3rem;\r\n}\r\n\r\n.px-8 {\r\n  padding-left: 2rem;\r\n  padding-right: 2rem;\r\n}\r\n\r\n.pl-3 {\r\n  padding-left: 0.75rem;\r\n}\r\n\r\n.pb-5 {\r\n  padding-bottom: 1.25rem;\r\n}\r\n\r\n.pr-4 {\r\n  padding-right: 1rem;\r\n}\r\n\r\n.text-left {\r\n  text-align: left;\r\n}\r\n\r\n.text-center {\r\n  text-align: center;\r\n}\r\n\r\n.text-xs {\r\n  font-size: 0.75rem;\r\n  line-height: 1rem;\r\n}\r\n\r\n.text-xl {\r\n  font-size: 1.25rem;\r\n  line-height: 1.75rem;\r\n}\r\n\r\n.text-lg {\r\n  font-size: 1.125rem;\r\n  line-height: 1.75rem;\r\n}\r\n\r\n.text-sm {\r\n  font-size: 0.875rem;\r\n  line-height: 1.25rem;\r\n}\r\n\r\n.text-3xl {\r\n  font-size: 1.875rem;\r\n  line-height: 2.25rem;\r\n}\r\n\r\n.text-4xl {\r\n  font-size: 2.25rem;\r\n  line-height: 2.5rem;\r\n}\r\n\r\n.text-2xl {\r\n  font-size: 1.5rem;\r\n  line-height: 2rem;\r\n}\r\n\r\n.font-semibold {\r\n  font-weight: 600;\r\n}\r\n\r\n.font-medium {\r\n  font-weight: 500;\r\n}\r\n\r\n.font-bold {\r\n  font-weight: 700;\r\n}\r\n\r\n.font-normal {\r\n  font-weight: 400;\r\n}\r\n\r\n.uppercase {\r\n  text-transform: uppercase;\r\n}\r\n\r\n.leading-tight {\r\n  line-height: 1.25;\r\n}\r\n\r\n.tracking-tight {\r\n  letter-spacing: -0.025em;\r\n}\r\n\r\n.text-gray-600 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(75 85 99 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-white {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(255 255 255 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-500 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(107 114 128 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-300 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(209 213 219 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-sky-500 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(14 165 233 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-sky-600 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(2 132 199 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-900 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(17 24 39 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-indigo-600 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(79 70 229 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-indigo-500 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(99 102 241 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-indigo-400 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(129 140 248 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-100 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(243 244 246 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-200 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(229 231 235 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-400 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(156 163 175 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-gray-800 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(31 41 55 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-orange-600 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(234 88 12 / var(--tw-text-opacity));\r\n}\r\n\r\n.text-red-500 {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(239 68 68 / var(--tw-text-opacity));\r\n}\r\n\r\n.underline {\r\n  text-decoration-line: underline;\r\n}\r\n\r\n.antialiased {\r\n  -webkit-font-smoothing: antialiased;\r\n  -moz-osx-font-smoothing: grayscale;\r\n}\r\n\r\n.placeholder-gray-500::-moz-placeholder {\r\n  --tw-placeholder-opacity: 1;\r\n  color: rgb(107 114 128 / var(--tw-placeholder-opacity));\r\n}\r\n\r\n.placeholder-gray-500::placeholder {\r\n  --tw-placeholder-opacity: 1;\r\n  color: rgb(107 114 128 / var(--tw-placeholder-opacity));\r\n}\r\n\r\n.shadow-sm {\r\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\r\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\r\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\r\n}\r\n\r\n.shadow {\r\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\r\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\r\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\r\n}\r\n\r\n.shadow-md {\r\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\r\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\r\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\r\n}\r\n\r\n.outline {\r\n  outline-style: solid;\r\n}\r\n\r\n.ring-2 {\r\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\r\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\r\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\r\n}\r\n\r\n.ring-1 {\r\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\r\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\r\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\r\n}\r\n\r\n.ring-gray-300 {\r\n  --tw-ring-opacity: 1;\r\n  --tw-ring-color: rgb(209 213 219 / var(--tw-ring-opacity));\r\n}\r\n\r\n.ring-gray-500 {\r\n  --tw-ring-opacity: 1;\r\n  --tw-ring-color: rgb(107 114 128 / var(--tw-ring-opacity));\r\n}\r\n\r\n.grayscale {\r\n  --tw-grayscale: grayscale(100%);\r\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\r\n}\r\n\r\n.filter {\r\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\r\n}\r\n\r\n.transition {\r\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;\r\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\r\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;\r\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\r\n  transition-duration: 150ms;\r\n}\r\n\r\n.hover\\:bg-gray-100:hover {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity));\r\n}\r\n\r\n.hover\\:bg-gray-700:hover {\r\n  --tw-bg-opacity: 1;\r\n  background-color: rgb(55 65 81 / var(--tw-bg-opacity));\r\n}\r\n\r\n.hover\\:text-white:hover {\r\n  --tw-text-opacity: 1;\r\n  color: rgb(255 255 255 / var(--tw-text-opacity));\r\n}\r\n\r\n.focus\\:z-10:focus {\r\n  z-index: 10;\r\n}\r\n\r\n.focus\\:border-indigo-500:focus {\r\n  --tw-border-opacity: 1;\r\n  border-color: rgb(99 102 241 / var(--tw-border-opacity));\r\n}\r\n\r\n.focus\\:outline-none:focus {\r\n  outline: 2px solid transparent;\r\n  outline-offset: 2px;\r\n}\r\n\r\n.focus\\:ring-indigo-500:focus {\r\n  --tw-ring-opacity: 1;\r\n  --tw-ring-color: rgb(99 102 241 / var(--tw-ring-opacity));\r\n}\r\n\r\n@media (prefers-color-scheme: dark) {\r\n  .dark\\:ring-gray-500 {\r\n    --tw-ring-opacity: 1;\r\n    --tw-ring-color: rgb(107 114 128 / var(--tw-ring-opacity));\r\n  }\r\n}\r\n\r\n@media (min-width: 640px) {\r\n  .sm\\:px-6 {\r\n    padding-left: 1.5rem;\r\n    padding-right: 1.5rem;\r\n  }\r\n\r\n  .sm\\:text-sm {\r\n    font-size: 0.875rem;\r\n    line-height: 1.25rem;\r\n  }\r\n}\r\n\r\n@media (min-width: 768px) {\r\n  .md\\:mb-5 {\r\n    margin-bottom: 1.25rem;\r\n  }\r\n\r\n  .md\\:mb-2 {\r\n    margin-bottom: 0.5rem;\r\n  }\r\n\r\n  .md\\:mb-0 {\r\n    margin-bottom: 0px;\r\n  }\r\n\r\n  .md\\:w-1\\/2 {\r\n    width: 50%;\r\n  }\r\n\r\n  .md\\:flex-row {\r\n    flex-direction: row;\r\n  }\r\n\r\n  .md\\:pr-4 {\r\n    padding-right: 1rem;\r\n  }\r\n}\r\n\r\n@media (min-width: 1024px) {\r\n  .lg\\:px-8 {\r\n    padding-left: 2rem;\r\n    padding-right: 2rem;\r\n  }\r\n}", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -39572,6 +39737,403 @@ var PrimeVue = {
 
 /***/ }),
 
+/***/ "./node_modules/primevue/confirmationeventbus/confirmationeventbus.esm.js":
+/*!********************************************************************************!*\
+  !*** ./node_modules/primevue/confirmationeventbus/confirmationeventbus.esm.js ***!
+  \********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ConfirmationEventBus)
+/* harmony export */ });
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+
+
+var ConfirmationEventBus = (0,primevue_utils__WEBPACK_IMPORTED_MODULE_0__.EventBus)();
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/confirmationservice/confirmationservice.esm.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/primevue/confirmationservice/confirmationservice.esm.js ***!
+  \******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ConfirmationService)
+/* harmony export */ });
+/* harmony import */ var primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/confirmationeventbus */ "./node_modules/primevue/confirmationeventbus/confirmationeventbus.esm.js");
+/* harmony import */ var primevue_useconfirm__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/useconfirm */ "./node_modules/primevue/useconfirm/useconfirm.esm.js");
+
+
+
+var ConfirmationService = {
+    install: (app) => {
+        const ConfirmationService = {
+            require: (options) => {
+                primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].emit('confirm', options);
+            },
+            close: () => {
+                primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].emit('close');
+            }
+        };
+
+        app.config.globalProperties.$confirm = ConfirmationService;
+        app.provide(primevue_useconfirm__WEBPACK_IMPORTED_MODULE_1__.PrimeVueConfirmSymbol, ConfirmationService);
+    }
+};
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/confirmpopup/confirmpopup.esm.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/primevue/confirmpopup/confirmpopup.esm.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ script)
+/* harmony export */ });
+/* harmony import */ var primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/confirmationeventbus */ "./node_modules/primevue/confirmationeventbus/confirmationeventbus.esm.js");
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+/* harmony import */ var primevue_overlayeventbus__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! primevue/overlayeventbus */ "./node_modules/primevue/overlayeventbus/overlayeventbus.esm.js");
+/* harmony import */ var primevue_button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! primevue/button */ "./node_modules/primevue/button/button.esm.js");
+/* harmony import */ var primevue_portal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! primevue/portal */ "./node_modules/primevue/portal/portal.esm.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+
+
+
+
+
+var script = {
+    name: 'ConfirmPopup',
+    inheritAttrs: false,
+    props: {
+        group: String
+    },
+    data() {
+        return {
+            visible: false,
+            confirmation: null
+        };
+    },
+    target: null,
+    outsideClickListener: null,
+    scrollHandler: null,
+    resizeListener: null,
+    container: null,
+    confirmListener: null,
+    closeListener: null,
+    mounted() {
+        this.confirmListener = (options) => {
+            if (!options) {
+                return;
+            }
+
+            if (options.group === this.group) {
+                this.confirmation = options;
+                this.target = options.target;
+                this.visible = true;
+            }
+        };
+
+        this.closeListener = () => {
+            this.visible = false;
+            this.confirmation = null;
+        };
+
+        primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].on('confirm', this.confirmListener);
+        primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].on('close', this.closeListener);
+    },
+    beforeUnmount() {
+        primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].off('confirm', this.confirmListener);
+        primevue_confirmationeventbus__WEBPACK_IMPORTED_MODULE_0__["default"].off('close', this.closeListener);
+
+        this.unbindOutsideClickListener();
+
+        if (this.scrollHandler) {
+            this.scrollHandler.destroy();
+            this.scrollHandler = null;
+        }
+
+        this.unbindResizeListener();
+
+        if (this.container) {
+            primevue_utils__WEBPACK_IMPORTED_MODULE_1__.ZIndexUtils.clear(this.container);
+            this.container = null;
+        }
+
+        this.target = null;
+        this.confirmation = null;
+    },
+    methods: {
+        accept() {
+            if (this.confirmation.accept) {
+                this.confirmation.accept();
+            }
+
+            this.visible = false;
+        },
+        reject() {
+            if (this.confirmation.reject) {
+                this.confirmation.reject();
+            }
+
+            this.visible = false;
+        },
+        onEnter(el) {
+            this.bindOutsideClickListener();
+            this.bindScrollListener();
+            this.bindResizeListener();
+
+            primevue_utils__WEBPACK_IMPORTED_MODULE_1__.ZIndexUtils.set('overlay', el, this.$primevue.config.zIndex.overlay);
+        },
+        onLeave() {
+            this.unbindOutsideClickListener();
+            this.unbindScrollListener();
+            this.unbindResizeListener();
+        },
+        onAfterLeave(el) {
+            primevue_utils__WEBPACK_IMPORTED_MODULE_1__.ZIndexUtils.clear(el);
+        },
+        alignOverlay() {
+            primevue_utils__WEBPACK_IMPORTED_MODULE_1__.DomHandler.absolutePosition(this.container, this.target);
+
+            const containerOffset = primevue_utils__WEBPACK_IMPORTED_MODULE_1__.DomHandler.getOffset(this.container);
+            const targetOffset = primevue_utils__WEBPACK_IMPORTED_MODULE_1__.DomHandler.getOffset(this.target);
+            let arrowLeft = 0;
+
+            if (containerOffset.left < targetOffset.left) {
+                arrowLeft = targetOffset.left - containerOffset.left;
+            }
+
+            this.container.style.setProperty('--overlayArrowLeft', `${arrowLeft}px`);
+
+            if (containerOffset.top < targetOffset.top) {
+                primevue_utils__WEBPACK_IMPORTED_MODULE_1__.DomHandler.addClass(this.container, 'p-confirm-popup-flipped');
+            }
+        },
+        bindOutsideClickListener() {
+            if (!this.outsideClickListener) {
+                this.outsideClickListener = (event) => {
+                    if (this.visible && this.container && !this.container.contains(event.target) && !this.isTargetClicked(event)) {
+                        this.visible = false;
+                    } else {
+                        this.alignOverlay();
+                    }
+                };
+
+                document.addEventListener('click', this.outsideClickListener);
+            }
+        },
+        unbindOutsideClickListener() {
+            if (this.outsideClickListener) {
+                document.removeEventListener('click', this.outsideClickListener);
+                this.outsideClickListener = null;
+            }
+        },
+        bindScrollListener() {
+            if (!this.scrollHandler) {
+                this.scrollHandler = new primevue_utils__WEBPACK_IMPORTED_MODULE_1__.ConnectedOverlayScrollHandler(this.target, () => {
+                    if (this.visible) {
+                        this.visible = false;
+                    }
+                });
+            }
+
+            this.scrollHandler.bindScrollListener();
+        },
+        unbindScrollListener() {
+            if (this.scrollHandler) {
+                this.scrollHandler.unbindScrollListener();
+            }
+        },
+        bindResizeListener() {
+            if (!this.resizeListener) {
+                this.resizeListener = () => {
+                    if (this.visible && !primevue_utils__WEBPACK_IMPORTED_MODULE_1__.DomHandler.isTouchDevice()) {
+                        this.visible = false;
+                    }
+                };
+
+                window.addEventListener('resize', this.resizeListener);
+            }
+        },
+        unbindResizeListener() {
+            if (this.resizeListener) {
+                window.removeEventListener('resize', this.resizeListener);
+                this.resizeListener = null;
+            }
+        },
+        isTargetClicked(event) {
+            return this.target && (this.target === event.target || this.target.contains(event.target));
+        },
+        containerRef(el) {
+            this.container = el;
+        },
+        onOverlayClick(event) {
+            primevue_overlayeventbus__WEBPACK_IMPORTED_MODULE_2__["default"].emit('overlay-click', {
+                originalEvent: event,
+                target: this.target
+            });
+        }
+    },
+    computed: {
+        containerClass() {
+            return [
+                'p-confirm-popup p-component',
+                {
+                    'p-input-filled': this.$primevue.config.inputStyle === 'filled',
+                    'p-ripple-disabled': this.$primevue.config.ripple === false
+                }
+            ];
+        },
+        message() {
+            return this.confirmation ? this.confirmation.message : null;
+        },
+        iconClass() {
+            return ['p-confirm-popup-icon', this.confirmation ? this.confirmation.icon : null];
+        },
+        acceptLabel() {
+            return this.confirmation ? this.confirmation.acceptLabel || this.$primevue.config.locale.accept : null;
+        },
+        rejectLabel() {
+            return this.confirmation ? this.confirmation.rejectLabel || this.$primevue.config.locale.reject : null;
+        },
+        acceptIcon() {
+            return this.confirmation ? this.confirmation.acceptIcon : null;
+        },
+        rejectIcon() {
+            return this.confirmation ? this.confirmation.rejectIcon : null;
+        },
+        acceptClass() {
+            return ['p-confirm-popup-accept p-button-sm', this.confirmation ? this.confirmation.acceptClass : null];
+        },
+        rejectClass() {
+            return ['p-confirm-popup-reject p-button-sm', this.confirmation ? this.confirmation.rejectClass || 'p-button-text' : null];
+        }
+    },
+    components: {
+        CPButton: primevue_button__WEBPACK_IMPORTED_MODULE_3__["default"],
+        Portal: primevue_portal__WEBPACK_IMPORTED_MODULE_4__["default"]
+    }
+};
+
+const _hoisted_1 = {
+  key: 0,
+  class: "p-confirm-popup-content"
+};
+const _hoisted_2 = { class: "p-confirm-popup-message" };
+const _hoisted_3 = { class: "p-confirm-popup-footer" };
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_CPButton = (0,vue__WEBPACK_IMPORTED_MODULE_5__.resolveComponent)("CPButton");
+  const _component_Portal = (0,vue__WEBPACK_IMPORTED_MODULE_5__.resolveComponent)("Portal");
+
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_5__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_5__.createBlock)(_component_Portal, null, {
+    default: (0,vue__WEBPACK_IMPORTED_MODULE_5__.withCtx)(() => [
+      (0,vue__WEBPACK_IMPORTED_MODULE_5__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_5__.Transition, {
+        name: "p-confirm-popup",
+        onEnter: $options.onEnter,
+        onLeave: $options.onLeave,
+        onAfterLeave: $options.onAfterLeave
+      }, {
+        default: (0,vue__WEBPACK_IMPORTED_MODULE_5__.withCtx)(() => [
+          ($data.visible)
+            ? ((0,vue__WEBPACK_IMPORTED_MODULE_5__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_5__.createElementBlock)("div", (0,vue__WEBPACK_IMPORTED_MODULE_5__.mergeProps)({
+                key: 0,
+                ref: $options.containerRef,
+                class: $options.containerClass
+              }, _ctx.$attrs, {
+                onClick: _cache[2] || (_cache[2] = (...args) => ($options.onOverlayClick && $options.onOverlayClick(...args)))
+              }), [
+                (!_ctx.$slots.message)
+                  ? ((0,vue__WEBPACK_IMPORTED_MODULE_5__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_5__.createElementBlock)("div", _hoisted_1, [
+                      (0,vue__WEBPACK_IMPORTED_MODULE_5__.createElementVNode)("i", {
+                        class: (0,vue__WEBPACK_IMPORTED_MODULE_5__.normalizeClass)($options.iconClass)
+                      }, null, 2),
+                      (0,vue__WEBPACK_IMPORTED_MODULE_5__.createElementVNode)("span", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_5__.toDisplayString)($data.confirmation.message), 1)
+                    ]))
+                  : ((0,vue__WEBPACK_IMPORTED_MODULE_5__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_5__.createBlock)((0,vue__WEBPACK_IMPORTED_MODULE_5__.resolveDynamicComponent)(_ctx.$slots.message), {
+                      key: 1,
+                      message: $data.confirmation
+                    }, null, 8, ["message"])),
+                (0,vue__WEBPACK_IMPORTED_MODULE_5__.createElementVNode)("div", _hoisted_3, [
+                  (0,vue__WEBPACK_IMPORTED_MODULE_5__.createVNode)(_component_CPButton, {
+                    label: $options.rejectLabel,
+                    icon: $options.rejectIcon,
+                    class: (0,vue__WEBPACK_IMPORTED_MODULE_5__.normalizeClass)($options.rejectClass),
+                    onClick: _cache[0] || (_cache[0] = $event => ($options.reject()))
+                  }, null, 8, ["label", "icon", "class"]),
+                  (0,vue__WEBPACK_IMPORTED_MODULE_5__.createVNode)(_component_CPButton, {
+                    label: $options.acceptLabel,
+                    icon: $options.acceptIcon,
+                    class: (0,vue__WEBPACK_IMPORTED_MODULE_5__.normalizeClass)($options.acceptClass),
+                    onClick: _cache[1] || (_cache[1] = $event => ($options.accept())),
+                    autofocus: ""
+                  }, null, 8, ["label", "icon", "class"])
+                ])
+              ], 16))
+            : (0,vue__WEBPACK_IMPORTED_MODULE_5__.createCommentVNode)("", true)
+        ]),
+        _: 1
+      }, 8, ["onEnter", "onLeave", "onAfterLeave"])
+    ]),
+    _: 1
+  }))
+}
+
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z = "\n.p-confirm-popup {\n    position: absolute;\n    margin-top: 10px;\n    top: 0;\n    left: 0;\n}\n.p-confirm-popup-flipped {\n    margin-top: 0;\n    margin-bottom: 10px;\n}\n\n/* Animation */\n.p-confirm-popup-enter-from {\n    opacity: 0;\n    -webkit-transform: scaleY(0.8);\n            transform: scaleY(0.8);\n}\n.p-confirm-popup-leave-to {\n    opacity: 0;\n}\n.p-confirm-popup-enter-active {\n    -webkit-transition: opacity 0.12s cubic-bezier(0, 0, 0.2, 1), -webkit-transform 0.12s cubic-bezier(0, 0, 0.2, 1);\n    transition: opacity 0.12s cubic-bezier(0, 0, 0.2, 1), -webkit-transform 0.12s cubic-bezier(0, 0, 0.2, 1);\n    transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1);\n    transition: transform 0.12s cubic-bezier(0, 0, 0.2, 1), opacity 0.12s cubic-bezier(0, 0, 0.2, 1), -webkit-transform 0.12s cubic-bezier(0, 0, 0.2, 1);\n}\n.p-confirm-popup-leave-active {\n    -webkit-transition: opacity 0.1s linear;\n    transition: opacity 0.1s linear;\n}\n.p-confirm-popup:after,\n.p-confirm-popup:before {\n    bottom: 100%;\n    left: calc(var(--overlayArrowLeft, 0) + 1.25rem);\n    content: ' ';\n    height: 0;\n    width: 0;\n    position: absolute;\n    pointer-events: none;\n}\n.p-confirm-popup:after {\n    border-width: 8px;\n    margin-left: -8px;\n}\n.p-confirm-popup:before {\n    border-width: 10px;\n    margin-left: -10px;\n}\n.p-confirm-popup-flipped:after,\n.p-confirm-popup-flipped:before {\n    bottom: auto;\n    top: 100%;\n}\n.p-confirm-popup.p-confirm-popup-flipped:after {\n    border-bottom-color: transparent;\n}\n.p-confirm-popup.p-confirm-popup-flipped:before {\n    border-bottom-color: transparent;\n}\n.p-confirm-popup .p-confirm-popup-content {\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-align: center;\n        -ms-flex-align: center;\n            align-items: center;\n}\n";
+styleInject(css_248z);
+
+script.render = render;
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/primevue/datatable/datatable.esm.js":
 /*!**********************************************************!*\
   !*** ./node_modules/primevue/datatable/datatable.esm.js ***!
@@ -49634,6 +50196,459 @@ script.render = render;
 
 /***/ }),
 
+/***/ "./node_modules/primevue/toast/toast.esm.js":
+/*!**************************************************!*\
+  !*** ./node_modules/primevue/toast/toast.esm.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ script)
+/* harmony export */ });
+/* harmony import */ var primevue_portal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/portal */ "./node_modules/primevue/portal/portal.esm.js");
+/* harmony import */ var primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/toasteventbus */ "./node_modules/primevue/toasteventbus/toasteventbus.esm.js");
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+/* harmony import */ var primevue_ripple__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! primevue/ripple */ "./node_modules/primevue/ripple/ripple.esm.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+
+
+
+
+var script$1 = {
+    name: 'ToastMessage',
+    emits: ['close'],
+    props: {
+        message: null,
+        template: null,
+        closeIcon: null,
+        infoIcon: null,
+        warnIcon: null,
+        errorIcon: null,
+        successIcon: null
+    },
+    closeTimeout: null,
+    mounted() {
+        if (this.message.life) {
+            this.closeTimeout = setTimeout(() => {
+                this.close();
+            }, this.message.life);
+        }
+    },
+    beforeUnmount() {
+        this.clearCloseTimeout();
+    },
+    methods: {
+        close() {
+            this.$emit('close', this.message);
+        },
+        onCloseClick() {
+            this.clearCloseTimeout();
+            this.close();
+        },
+        clearCloseTimeout() {
+            if (this.closeTimeout) {
+                clearTimeout(this.closeTimeout);
+                this.closeTimeout = null;
+            }
+        }
+    },
+    computed: {
+        containerClass() {
+            return [
+                'p-toast-message',
+                this.message.styleClass,
+                {
+                    'p-toast-message-info': this.message.severity === 'info',
+                    'p-toast-message-warn': this.message.severity === 'warn',
+                    'p-toast-message-error': this.message.severity === 'error',
+                    'p-toast-message-success': this.message.severity === 'success'
+                }
+            ];
+        },
+        iconClass() {
+            return [
+                'p-toast-message-icon',
+                {
+                    [this.infoIcon]: this.message.severity === 'info',
+                    [this.warnIcon]: this.message.severity === 'warn',
+                    [this.errorIcon]: this.message.severity === 'error',
+                    [this.successIcon]: this.message.severity === 'success'
+                }
+            ];
+        }
+    },
+    directives: {
+        ripple: primevue_ripple__WEBPACK_IMPORTED_MODULE_3__["default"]
+    }
+};
+
+const _hoisted_1 = { class: "p-toast-message-text" };
+const _hoisted_2 = { class: "p-toast-summary" };
+const _hoisted_3 = { class: "p-toast-detail" };
+const _hoisted_4 = { key: 2 };
+
+function render$1(_ctx, _cache, $props, $setup, $data, $options) {
+  const _directive_ripple = (0,vue__WEBPACK_IMPORTED_MODULE_4__.resolveDirective)("ripple");
+
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementBlock)("div", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_4__.normalizeClass)($options.containerClass),
+    role: "alert",
+    "aria-live": "assertive",
+    "aria-atomic": "true"
+  }, [
+    (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("div", {
+      class: (0,vue__WEBPACK_IMPORTED_MODULE_4__.normalizeClass)(["p-toast-message-content", $props.message.contentStyleClass])
+    }, [
+      (!$props.template)
+        ? ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_4__.Fragment, { key: 0 }, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("span", {
+              class: (0,vue__WEBPACK_IMPORTED_MODULE_4__.normalizeClass)($options.iconClass)
+            }, null, 2),
+            (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("div", _hoisted_1, [
+              (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("span", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_4__.toDisplayString)($props.message.summary), 1),
+              (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("div", _hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_4__.toDisplayString)($props.message.detail), 1)
+            ])
+          ], 64))
+        : ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createBlock)((0,vue__WEBPACK_IMPORTED_MODULE_4__.resolveDynamicComponent)($props.template), {
+            key: 1,
+            message: $props.message
+          }, null, 8, ["message"])),
+      ($props.message.closable !== false)
+        ? ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementBlock)("div", _hoisted_4, [
+            (0,vue__WEBPACK_IMPORTED_MODULE_4__.withDirectives)(((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementBlock)("button", {
+              class: "p-toast-icon-close p-link",
+              onClick: _cache[0] || (_cache[0] = (...args) => ($options.onCloseClick && $options.onCloseClick(...args))),
+              type: "button"
+            }, [
+              (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("span", {
+                class: (0,vue__WEBPACK_IMPORTED_MODULE_4__.normalizeClass)(['p-toast-icon-close-icon', $props.closeIcon])
+              }, null, 2)
+            ])), [
+              [_directive_ripple]
+            ])
+          ]))
+        : (0,vue__WEBPACK_IMPORTED_MODULE_4__.createCommentVNode)("", true)
+    ], 2)
+  ], 2))
+}
+
+script$1.render = render$1;
+
+var messageIdx = 0;
+
+var script = {
+    name: 'Toast',
+    inheritAttrs: false,
+    props: {
+        group: {
+            type: String,
+            default: null
+        },
+        position: {
+            type: String,
+            default: 'top-right'
+        },
+        autoZIndex: {
+            type: Boolean,
+            default: true
+        },
+        baseZIndex: {
+            type: Number,
+            default: 0
+        },
+        breakpoints: {
+            type: Object,
+            default: null
+        },
+        closeIcon: {
+            type: String,
+            default: 'pi pi-times'
+        },
+        infoIcon: {
+            type: String,
+            default: 'pi pi-info-circle'
+        },
+        warnIcon: {
+            type: String,
+            default: 'pi pi-exclamation-triangle'
+        },
+        errorIcon: {
+            type: String,
+            default: 'pi pi-times'
+        },
+        successIcon: {
+            type: String,
+            default: 'pi pi-check'
+        }
+    },
+    data() {
+        return {
+            messages: []
+        };
+    },
+    styleElement: null,
+    mounted() {
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].on('add', this.onAdd);
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].on('remove-group', this.onRemoveGroup);
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].on('remove-all-groups', this.onRemoveAllGroups);
+
+        if (this.breakpoints) {
+            this.createStyle();
+        }
+    },
+    beforeUnmount() {
+        this.destroyStyle();
+
+        if (this.$refs.container && this.autoZIndex) {
+            primevue_utils__WEBPACK_IMPORTED_MODULE_2__.ZIndexUtils.clear(this.$refs.container);
+        }
+
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].off('add', this.onAdd);
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].off('remove-group', this.onRemoveGroup);
+        primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_1__["default"].off('remove-all-groups', this.onRemoveAllGroups);
+    },
+    methods: {
+        add(message) {
+            if (message.id == null) {
+                message.id = messageIdx++;
+            }
+
+            this.messages = [...this.messages, message];
+        },
+        remove(message) {
+            let index = -1;
+
+            for (let i = 0; i < this.messages.length; i++) {
+                if (this.messages[i] === message) {
+                    index = i;
+                    break;
+                }
+            }
+
+            this.messages.splice(index, 1);
+        },
+        onAdd(message) {
+            if (this.group == message.group) {
+                this.add(message);
+            }
+        },
+        onRemoveGroup(group) {
+            if (this.group === group) {
+                this.messages = [];
+            }
+        },
+        onRemoveAllGroups() {
+            this.messages = [];
+        },
+        onEnter() {
+            this.$refs.container.setAttribute(this.attributeSelector, '');
+
+            if (this.autoZIndex) {
+                primevue_utils__WEBPACK_IMPORTED_MODULE_2__.ZIndexUtils.set('modal', this.$refs.container, this.baseZIndex || this.$primevue.config.zIndex.modal);
+            }
+        },
+        onLeave() {
+            if (this.$refs.container && this.autoZIndex && primevue_utils__WEBPACK_IMPORTED_MODULE_2__.ObjectUtils.isEmpty(this.messages)) {
+                setTimeout(() => {
+                    primevue_utils__WEBPACK_IMPORTED_MODULE_2__.ZIndexUtils.clear(this.$refs.container);
+                }, 200);
+            }
+        },
+        createStyle() {
+            if (!this.styleElement) {
+                this.styleElement = document.createElement('style');
+                this.styleElement.type = 'text/css';
+                document.head.appendChild(this.styleElement);
+
+                let innerHTML = '';
+
+                for (let breakpoint in this.breakpoints) {
+                    let breakpointStyle = '';
+
+                    for (let styleProp in this.breakpoints[breakpoint]) {
+                        breakpointStyle += styleProp + ':' + this.breakpoints[breakpoint][styleProp] + '!important;';
+                    }
+
+                    innerHTML += `
+                        @media screen and (max-width: ${breakpoint}) {
+                            .p-toast[${this.attributeSelector}] {
+                                ${breakpointStyle}
+                            }
+                        }
+                    `;
+                }
+
+                this.styleElement.innerHTML = innerHTML;
+            }
+        },
+        destroyStyle() {
+            if (this.styleElement) {
+                document.head.removeChild(this.styleElement);
+                this.styleElement = null;
+            }
+        }
+    },
+    computed: {
+        containerClass() {
+            return [
+                'p-toast p-component p-toast-' + this.position,
+                {
+                    'p-input-filled': this.$primevue.config.inputStyle === 'filled',
+                    'p-ripple-disabled': this.$primevue.config.ripple === false
+                }
+            ];
+        },
+        attributeSelector() {
+            return (0,primevue_utils__WEBPACK_IMPORTED_MODULE_2__.UniqueComponentId)();
+        }
+    },
+    components: {
+        ToastMessage: script$1,
+        Portal: primevue_portal__WEBPACK_IMPORTED_MODULE_0__["default"]
+    }
+};
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_ToastMessage = (0,vue__WEBPACK_IMPORTED_MODULE_4__.resolveComponent)("ToastMessage");
+  const _component_Portal = (0,vue__WEBPACK_IMPORTED_MODULE_4__.resolveComponent)("Portal");
+
+  return ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createBlock)(_component_Portal, null, {
+    default: (0,vue__WEBPACK_IMPORTED_MODULE_4__.withCtx)(() => [
+      (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementVNode)("div", (0,vue__WEBPACK_IMPORTED_MODULE_4__.mergeProps)({
+        ref: "container",
+        class: $options.containerClass
+      }, _ctx.$attrs), [
+        (0,vue__WEBPACK_IMPORTED_MODULE_4__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_4__.TransitionGroup, {
+          name: "p-toast-message",
+          tag: "div",
+          onEnter: $options.onEnter,
+          onLeave: $options.onLeave
+        }, {
+          default: (0,vue__WEBPACK_IMPORTED_MODULE_4__.withCtx)(() => [
+            ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_4__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_4__.renderList)($data.messages, (msg) => {
+              return ((0,vue__WEBPACK_IMPORTED_MODULE_4__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_4__.createBlock)(_component_ToastMessage, {
+                key: msg.id,
+                message: msg,
+                template: _ctx.$slots.message,
+                closeIcon: $props.closeIcon,
+                infoIcon: $props.infoIcon,
+                warnIcon: $props.warnIcon,
+                errorIcon: $props.errorIcon,
+                successIcon: $props.successIcon,
+                onClose: _cache[0] || (_cache[0] = $event => ($options.remove($event)))
+              }, null, 8, ["message", "template", "closeIcon", "infoIcon", "warnIcon", "errorIcon", "successIcon"]))
+            }), 128))
+          ]),
+          _: 1
+        }, 8, ["onEnter", "onLeave"])
+      ], 16)
+    ]),
+    _: 1
+  }))
+}
+
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z = "\n.p-toast {\n    position: fixed;\n    width: 25rem;\n}\n.p-toast-message-content {\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-align: start;\n        -ms-flex-align: start;\n            align-items: flex-start;\n}\n.p-toast-message-text {\n    -webkit-box-flex: 1;\n        -ms-flex: 1 1 auto;\n            flex: 1 1 auto;\n}\n.p-toast-top-right {\n    top: 20px;\n    right: 20px;\n}\n.p-toast-top-left {\n    top: 20px;\n    left: 20px;\n}\n.p-toast-bottom-left {\n    bottom: 20px;\n    left: 20px;\n}\n.p-toast-bottom-right {\n    bottom: 20px;\n    right: 20px;\n}\n.p-toast-top-center {\n    top: 20px;\n    left: 50%;\n    -webkit-transform: translateX(-50%);\n            transform: translateX(-50%);\n}\n.p-toast-bottom-center {\n    bottom: 20px;\n    left: 50%;\n    -webkit-transform: translateX(-50%);\n            transform: translateX(-50%);\n}\n.p-toast-center {\n    left: 50%;\n    top: 50%;\n    min-width: 20vw;\n    -webkit-transform: translate(-50%, -50%);\n            transform: translate(-50%, -50%);\n}\n.p-toast-icon-close {\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-align: center;\n        -ms-flex-align: center;\n            align-items: center;\n    -webkit-box-pack: center;\n        -ms-flex-pack: center;\n            justify-content: center;\n    overflow: hidden;\n    position: relative;\n}\n.p-toast-icon-close.p-link {\n    cursor: pointer;\n}\n\n/* Animations */\n.p-toast-message-enter-from {\n    opacity: 0;\n    -webkit-transform: translateY(50%);\n    transform: translateY(50%);\n}\n.p-toast-message-leave-from {\n    max-height: 1000px;\n}\n.p-toast .p-toast-message.p-toast-message-leave-to {\n    max-height: 0;\n    opacity: 0;\n    margin-bottom: 0;\n    overflow: hidden;\n}\n.p-toast-message-enter-active {\n    -webkit-transition: transform 0.3s, opacity 0.3s;\n    -webkit-transition: opacity 0.3s, -webkit-transform 0.3s;\n    transition: opacity 0.3s, -webkit-transform 0.3s;\n    transition: transform 0.3s, opacity 0.3s;\n    transition: transform 0.3s, opacity 0.3s, -webkit-transform 0.3s;\n}\n.p-toast-message-leave-active {\n    -webkit-transition: max-height 0.45s cubic-bezier(0, 1, 0, 1), opacity 0.3s, margin-bottom 0.3s;\n    transition: max-height 0.45s cubic-bezier(0, 1, 0, 1), opacity 0.3s, margin-bottom 0.3s;\n}\n";
+styleInject(css_248z);
+
+script.render = render;
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/toasteventbus/toasteventbus.esm.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/primevue/toasteventbus/toasteventbus.esm.js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ToastEventBus)
+/* harmony export */ });
+/* harmony import */ var primevue_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/utils */ "./node_modules/primevue/utils/utils.esm.js");
+
+
+var ToastEventBus = (0,primevue_utils__WEBPACK_IMPORTED_MODULE_0__.EventBus)();
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/toastservice/toastservice.esm.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/primevue/toastservice/toastservice.esm.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ToastService)
+/* harmony export */ });
+/* harmony import */ var primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! primevue/toasteventbus */ "./node_modules/primevue/toasteventbus/toasteventbus.esm.js");
+/* harmony import */ var primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! primevue/usetoast */ "./node_modules/primevue/usetoast/usetoast.esm.js");
+
+
+
+var ToastService = {
+    install: (app) => {
+        const ToastService = {
+            add: (message) => {
+                primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_0__["default"].emit('add', message);
+            },
+            removeGroup: (group) => {
+                primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_0__["default"].emit('remove-group', group);
+            },
+            removeAllGroups: () => {
+                primevue_toasteventbus__WEBPACK_IMPORTED_MODULE_0__["default"].emit('remove-all-groups');
+            }
+        };
+
+        app.config.globalProperties.$toast = ToastService;
+        app.provide(primevue_usetoast__WEBPACK_IMPORTED_MODULE_1__.PrimeVueToastSymbol, ToastService);
+    }
+};
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/primevue/tooltip/tooltip.esm.js":
 /*!******************************************************!*\
   !*** ./node_modules/primevue/tooltip/tooltip.esm.js ***!
@@ -50020,6 +51035,70 @@ const Tooltip = {
         }
     }
 };
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/useconfirm/useconfirm.esm.js":
+/*!************************************************************!*\
+  !*** ./node_modules/primevue/useconfirm/useconfirm.esm.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "PrimeVueConfirmSymbol": () => (/* binding */ PrimeVueConfirmSymbol),
+/* harmony export */   "useConfirm": () => (/* binding */ useConfirm)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+const PrimeVueConfirmSymbol = Symbol();
+
+function useConfirm() {
+    const PrimeVueConfirm = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(PrimeVueConfirmSymbol);
+
+    if (!PrimeVueConfirm) {
+        throw new Error('No PrimeVue Confirmation provided!');
+    }
+
+    return PrimeVueConfirm;
+}
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/primevue/usetoast/usetoast.esm.js":
+/*!********************************************************!*\
+  !*** ./node_modules/primevue/usetoast/usetoast.esm.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "PrimeVueToastSymbol": () => (/* binding */ PrimeVueToastSymbol),
+/* harmony export */   "useToast": () => (/* binding */ useToast)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+
+const PrimeVueToastSymbol = Symbol();
+
+function useToast() {
+    const PrimeVueToast = (0,vue__WEBPACK_IMPORTED_MODULE_0__.inject)(PrimeVueToastSymbol);
+
+    if (!PrimeVueToast) {
+        throw new Error('No PrimeVue Toast provided!');
+    }
+
+    return PrimeVueToast;
+}
 
 
 
