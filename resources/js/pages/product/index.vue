@@ -2,14 +2,14 @@
   <div class=" p-2">
     <div class="border rounded  ">
       <div class="h-[calc(100vh-4.1rem)]">
-        <DataTable :value="products" @row-dblclick="doubleClick" v-model:selection="selectProduct" selectionMode="single" dataKey="id" :paginator="true" :maximizable="true" :modal="true" scrollHeight="flex" :scrollable="true" scrollDirection="both" showGridlines stripedRows responsiveLayout="scroll" class="p-datatable-sm text-xs" style="font-size:12px !important" :rows="10" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+        <DataTable ref="dt" :value="products" @row-dblclick="doubleClick" v-model:selection="selectProduct" selectionMode="single" dataKey="id" :paginator="true" :maximizable="true" :modal="true" scrollHeight="flex" :scrollable="true" scrollDirection="both" showGridlines stripedRows responsiveLayout="scroll" class="p-datatable-sm text-xs" style="font-size:12px !important" :rows="10" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
           <template #header>
             <div class="flex justify-between items-center">
               <div class="text-left text-lg">
                 Products
               </div>
               <div class="flex space-x-2">
-                <Button label="Export" icon="pi pi-plus" class="p-button-secondary p-button-sm" iconPos="left" />
+                <Button label="Export" icon="pi pi-plus" class="p-button-secondary p-button-sm" iconPos="left" @click="exportCSV($event)" />
                 <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" @click="openDialog" />
               </div>
             </div>
@@ -134,6 +134,10 @@ export default {
           }
         })
 
+    },
+
+    exportCSV() {
+      this.$refs.dt.exportCSV();
     }
   }
 }

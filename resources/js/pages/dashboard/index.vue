@@ -265,6 +265,8 @@ export default {
   },
   mounted() {
     this.$store.dispatch('product/GET_PRODUCT')
+    this.chartData.labels = this.chartProduct
+
   },
   methods: {
     // GENERATE COLOR CODE
@@ -281,7 +283,6 @@ export default {
       }
       this.chartData.datasets[0].backgroundColor = colorCode;
       this.chartData.datasets[0].hoverBackgroundColor = colorCode;
-      console.log(colorCode)
     }
   }
 }
