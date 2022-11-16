@@ -20,10 +20,10 @@
     "chart.js": "^4.0.1",
     "primeicons": "^6.0.1",
     "primevue": "^3.15.0",
+    "vee-validate": "^4.5.11",
     "vue": "^3.2.36",
     "vue-router": "^4.0.16",
     "vuex": "^4.0.2",
-    "vee-validate": "^4.5.11",
     "yup": "^0.32.11"
   },
   "name": "subscription-management-system",

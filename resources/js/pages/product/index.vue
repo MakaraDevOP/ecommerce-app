@@ -8,8 +8,9 @@
               <div class="text-left text-lg">
                 Products
               </div>
-              <div>
-                <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" />
+              <div class="flex space-x-2">
+                <Button label="Export" icon="pi pi-plus" class="p-button-secondary p-button-sm" iconPos="left" />
+                <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" @click="openDialog" />
               </div>
             </div>
           </template>
@@ -20,6 +21,18 @@
           <Column field="is_active" header="Is active" style="flex-grow: 0; flex-basis: 100px;"></Column>
         </DataTable>
       </div>
+      <Dialog header="Product" v-model:visible="showDialog">
+        <div class="py-2 grid grid-cols-2 gap-2">
+          <div class="flex flex-col">
+            <InputText v-model="name" placeholder="Product name" />
+            <Dropdown v-model="type" :options="productType" optionLabel="name" />
+            <Checkbox v-model="checked" :binary="true" />
+          </div>
+          <div>
+            <Textarea v-model="name" placeholder="Description" />
+          </div>
+        </div>
+      </Dialog>
     </div>
   </div>
 </template>
@@ -29,6 +42,15 @@ export default {
   components: { mapGetters },
   data() {
     return {
+      showDialog: true,
+      type: '',
+      productType: [
+        { name: 'New York', code: 'NY' },
+        { name: 'Rome', code: 'RM' },
+        { name: 'London', code: 'LDN' },
+        { name: 'Istanbul', code: 'IST' },
+        { name: 'Paris', code: 'PRS' }
+      ]
     }
   },
   computed: {
@@ -38,6 +60,11 @@ export default {
   },
   mounted() {
     this.$store.dispatch('product/GET_PRODUCT')
+  },
+  methods: {
+    openDialog() {
+      this.showDialog = true
+    }
   }
 }
 </script>

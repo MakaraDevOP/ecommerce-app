@@ -20,7 +20,10 @@ class UserController extends Controller
     public function index()
     {
         $response = [ 
-            'users' => User::all(),
+            'users' => User::with(array('roles' => function($query) {
+                $query->get();
+            }))
+            ->get()
         ];
         return  response($response , 201);
     }
@@ -46,6 +49,14 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // $response = [
+        //     'message' => 'Hello' 
+        // ];
+
+        dd($request->all());
+
+        return  response($request->email, 201); 
+
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],

@@ -10,15 +10,15 @@ axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://127.0
 //________________________________
 
 import "./dist/app.css";
+import "primevue/resources/themes/tailwind-light/theme.css";
+import 'primevue/resources/primevue.min.css'
+import 'primeicons/primeicons.css'
 
 import store from "./store/index"
 import PrimeVue from 'primevue/config';
 import router from "./router";
 import Tooltip from 'primevue/tooltip';
 
-import "primevue/resources/themes/tailwind-light/theme.css";
-import 'primevue/resources/primevue.min.css'
-import 'primeicons/primeicons.css'
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -26,7 +26,14 @@ import Menu from "primevue/menu";
 import InputText from "primevue/inputtext";
 import Button from 'primevue/button';
 import CheckBox from 'primevue/checkbox'
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import Dropdown from 'primevue/dropdown';
+import Badge from 'primevue/badge';
 
+
+// vue validation
+import { Form, Field, ErrorMessage } from "vee-validate";
 
 const app = createApp(App)
 app.component('DataTable', DataTable)
@@ -34,7 +41,17 @@ app.component('Column', Column)
 app.component('Menu', Menu)
 app.component('InputText', InputText)
 app.component('Button', Button)
-app.component('Checkbox',CheckBox)
+app.component('Checkbox', CheckBox)
+app.component('Dialog', Dialog)
+app.component('Textarea', Textarea)
+app.component('Dropdown',Dropdown)
+app.component('Badge',Badge)
+
+// vue validation
+app.component('Form', Form)
+app.component('Field', Field)
+app.component('ErrorMessage', ErrorMessage)
+
 app.directive('tooltip', Tooltip);
 
 app.use(PrimeVue);
