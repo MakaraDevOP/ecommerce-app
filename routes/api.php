@@ -78,7 +78,7 @@ Route::prefix('v1')->group(function(){
     Route::prefix('user')->group(function () {
       Route::get('/get' , [UserController::class, 'index']);
       Route::get('/create' , [UserController::class, 'create']);
-      Route::post('/create' , [UserController::class, 'store']);
+      Route::post('/store' , [UserController::class, 'store']);
       Route::get('/{id}/get' , [UserController::class, 'show']);
       Route::put('/{id}/update' , [UserController::class, 'update']);
       Route::delete('/{id}/destroy' , [UserController::class, 'destroy']);

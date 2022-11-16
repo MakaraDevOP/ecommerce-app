@@ -20,9 +20,11 @@
     "chart.js": "^4.0.1",
     "primeicons": "^6.0.1",
     "primevue": "^3.15.0",
+    "vee-validate": "^4.5.11",
     "vue": "^3.2.36",
     "vue-router": "^4.0.16",
-    "vuex": "^4.0.2"
+    "vuex": "^4.0.2",
+    "yup": "^0.32.11"
   },
   "name": "subscription-management-system",
   "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",

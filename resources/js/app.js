@@ -28,6 +28,11 @@ import CheckBox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
+import Badge from 'primevue/badge';
+
+
+// vue validation
+import { Form, Field, ErrorMessage } from "vee-validate";
 import ToastService from 'primevue/toastservice';
 import Toast from 'primevue/toast';
 import ConfirmationService from 'primevue/confirmationservice';
@@ -43,10 +48,19 @@ app.component('Button', Button)
 app.component('Checkbox', CheckBox)
 app.component('Dialog', Dialog)
 app.component('Textarea', Textarea)
+
+app.component('Dropdown',Dropdown)
+app.component('Badge',Badge)
+
+// vue validation
+app.component('Form', Form)
+app.component('Field', Field)
+app.component('ErrorMessage', ErrorMessage)
+
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
 app.component('ConfirmPopup',ConfirmPopup)
-// USE
+
 app.directive('tooltip', Tooltip);
 app.use(ToastService);
 app.use(ConfirmationService);
