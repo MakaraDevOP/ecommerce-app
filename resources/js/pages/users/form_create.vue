@@ -32,9 +32,8 @@
                             </div>
                             <div class="px-2 py-1 border rounded">
                                 <div v-for="role in data.roles" :key="role" class="field-checkbox m-2">
-                                    <Field type="checkbox" name="role[]" class="" v-model="role.is_selected"/>
+                                    <Field type="checkbox" name="roles[]" class="" v-model="role.is_selected"/>
 
-                                    
                                     <Checkbox :inputId="role.name" v-model="role.is_selected" :binary="true"
                                         class="mr-2 p-checkbox-lg" />
                                     <label :for="role.name" class="text-md">{{ role.name }}</label>
@@ -94,8 +93,6 @@ export default {
     },
     methods: {
         submit(formdate) {
-            console.log(formdate)
-            return
             try {
                 this.$store.dispatch("user/store", formdate).then(resp => {
                    console.log(resp)

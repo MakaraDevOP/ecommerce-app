@@ -53,7 +53,9 @@ class UserController extends Controller
         //     'message' => 'Hello' 
         // ];
 
-        dd($request->all());
+        $roles = $request->input('roles');
+
+        dd($roles);
 
         return  response($request->email, 201); 
 
