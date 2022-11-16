@@ -62,7 +62,6 @@ export default {
             } catch (e) {
                 return null;
             }
-            this.DialogCreate.display = true;
         },
     },
 };
