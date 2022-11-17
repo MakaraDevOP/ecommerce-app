@@ -1,50 +1,54 @@
 <script setup>
-import FormCreate from "./form_create.vue";
-import FormUpdate from "./form_update.vue";
+    import FormCreate from "./form_create.vue";
+    import FormUpdate from "./form_update.vue";
 </script>
 
 <template>
-    <div class="w-full flex flex-col">
-        <DataTable :value="Users" class="p-datatable-sm">
-            <template #header>
-                <div class="flex justify-between">
-                    <div class="">
-                        <Button label="Addnew" class="p-button-sm" />
-                    </div>
-                    <div class="">
-                        <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right"
-                            class="p-button-sm " />
-                    </div>
-                </div>
-            </template>
-            <Column field="name" header="Name"></Column>
-            <Column field="email" header="Email"></Column>
-            <Column field="brand" header="Phone"></Column>
-            <Column field="roles" header="Role" class="flex">
-                <template #body="params">
-                    <div v-for="role in params?.data?.roles" :key="role.id" class="mr-1">
-                        <Badge class="p-badge-sm text-xs font-normal p-badge-info">{{ role.name }}</Badge>
-                    </div>
-                </template>
-            </Column>
-            <Column header="Actions" style="width: 15rem;">
-                <template #body="params">
-                    <div class="" @click="openDialogUpdate(params.data.id)">
-                        Click me
-                    </div>
-                </template>
-            </Column>
-        </DataTable>
+    <div class="border rounded  ">
+        <div class="h-[calc(100vh-4.1rem)]">
+            <div class="w-full flex flex-col">
+                <DataTable :value="Users" class="p-datatable-sm">
+                    <template #header>
+                        <div class="flex justify-between">
+                            <div class="">
+                                <Button label="Addnew" class="p-button-sm" />
+                            </div>
+                            <div class="">
+                                <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right"
+                                    class="p-button-sm " />
+                            </div>
+                        </div>
+                    </template>
+                    <Column field="name" header="Name"></Column>
+                    <Column field="email" header="Email"></Column>
+                    <Column field="brand" header="Phone"></Column>
+                    <Column field="roles" header="Role" class="flex">
+                        <template #body="params">
+                            <div v-for="role in params?.data?.roles" :key="role.id" class="mr-1">
+                                <Badge class="p-badge-sm text-xs font-normal p-badge-info">{{ role.name }}</Badge>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column header="Actions" style="width: 15rem;">
+                        <template #body="params">
+                            <div class="" @click="openDialogUpdate(params.data.id)">
+                                Click me
+                            </div>
+                        </template>
+                    </Column>
+                </DataTable>
 
-        <Dialog header="Header" v-model:visible="dialogCreate.display" :modal="true"
-            :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-            <FormCreate :params="dialogCreate" @callback="dialogCreateCallBack" />
-        </Dialog>
+                <Dialog header="Header" v-model:visible="dialogCreate.display" :modal="true"
+                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                    <FormCreate :params="dialogCreate" @callback="dialogCreateCallBack" />
+                </Dialog>
 
-        <Dialog header="Header" v-model:visible="dialogUpdate.display" :modal="true"
-            :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-            <FormUpdate :params="dialogCreate" @callback="dialogCreateCallBack" />
-        </Dialog>
+                <Dialog header="Header" v-model:visible="dialogUpdate.display" :modal="true"
+                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                    <FormUpdate :params="dialogCreate" @callback="dialogCreateCallBack" />
+                </Dialog>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -70,7 +74,7 @@ export default {
                 display: false,
                 data: Object,
             },
-            
+
         };
     },
     created() {
@@ -105,7 +109,7 @@ export default {
                 });
             } catch (e) {
                 return null;
-            }     
+            }
         },
         openDialogUpdate(id) {
             try {
@@ -114,10 +118,10 @@ export default {
                     data.roles = resp.roles
                     data.user = resp.user
                     data.user_has_role = resp.user_has_role
-                    
+
                     this.dialogUpdate = {
-                        display : true,
-                        data : data
+                        display: true,
+                        data: data
                     }
                 });
             } catch (e) {

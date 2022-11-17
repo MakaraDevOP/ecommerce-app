@@ -5,12 +5,13 @@
         <div @click="toggleSideBar" class="h-full px-5 hover:bg-gray-100 flex items-center cursor-pointer">
           <span class="pi pi-bars" style="font-size: 1rem"></span>
         </div>
-        <div class="py-1">
-          <InputText placeholder="Search" type="text" />
-        </div>
+
+      </div>
+      <div class="py-1">
+        <InputText placeholder="Search Menu" type="text" class="min-w-[300px]" />
       </div>
       <div>
-        <div class="px-4 flex justify-center items-center space-x-4">
+        <div class="px-4 flex justify-center items-center space-x-4" v-if="user">
           <span class="text-gray-600 ">{{ user.email }}</span>
           <button class="p-panel-header-icon p-link mr-2" @click="toggle">
             <!-- <span class="pi pi-cog"></span> -->
@@ -49,7 +50,7 @@ export default {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             command: () => {
-              this.$toast.add({ severity: 'warn', summary: 'Delete', detail: 'Data Deleted', life: 3000 });
+              this.logout()
             }
           }
           ]
@@ -66,8 +67,12 @@ export default {
     toggle(event) {
       this.$refs.menu.toggle(event);
     },
-    save() {
-      this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Data Saved', life: 3000 });
+    logout() {
+      this.$store.dispatch('auth/LOGOUT_SYSTEM').then(respnse => {
+        if (respnse) {
+          this.$router.push('/login');
+        }
+      })
     }
   }
 };

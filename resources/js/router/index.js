@@ -17,10 +17,10 @@ router.beforeEach(async (to, from) => {
      // ❗️ Avoid an infinite redirect
     if ( !isAuthenticated && to.name !== 'Login' ) {
     // redirect the user to the login page
-     return { name: 'Login' }
+        return { name: 'Login' }
     } 
     if ( isAuthenticated && to.name == 'Login' ) {
-      return { name: 'Master' }
+        return { name: 'Master' }
     } 
 
 })

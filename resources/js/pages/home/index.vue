@@ -144,8 +144,6 @@
 import TreeTable from "primevue/treetable";
 import Column from "primevue/column";
 import Button from "primevue/button";
-
-import Dropdown from "primevue/dropdown";
 import Calendar from "primevue/calendar";
 import RadioButton from "primevue/radiobutton";
 import jsonData from "../../Data/report-profit-and-loss.json";
@@ -157,7 +155,6 @@ export default {
     TreeTable,
     Column,
     Button,
-    Dropdown,
     Calendar,
     RadioButton,
     InputText,

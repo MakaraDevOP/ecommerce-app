@@ -3,12 +3,12 @@
 export const auth = {
   namespaced: true,
   state: {
-    LOGGINED: JSON.parse(localStorage.getItem('logined'))??false,
-    TOKEN: JSON.parse(localStorage.getItem('token'))??'',
-    USER: JSON.parse(localStorage.getItem('user'))??'',
+    LOGGINED: JSON.parse(localStorage.getItem('logined')) ?? false,
+    TOKEN: JSON.parse(localStorage.getItem('token')) ?? '',
+    USER: JSON.parse(localStorage.getItem('user')) ?? '',
   },
   getters: {
-    user:state=>state.USER
+    user: state => state.USER
   },
   mutations: {
     //LOGIN 
@@ -21,15 +21,24 @@ export const auth = {
       localStorage.setItem('token', JSON.stringify(state.TOKEN));
       localStorage.setItem('user', JSON.stringify(state.USER));
       localStorage.setItem('logined', JSON.stringify(state.LOGGINED));
+      const success = "ok";
+      return success;
     },
     // LOGOUT
-    CLEAR_TOKEN() {
-      
+    CLEAR_TOKEN(state) {
+      //SET SATE
+      state.TOKEN = null;
+      state.USER = null;
+      state.LOGGINED = false;
+      //LOCAL STORE
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('logined');
     }
   },
   actions: {
     // LOGIN 
-    async LOGIN_SYSTEM({commit}, payload) {
+    async LOGIN_SYSTEM({ commit }, payload) {
       const response = await axios.post('/login', payload).then(resp => {
         // SET STATE AND LOCAL STORE
         commit('SET_TOKEN', resp.data)
@@ -38,11 +47,13 @@ export const auth = {
       return response;
     },
     async LOGOUT_SYSTEM({ commit }) {
-      await axios.post('/logout', payload).then((response) => {
-        // SET STATE AND LOCAL STORE
-        commit('SET_TOKEN', response.data)
+      const response = await axios.post('/logout').then((response) => {
+        // CLEAR STATE AND LOCAL STORE
+        commit('CLEAR_TOKEN');
         return response;
-      })
+      });
+      return response;
+
     }
   }
 };
