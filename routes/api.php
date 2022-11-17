@@ -72,6 +72,15 @@ Route::prefix('v1')->group(function(){
       Route::get('/{id}/get' , [ActivationController::class, 'show']);
       Route::put('/{id}/update' , [ActivationController::class, 'update']);
       Route::delete('/{id}/destroy' , [ActivationController::class, 'destroy']);
+      Route::get('/get-all' , [ActivationController::class, 'getActivationLine']);
+    });
+         // Activation Line
+    Route::prefix('activation-line')->group(function () {
+      Route::get('/get' , [ActivationLineController::class, 'index']);
+      Route::post('/create' , [ActivationLineController::class, 'store']);
+      Route::get('/{id}/get' , [ActivationLineController::class, 'show']);
+      Route::put('/{id}/update' , [ActivationLineController::class, 'update']);
+      Route::delete('/{id}/destroy' , [ActivationLineController::class, 'destroy']);
     });
     
     // Users  

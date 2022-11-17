@@ -25,7 +25,9 @@
     transition: none;
     border-radius: 0;
     font-size: 12px !important;
-
+}
+.p-panel.p-panel-toggleable .p-panel-header {
+    padding:  5px !important;
 }
 .p-button {
     padding: 0.75rem 1rem;
@@ -44,6 +46,13 @@
 .p-button.p-button-sm .p-button-icon {
     font-size: 12px !important;
 
+}
+.p-sidebar .p-sidebar-header {
+    padding: 5px!important;
+    border-bottom: 1px solid #d4d4d8!important;
+}
+.p-sidebar .p-sidebar-content {
+    padding: 10px !important;
 }
 .p-button.p-button-icon-only {
     width: 1.5rem !important;

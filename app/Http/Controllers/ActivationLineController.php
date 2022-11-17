@@ -34,14 +34,13 @@ class ActivationLineController extends Controller
             'term_id' =>'required|string',
             'user_no' =>'required|string',
             'period' =>'required|string',
-
         ]);
         $activationLine =  ActivationLine::create([
         'activation_id' =>$fields['activation_id'],
         'product_id' =>$fields['product_id'],
         'term_id' =>$fields['term_id'],
         'user_no' =>$fields['user_no'],
-        'period' => $fields['period'],
+        'period' =>$fields['period'],
         'note' => $request->note,  
         'activated_date' => $request->activated_date,  
         'expired_date' => $request->expired_date,  

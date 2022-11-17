@@ -29,6 +29,9 @@ import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Badge from 'primevue/badge';
+import Sidebar from 'primevue/sidebar';
+import Panel from 'primevue/panel';
+import ScrollPanel from 'primevue/scrollpanel';
 
 
 // vue validation
@@ -50,7 +53,11 @@ app.component('Dialog', Dialog)
 app.component('Textarea', Textarea)
 
 app.component('Dropdown',Dropdown)
-app.component('Badge',Badge)
+app.component('Badge', Badge)
+app.component('Sidebar', Sidebar)
+app.component('Panel', Panel)
+app.component('ScrollPanel',ScrollPanel)
+
 
 // vue validation
 app.component('Form', Form)

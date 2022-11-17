@@ -5,14 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Activation;
+use App\Models\VActivation;
 
 class ActivationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
          $activation = Activation::all();
@@ -21,13 +18,6 @@ class ActivationController extends Controller
         ];
         return  response($response, 200);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $fields = $request->validate([
@@ -44,12 +34,6 @@ class ActivationController extends Controller
         return  response($response, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $activation=  Activation::where('id', $id)->first();
@@ -59,13 +43,6 @@ class ActivationController extends Controller
         return  response($response, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
@@ -82,12 +59,6 @@ class ActivationController extends Controller
         return  response($response, 201);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         Activation::where('id', $id)->delete();
@@ -95,5 +66,12 @@ class ActivationController extends Controller
             'message' => 'successfully' , 
         ];
         return  response($response, 200);
+    }
+    public function getActivationLine(){
+        $activation = VActivation::all();
+        $response = [
+            'activation' =>$activation
+        ];
+        return response($response , 200);
     }
 }

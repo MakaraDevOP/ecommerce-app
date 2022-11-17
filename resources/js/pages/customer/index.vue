@@ -47,7 +47,7 @@
             <InputText v-model="customer.company_name" placeholder="company name" />
             <InputText v-model="customer.phone" placeholder="phone" />
             <InputText v-model="customer.email" placeholder="email" />
-            <Dropdown v-model="customer.parent_company_id" :options="parentCompany" optionLabel="name" optionValue="code" />
+            <Dropdown v-model="customer.parent_company_id" :options="parentCompany" optionLabel="company_name" optionValue="id" />
             <div class="field-checkbox">
               <Checkbox v-model="customer.is_active" :binary="true" trueValue="1" falseValue="0" inputId="is_active" />
               <label for="is_active" class="px-2">is active</label>
@@ -74,10 +74,7 @@ export default {
     return {
       showDialog: false,
       selectCustomer: {},
-      parentCompany: [
-        { name: 'CAS BIZ Technology', code: '1' },
-        { name: 'DEV OP co-leader', code: '2' },
-      ]
+      parentCompany: []
     }
   },
   computed: {
@@ -91,6 +88,12 @@ export default {
   },
   methods: {
     doubleClick() {
+      this.parentCompany = [];
+      this.customers.forEach((element) => {
+        element.id = element.id?.toString();
+        if (element.id != this.selectCustomer.id)
+          this.parentCompany = [...this.parentCompany, element]
+      });
       this.$store.dispatch('customer/GET_ID_CUSTOMER', this.selectCustomer.id).then(respnse => {
         if (respnse) {
           this.showDialog = true
@@ -98,6 +101,13 @@ export default {
       })
     },
     edit(id) {
+      this.selectCustomer = { id: id }
+      this.parentCompany = [];
+      this.customers.forEach((element) => {
+        element.id = element.id?.toString();
+        if (element.id != this.selectCustomer.id)
+          this.parentCompany = [...this.parentCompany, element]
+      });
       this.$store.dispatch('customer/GET_ID_CUSTOMER', id).then(respnse => {
         if (respnse) {
           this.showDialog = true
@@ -123,6 +133,11 @@ export default {
     },
     openDialog() {
       this.showDialog = true;
+      this.parentCompany = [];
+      this.customers.forEach((element) => {
+        element.id = element.id?.toString();
+        this.parentCompany = [...this.parentCompany, element]
+      });
       this.$store.commit('customer/ADD_CUSTOMER')
     },
     cancel() {

@@ -19,7 +19,7 @@
           </template>
           <Column selectionMode="multiple" headerStyle="width: 3rem" style="flex-grow: 0; flex-basis: 50px;"></Column>
           <Column field="title" header="Title" style="flex-grow: 0; flex-basis: 80px;"></Column>
-          <Column field="full_name" header="Full Name" style="flex-grow: 1; flex-basis: 200px;"></Column>
+          <Column field="full_name" header="Full Name" style="flex-grow: 1; flex-basis: 150px;"></Column>
           <Column field="contact_phone" header="Phone" style="flex-grow: 1; flex-basis: 100px;"></Column>
           <Column field="contact_email" header="Email" style="flex-grow: 1; flex-basis: 150px;"></Column>
           <Column field="description" header="Description" style="flex-grow: 1; flex-basis: 200px;"></Column>

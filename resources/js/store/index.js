@@ -5,6 +5,8 @@ import { auth } from './auth.module'
 import { user } from './user.module'
 import { product } from './product.module'
 import { contact } from './contact.module'
+import { activation } from './activation.module'
+
 const store = createStore({
     modules: {
         product,
@@ -12,7 +14,8 @@ const store = createStore({
         customer,
         auth,
         user,
-        contact
+        contact,
+        activation
     },
 });
 export default store;

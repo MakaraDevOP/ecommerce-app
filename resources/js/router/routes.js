@@ -30,6 +30,12 @@ export default [
                 component: import ('./../pages/customer'),
                 path: "/customer",
             },
+            {
+                
+                name: "Activation",
+                component: import ('./../pages/activation'),
+                path: "/activation",
+           }
         ]
     },
     {
