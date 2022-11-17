@@ -80,6 +80,7 @@ Route::prefix('v1')->group(function(){
       Route::get('/create' , [UserController::class, 'create']);
       Route::post('/store' , [UserController::class, 'store']);
       Route::get('/{id}/get' , [UserController::class, 'show']);
+      Route::get('/{id}/edit' , [UserController::class, 'edit']);
       Route::put('/{id}/update' , [UserController::class, 'update']);
       Route::delete('/{id}/destroy' , [UserController::class, 'destroy']);
     });

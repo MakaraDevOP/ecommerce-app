@@ -36,6 +36,15 @@ export const user = {
                     return resp;
                 });
             return response;
+        },
+
+        async edit({commit}, id){
+            const response = await axios
+                .get(`/user/${id}/edit`)
+                .then((resp) => {
+                    return resp.data;
+                });
+            return response;
         }
     },
     getters: {

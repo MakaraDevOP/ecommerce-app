@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 use DB;
 
 class UserController extends Controller
@@ -49,28 +50,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // $response = [
-        //     'message' => 'Hello' 
-        // ];
-
-        $roles = $request->input('roles');
-
-        dd($roles);
-
-        return  response($request->email, 201); 
 
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'name' => ['required', 'string', 'unique:users'],
             'email' => ['required', 'email', 'unique:users'],
+            'password' => ['required', Rules\Password::defaults()],
             // 'role' => 'required',
         ]);
 
         if ($validator->fails()) {
             $response = [ 
-                'errors' => $validator
+                'errors' => $validator->messages(),
             ];
             return  response($response, 201);
         }
@@ -78,14 +68,12 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'profile_image' => empty($profile_image) ? 'https://images.assetsdelivery.com/compings_v2/triken/triken1608/triken160800029.jpg' : $profile_image,
-            'is_system' => false,
         ]);
 
-        $roles = $request->input('role');
-        $user->assignRole($roles);
+        if(isset($request->roles)){
+            $user->assignRole($request->roles);
+        }
 
         $response = [ 
             'user' => $user,
@@ -115,17 +103,18 @@ class UserController extends Controller
     {
         $user = User::where('id', $id)->first();
 
-        if (isNull($user)) {
-            abort(403);
+        if (is_null($user)) {
+            $response = [ 
+                'message' => 'user not found',
+            ];
+            return  response($response, 404);
         }
 
-        $roles = Role::all()->map(function ($value, $key) use ($user) {
-            $value['user_has_role'] = $user->roles->find($value) != null;
-            return $value;
-        });
+        $roles = Role::all();
 
         $response = [ 
             'user' => $user,
+            'user_has_roles' => $user->roles,
             'roles' => $roles
         ];
         return  response($response, 201);

@@ -18607,6 +18607,29 @@ var user = {
           }
         }, _callee3);
       }))();
+    },
+    edit: function edit(_ref3, id) {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+        var commit, response;
+        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                commit = _ref3.commit;
+                _context4.next = 3;
+                return axios.get("/user/".concat(id, "/edit")).then(function (resp) {
+                  return resp.data;
+                });
+              case 3:
+                response = _context4.sent;
+                return _context4.abrupt("return", response);
+              case 5:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }))();
     }
   },
   getters: {

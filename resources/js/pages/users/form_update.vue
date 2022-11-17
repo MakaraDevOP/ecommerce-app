@@ -21,26 +21,15 @@
                             <Field type="text" name="email" class="p-component p-inputtext p-inputtext-sm mb-2" />
                             <span class="p-error">{{ errors.email }}</span>
                         </div>
-                        <div class="flex flex-col mb-2">
-                            <label for="password" class="mb-2">Password</label>
-                            <Field type="password" name="password"
-                                class="p-component p-inputtext p-inputtext-sm mb-2" />
-                            <span class="p-error">{{ errors.password }}</span>
-                        </div>
-                        <div class="flex flex-col mb-2">
-                            <label for="confirmed" class="mb-2">Confirm Password</label>
-                            <Field type="password" name="confirmed"
-                                class="p-component p-inputtext p-inputtext-sm mb-2" />
-                            <span class="p-error">{{ errors.confirmed }}</span>
-                        </div>
+
                         <div class="flex flex-col">
                             <div class="card-title">
                                 <h1 class="text-lg">Roles</h1>
                             </div>
                             <div class="px-2 py-1 border rounded">
-                                <div v-for="role in data.roles" :key="role" class="field-checkbox m-2">
-                                    <Checkbox :inputId="role.id" :value="role.name" v-model="roles"
-                                        class="mr-2 p-checkbox-lg" />
+                                <div v-for="role in data.roles" :key="role.id" class="field-checkbox m-2">
+                                    <input :value="role.name" v-model="roles" type="checkbox" checked>
+                                    <Checkbox :inputId="role.id" :value="role.name" v-model="roles"  class="mr-2 p-checkbox-lg" :checked="true"/>
                                     <label :for="role.id" class="text-md">{{ role.name }}</label>
                                 </div>
                             </div>
@@ -48,7 +37,7 @@
                     </div>
                 </div>
                 <div class="w-full md:w-1/2 mb-5 md:mb-0">
-                    {{ roles }}
+                    {{roles}}
                 </div>
             </div>
             <div class="flex items-center justify-between w-full">
@@ -87,14 +76,6 @@ export default {
                 .string()
                 .required()
                 .email(),
-            password: yup
-                .string()
-                .min(8)
-                .required(),
-            confirmed: yup
-                .string()
-                .min(8)
-                .required(),
         });
 
         return {
@@ -106,13 +87,11 @@ export default {
         submit(formdate) {
             try {
                 formdate.roles = this.roles;
-                this.$store.dispatch("user/store", formdate).then(resp => {
-                    this.$emit('callback', resp?.data);
-                });
+                console.log(formdate)
             } catch (e) {
                 return null;
             }
         },
-    }   
+    }
 }
 </script>

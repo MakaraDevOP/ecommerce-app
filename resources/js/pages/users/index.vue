@@ -1,5 +1,6 @@
 <script setup>
-    import FormCreate from "./form_create.vue";
+import FormCreate from "./form_create.vue";
+import FormUpdate from "./form_update.vue";
 </script>
 
 <template>
@@ -11,7 +12,8 @@
                         <Button label="Addnew" class="p-button-sm" />
                     </div>
                     <div class="">
-                        <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right" class="p-button-sm " />
+                        <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right"
+                            class="p-button-sm " />
                     </div>
                 </div>
             </template>
@@ -25,11 +27,23 @@
                     </div>
                 </template>
             </Column>
+            <Column header="Actions" style="width: 15rem;">
+                <template #body="params">
+                    <div class="" @click="openDialogUpdate(params.data.id)">
+                        Click me
+                    </div>
+                </template>
+            </Column>
         </DataTable>
 
-        <Dialog header="Header" v-model:visible="DialogCreate.display" :modal="true"
+        <Dialog header="Header" v-model:visible="dialogCreate.display" :modal="true"
             :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-            <FormCreate :params="DialogCreate" />
+            <FormCreate :params="dialogCreate" @callback="dialogCreateCallBack" />
+        </Dialog>
+
+        <Dialog header="Header" v-model:visible="dialogUpdate.display" :modal="true"
+            :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+            <FormUpdate :params="dialogCreate" @callback="dialogCreateCallBack" />
         </Dialog>
     </div>
 </template>
@@ -48,10 +62,15 @@ export default {
         ]
         return {
             badgeClass,
-            DialogCreate: {
+            dialogCreate: {
                 display: false,
                 data: Object,
             },
+            dialogUpdate: {
+                display: false,
+                data: Object,
+            },
+            
         };
     },
     created() {
@@ -79,15 +98,35 @@ export default {
         opentCreateNewDialog() {
             try {
                 this.$store.dispatch("user/create").then(resp => {
-                    this.DialogCreate = {
+                    this.dialogCreate = {
                         display: true,
                         data: resp.data,
                     }
                 });
             } catch (e) {
                 return null;
+            }     
+        },
+        openDialogUpdate(id) {
+            try {
+                this.$store.dispatch("user/edit", id).then(resp => {
+                    var data = Object
+                    data.roles = resp.roles
+                    data.user = resp.user
+                    data.user_has_role = resp.user_has_role
+                    
+                    this.dialogUpdate = {
+                        display : true,
+                        data : data
+                    }
+                });
+            } catch (e) {
+                return null;
             }
         },
+        dialogCreateCallBack(e) {
+            console.log(e)
+        }
     },
 };
 </script>
