@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-3 gap-4 p-2">
+  <div class="grid grid-cols-3 gap-2 ">
     <div class="col-span-2 border rounded shadow bg-gray-50">
       <div>
         <DataTable :value="products" stripedRows responsiveLayout="scroll" class="p-datatable-sm">
@@ -264,8 +264,10 @@ export default {
     }
   },
   mounted() {
-    this.$store.dispatch('product/GET_PRODUCT')
-    this.chartData.labels = this.chartProduct
+    this.$store.dispatch('product/GET_PRODUCT').then(response => {
+      if (response)
+        this.chartData.labels = this.chartProduct
+    })
 
   },
   methods: {

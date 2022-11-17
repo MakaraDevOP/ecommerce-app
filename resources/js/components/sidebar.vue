@@ -10,7 +10,7 @@
       <div class="flex flex-col justify-between h-[calc(100vh-3rem)] bg-gray-900">
         <div class="menu-man text-left px-2 whitespace-nowrap ">
           <div class="profile flex justify-center items-center text-center p-5 " v-show="dataSibar">
-            <div class="text-center ">
+            <div class="text-center " v-if="user">
               <img src="https://avatars.githubusercontent.com/u/97021587?v=4" class="p-1 w-24 h-24 rounded-full ring-2 ring-gray-300 dark:ring-gray-500 mb-4" alt="Avatar" />
 
               <h5 class="text-xl font-medium leading-tight mb-2">{{ user.name }}</h5>
@@ -27,10 +27,10 @@
             <router-link to="/product" class="px-2 flex space-x-2"><span class="pi pi-cart-plus " v-tooltip.right="'Product'"></span> <span v-show="dataSibar">Product</span></router-link>
           </div>
           <div class="  py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi pi-whatsapp  " v-tooltip.right="'Contact'"></span> <span v-show="dataSibar">Contact</span></div>
+            <router-link to="/contact" class="px-2 flex space-x-2"><span class="pi pi-whatsapp  " v-tooltip.right="'Contact'"></span> <span v-show="dataSibar">Contact</span></router-link>
           </div>
           <div class="  py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi pi-shield " v-tooltip.right="'Customer'"></span> <span v-show="dataSibar">Customer</span></div>
+            <router-link to="/customer" class="px-2 flex space-x-2"><span class="pi pi-shield " v-tooltip.right="'Customer'"></span> <span v-show="dataSibar">Customer</span></router-link>
           </div>
           <div class="  py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
             <div class="px-2 flex space-x-2"><span class="pi  pi-check-circle " v-tooltip.right="'Activation'"></span> <span v-show="dataSibar">Activation</span></div>

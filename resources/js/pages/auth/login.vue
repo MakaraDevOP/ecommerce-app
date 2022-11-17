@@ -50,8 +50,9 @@ export default {
   methods: {
     login() {
       this.$store.dispatch("auth/LOGIN_SYSTEM", this.objData).then(reponse => {
-        if (reponse.status == '201') {
-          this.$router.push('/');
+        if (reponse.status == '201' && localStorage.getItem('token') != null) {
+          // this.$router.push('/');
+          window.location = '/';
         }
       })
     }

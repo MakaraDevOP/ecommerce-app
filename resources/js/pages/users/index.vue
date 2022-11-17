@@ -1,36 +1,39 @@
 <script setup>
-    import FormCreate from "./form_create.vue";
+import FormCreate from "./form_create.vue";
 </script>
 
 <template>
-    <div class="w-full flex flex-col">
-        <DataTable :value="Users" class="p-datatable-sm">
-            <template #header>
-                <div class="flex justify-between">
-                    <div class="">
-                        <Button label="Addnew" class="p-button-sm" />
-                    </div>
-                    <div class="">
-                        <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right" class="p-button-sm " />
-                    </div>
-                </div>
-            </template>
-            <Column field="name" header="Name"></Column>
-            <Column field="email" header="Email"></Column>
-            <Column field="brand" header="Phone"></Column>
-            <Column field="roles" header="Role" class="flex">
-                <template #body="params">
-                    <div v-for="role in params?.data?.roles" :key="role.id" class="mr-1">
-                        <Badge class="p-badge-sm text-xs font-normal p-badge-info">{{ role.name }}</Badge>
-                    </div>
-                </template>
-            </Column>
-        </DataTable>
+    <div class="border rounded  ">
+        <div class="h-[calc(100vh-4.1rem)]">
+            <div class="w-full flex flex-col">
+                <DataTable :value="Users" class="p-datatable-sm">
+                    <template #header>
+                        <div class="flex justify-between">
+                            <div class="">
+                                <Button label="Addnew" class="p-button-sm" />
+                            </div>
+                            <div class="">
+                                <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right" class="p-button-sm " />
+                            </div>
+                        </div>
+                    </template>
+                    <Column field="name" header="Name"></Column>
+                    <Column field="email" header="Email"></Column>
+                    <Column field="brand" header="Phone"></Column>
+                    <Column field="roles" header="Role" class="flex">
+                        <template #body="params">
+                            <div v-for="role in params?.data?.roles" :key="role.id" class="mr-1">
+                                <Badge class="p-badge-sm text-xs font-normal p-badge-info">{{ role.name }}</Badge>
+                            </div>
+                        </template>
+                    </Column>
+                </DataTable>
 
-        <Dialog header="Header" v-model:visible="DialogCreate.display" :modal="true"
-            :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-            <FormCreate :params="DialogCreate" />
-        </Dialog>
+                <Dialog header="Header" v-model:visible="DialogCreate.display" :modal="true" :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                    <FormCreate :params="DialogCreate" />
+                </Dialog>
+            </div>
+        </div>
     </div>
 </template>
 

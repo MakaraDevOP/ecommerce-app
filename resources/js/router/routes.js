@@ -11,11 +11,6 @@ export default [
                 path: "/dashboard",
             },
             {
-                name: "Home",
-                component: import ('./../pages/home'),
-                path: "/home",
-            },
-            {
                 name: "User",
                 component: import ('./../pages/users'),
                 path: "/user",
@@ -24,6 +19,16 @@ export default [
                 name: "Product",
                 component: import ('./../pages/product'),
                 path: "/product",
+            },
+            {
+                name: "Contact",
+                component: import ('./../pages/contact'),
+                path: "/contact",
+            },
+           {
+                name: "Customer",
+                component: import ('./../pages/customer'),
+                path: "/customer",
             },
         ]
     },
