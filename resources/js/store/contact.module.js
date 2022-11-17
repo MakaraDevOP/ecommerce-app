@@ -34,6 +34,7 @@ export const contact = {
     SET_EDIT_CONTACT(state, data) {
       state.contact = Object.assign({}, data);
       state.contact.is_active = state.contact.is_active.toString();
+      state.contact.company_id = state.contact.company_id?.toString();
     },
     ADD_CONTACT(state) {
         state.contact = Object.assign({}, state.defaultContact);
@@ -49,7 +50,7 @@ export const contact = {
       return response;
     },
     async GET_CONTACT({ commit }) {
-      await axios.get('/contact/get').then((response) => {
+      await axios.get('/contact/get-all').then((response) => {
         // SET STATE AND LOCAL STORE
         commit('SET_CONTACT', response.data.contact)
         return response;

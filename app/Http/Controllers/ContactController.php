@@ -47,7 +47,7 @@ class ContactController extends Controller
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
-            'company_id' =>'required|string|unique:customers,id',
+            'company_id' =>'required|string|exists:customers,id',
         ]);
         $contact =  Contact::where('id', $id)->update([
             'company_id' =>$fields['company_id'],

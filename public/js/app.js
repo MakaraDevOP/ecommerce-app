@@ -18302,8 +18302,10 @@ var contact = {
       state.contacts = data;
     },
     SET_EDIT_CONTACT: function SET_EDIT_CONTACT(state, data) {
+      var _state$contact$compan;
       state.contact = Object.assign({}, data);
       state.contact.is_active = state.contact.is_active.toString();
+      state.contact.company_id = (_state$contact$compan = state.contact.company_id) === null || _state$contact$compan === void 0 ? void 0 : _state$contact$compan.toString();
     },
     ADD_CONTACT: function ADD_CONTACT(state) {
       state.contact = Object.assign({}, state.defaultContact);
@@ -18344,7 +18346,7 @@ var contact = {
               case 0:
                 commit = _ref2.commit;
                 _context2.next = 3;
-                return axios.get('/contact/get').then(function (response) {
+                return axios.get('/contact/get-all').then(function (response) {
                   // SET STATE AND LOCAL STORE
                   commit('SET_CONTACT', response.data.contact);
                   return response;
@@ -18464,7 +18466,7 @@ var customer = {
       is_active: "1",
       phone: "",
       email: "",
-      parent_company_id: "2"
+      parent_company_id: ""
     },
     //DEFAULT
     defaultCustomer: {
@@ -18474,7 +18476,7 @@ var customer = {
       is_active: "1",
       phone: "",
       email: "",
-      parent_company_id: "2"
+      parent_company_id: ""
     }
   },
   getters: {
