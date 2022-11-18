@@ -6,7 +6,7 @@ import App from './App.vue'
 axios.defaults.headers.common["Authorization"] = "Bearer " + JSON.parse(localStorage.getItem("token")) ?? '';
 axios.defaults.headers.common["content-type"] = "application/json";
 axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://127.0.0.1:8000/api/v1' : '';
+axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://subscription.test/api/v1' : '';
 //__________________________________________________AXIOS_________________________________________________________________//
 
 //IMPORT STYLE
