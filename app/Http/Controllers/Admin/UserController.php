@@ -114,7 +114,7 @@ class UserController extends Controller
 
         $response = [ 
             'user' => $user,
-            'user_has_roles' => $user->roles,
+            'user_has_roles' => $user->roles->pluck("name"),
             'roles' => $roles
         ];
         return  response($response, 201);
@@ -129,28 +129,27 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-            $user = User::where('id', $request->id)->first();
-            if (is_null($user)) {
-                abort(404);
-            }
+        $user = User::where('id', $request->id)->first();
 
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'profile_image' => $request->profile_image
-            ]);
+        if (is_null($user)) {
+            abort(404);
+        }
 
-            // delete all user roles
-            DB::table('model_has_roles')->where('model_id', $request->id)->delete();
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'profile_image' => $request->profile_image
+        ]);
 
-            if (isset($request->role)) {
-                // reassign roles to user
-                $roles = $request->input('role');
-                $user->assignRole($roles);
-            }
+        // delete all user roles
+        DB::table('model_has_roles')->where('model_id', $request->id)->delete();
 
-            $response = [ 
+        if(isset($request->roles)){
+            $user->assignRole($request->roles);
+        }
+
+        $response = [ 
             'user' => $user,
             'message' => "User updated."
         ];

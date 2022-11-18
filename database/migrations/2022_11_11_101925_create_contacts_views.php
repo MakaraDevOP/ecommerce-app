@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
       \DB::statement("
-            CREATE VIEW vcontacts 
+            CREATE OR REPLACE VIEW vcontacts 
             AS
             SELECT
                 contacts.id,

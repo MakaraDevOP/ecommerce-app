@@ -4,9 +4,7 @@ export const user = {
         users: [],
     },
     mutations: {
-        storeUsers(state, value) {
-            state.users = value;
-        },
+        storeUsers: (state, value) => state.users = value,
     },
     actions: {
         async fetchUsers({ commit }) {
@@ -28,10 +26,10 @@ export const user = {
             return response;
         },
 
-        async store({commit}, request){
+        async store({commit}, formdate){
 
             const response = await axios
-                .post("/user/store", request)
+                .post("/user/store", formdate)
                 .then((resp) => {
                     return resp;
                 });
@@ -45,6 +43,29 @@ export const user = {
                     return resp.data;
                 });
             return response;
+        },
+
+        async update({commit}, formdate){
+            var id = formdate?.id
+
+            const response = await axios
+                .put(`/user/${id}/update`, formdate)
+                .then((resp) => {
+                    return resp;
+                });
+            return response;
+        },
+
+        async destroy({commit}, id){
+            const response = await axios
+                .delete(`/user/${id}/destroy`)
+                .then((resp) => {
+                    return resp.data;
+                });
+            return response;
+        },
+        async viewProfile(){
+
         }
     },
     getters: {
