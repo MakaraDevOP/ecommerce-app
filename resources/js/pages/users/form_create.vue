@@ -14,7 +14,7 @@
                         <div class="flex flex-col mb-2">
                             <label for="name" class="mb-2">Name</label>
                             <Field type="text" name="name" class="p-component p-inputtext p-inputtext-sm mb-2" />
-                            <span class="p-error"></span>
+                            <span class="p-error">{{ errors.name }}</span>
                         </div>
                         <div class="flex flex-col mb-2">
                             <label for="email" class="mb-2">Email</label>
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="flex items-center justify-between w-full">
-                <Button label="Cancel" class="p-button-sm" />
+                <Button @click="closeDialog" label="Cancel" class="p-button-sm" />
                 <Button type="submit" label="Save" icon="pi pi-save" iconPos="right" class="p-button-sm" />
             </div>
         </div>
@@ -75,7 +75,7 @@ export default {
     computed: {
         data() {
             try {
-                return this.params.data;
+                return this.params?.data;
             } catch (e) {
                 return null;
             }
@@ -83,6 +83,10 @@ export default {
     },
     data() {
         const schema = yup.object({
+            name: yup
+                .string()
+                .min(3)
+                .required(),
             email: yup
                 .string()
                 .required()
@@ -113,6 +117,13 @@ export default {
                 return null;
             }
         },
-    }   
+        closeDialog(){
+            try{
+                this.params.display = false
+            } catch (e){
+                return null;
+            }
+        }
+    }
 }
 </script>

@@ -1,6 +1,7 @@
 <script setup>
-    import FormCreate from "./form_create.vue";
-    import FormUpdate from "./form_update.vue";
+import DialogCreate from "./form_create.vue";
+import DialogUpdate from "./form_update.vue";
+import DialogProfile from './profile.vue'
 </script>
 
 <template>
@@ -21,7 +22,6 @@
                     </template>
                     <Column field="name" header="Name"></Column>
                     <Column field="email" header="Email"></Column>
-                    <Column field="brand" header="Phone"></Column>
                     <Column field="roles" header="Role" class="flex">
                         <template #body="params">
                             <div v-for="role in params?.data?.roles" :key="role.id" class="mr-1">
@@ -31,21 +31,34 @@
                     </Column>
                     <Column header="Actions" style="width: 15rem;">
                         <template #body="params">
-                            <div class="" @click="openDialogUpdate(params.data.id)">
-                                Click me
+                            <div class="flex space-x-3">
+                                <div class="" @click="openDialogUpdateProfile(params.data.id)">
+                                    Detail
+                                </div>
+                                <div class="" @click="openDialogUpdate(params.data.id)">
+                                    Update me
+                                </div>
+                                <div class="" @click="openDialogDelete(params.data.id)">
+                                    Delete me
+                                </div>
                             </div>
                         </template>
                     </Column>
                 </DataTable>
 
-                <Dialog header="Header" v-model:visible="dialogCreate.display" :modal="true"
+                <Dialog header="Create User" v-model:visible="dialogCreate.display" :modal="true"
                     :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-                    <FormCreate :params="dialogCreate" @callback="dialogCreateCallBack" />
+                    <DialogCreate :params="dialogCreate" @callback="dialogCallback" />
                 </Dialog>
 
-                <Dialog header="Header" v-model:visible="dialogUpdate.display" :modal="true"
+                <Dialog header="Update User" v-model:visible="dialogUpdate.display" :modal="true"
                     :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
-                    <FormUpdate :params="dialogCreate" @callback="dialogCreateCallBack" />
+                    <DialogUpdate :params="dialogUpdate" @callback="dialogCallback" />
+                </Dialog>
+
+                <Dialog header="Profile" v-model:visible="dialogProfile.display" :modal="true"
+                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                    <DialogProfile :params="dialogProfile" @callback="dialogCallback" />
                 </Dialog>
             </div>
         </div>
@@ -74,15 +87,14 @@ export default {
                 display: false,
                 data: Object,
             },
-
+            dialogProfile: {
+                display: false,
+                data: Object,
+            }
         };
     },
     created() {
-        try {
-            this.$store.dispatch("user/fetchUsers");
-        } catch (e) {
-            return null;
-        }
+        this.initialData()
     },
     computed: {
         ...mapGetters({
@@ -99,6 +111,15 @@ export default {
     },
 
     methods: {
+        name: 'user-layout',
+        
+        initialData() {
+            try {
+                this.$store.dispatch("user/fetchUsers");
+            } catch (e) {
+                return null;
+            }
+        },
         opentCreateNewDialog() {
             try {
                 this.$store.dispatch("user/create").then(resp => {
@@ -112,12 +133,13 @@ export default {
             }
         },
         openDialogUpdate(id) {
+            console.log(id)
             try {
                 this.$store.dispatch("user/edit", id).then(resp => {
                     var data = Object
                     data.roles = resp.roles
                     data.user = resp.user
-                    data.user_has_role = resp.user_has_role
+                    data.user_has_role = resp.user_has_roles
 
                     this.dialogUpdate = {
                         display: true,
@@ -128,8 +150,46 @@ export default {
                 return null;
             }
         },
-        dialogCreateCallBack(e) {
-            console.log(e)
+        openDialogUpdateProfile() {
+            this.dialogProfile = {
+                display: true,
+                data: []
+            }
+        },
+        openDialogDelete(id) {
+            this.$confirm.require({
+                target: event.currentTarget,
+                message: 'Are you sure you want to proceed?',
+                icon: 'pi pi-exclamation-triangle',
+                accept: () => {
+                    this.$store.dispatch('user/destroy', id).then(respnse => {
+                        this.initialData()
+                        if (respnse) {
+                            this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Deleted successfully', life: 3000 });
+                        }
+                    })
+                },
+                reject: () => {
+                    this.$toast.add({ severity: 'info', summary: 'Infomation Message', detail: 'Rejected', life: 3000 });
+                }
+            });
+        },
+
+        dialogCallback(resp) {
+            if (resp.errors) {
+                console.log
+            }
+
+            this.dialogCreate = {
+                display: false,
+                data: [],
+            }
+            this.dialogUpdate = {
+                display: false,
+                data: [],
+            }
+
+            this.initialData()
         }
     },
 };
