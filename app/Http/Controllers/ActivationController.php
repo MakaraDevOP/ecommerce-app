@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 
 use App\Models\Activation;
 use App\Models\VActivation;
+use App\Models\ActivationLine;
+use Illuminate\Support\Facades\DB;
+use App\Models\Note;
 
 class ActivationController extends Controller
 {
@@ -23,22 +26,57 @@ class ActivationController extends Controller
         $fields = $request->validate([
             'customer_id' =>'required|exists:customers,id',
         ]);
-        $activation=  Activation::create([
-        'customer_id' =>$fields['customer_id'],
-        'details' => $request->details,  
-        'is_active' => $request->is_active
-       ]);
+        //TRANSACTION 
+        DB::transaction(function () use ($request , $fields) {
+            //ACTIVATION
+            $activation=Activation::create([
+                'customer_id' =>$fields['customer_id'],
+                'details' => $request->details,  
+                'is_active' => $request->is_active
+            ]);
+            //ACTIVATION LINE
+            if($request->activation_line){
+                if(count($request->activation_line)>0){
+                    collect($request->activation_line)->each(function (array $items) use ($request,$activation) {
+                        $activationLine = ActivationLine::create(
+                            [ 
+                                'activation_id' =>$activation->id,
+                                'product_id' =>$items['product_id'],
+                                'term_id' =>$items['term_id'],
+                                'user_no' =>$items['user_no'],
+                                'period' =>$items['period'],
+                                'note' => $items["note"], 
+                                'activated_date' =>$items["activated_date"],  
+                                'expired_date' => $items["expired_date"],  
+                                'status' =>$items["status"], 
+                                'is_free' =>$items["is_free"], 
+                                'is_notify_email' =>$items["is_notify_email"],  
+                                'order_by' =>$items["order_by"], 
+                                'is_active' => $items["is_active"]]
+                        );
+                    });
+                }
+            }
+            return $activation;
+        });
         $response = [ 
-            'activation' => $activation , 
+             'message' => 'successfully' , 
         ];
         return  response($response, 201);
     }
-
+    
     public function show($id)
     {
         $activation=  Activation::where('id', $id)->first();
+        $activationLine = ActivationLine::where('activation_id' ,$id)->get();
+        $data = array([
+           "customer_id" =>$activation->customer_id,
+           "details"  =>$activation->details,
+           "is_active" =>$activation->is_active,
+           "activation_line" =>$activationLine
+        ]);
         $response = [ 
-            'activation' => $activation , 
+            'activation' => $data , 
         ];
         return  response($response, 200);
     }

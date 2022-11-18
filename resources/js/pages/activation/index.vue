@@ -70,25 +70,27 @@
           <div class="grid grid-cols-6 gap-2 py-2">
             <div class="col-span-2">
               <div class="text-md font-semibold p-1">Company Name</div>
-              <Dropdown v-model="activation.company_id" :options="customers" optionLabel="company_name" optionValue="id" placeholder="company name" class="w-full" :disabled="true" />
+              <Dropdown v-model="activation.customer_id" :options="customers" optionLabel="company_name" optionValue="id" placeholder="select company " class="w-full" :disabled="activation.id != null" />
             </div>
             <div>
-              <div class="text-md font-semibold p-1">Status</div>
-              <Dropdown v-model="activation.status" :options="status" optionLabel="name" optionValue="code" placeholder="status" class="w-full" />
+              <div class="text-md font-semibold p-1">Is Active</div>
+              <Dropdown v-model="activation.is_active" :options="status" optionLabel="name" optionValue="code" placeholder="status" class="w-full" />
             </div>
           </div>
           <div>
             <div class="h-[calc(100vh-35rem)]">
-              <DataTable ref="dt" :value="activations" dataKey="id" :paginator="false" scrollHeight="flex" :scrollable="true" scrollDirection="both" showGridlines stripedRows class="p-datatable-sm text-xs" style="font-size:12px !important" :rows="10" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+              <DataTable ref="dt" :value="activation.activation_line" editMode="cell" @cell-edit-complete="onCellEditComplete" class="editable-cells-table p-datatable-sm text-xs" dataKey="id" :paginator="false" scrollHeight="flex" :scrollable="true" scrollDirection="both" showGridlines stripedRows style="font-size:12px !important" :rows="10" paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown" :rowsPerPageOptions="[10, 20, 50]" currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
                 <template #header>
                   <div class="flex justify-between items-center">
-                    <div class="text-left flex space-x-2  items-center">
-                      <Button label="Contact List" icon="pi pi-id-card" class="p-button-success p-button-sm" iconPos="left" />
-                      <Button label="History " icon="pi pi-history" class="p-button-sm p-button-help" iconPos="left" />
-                      <Button label="Company Detail" icon="pi pi-list" class="p-button-secondary p-button-sm" iconPos="left" />
+                    <div>
+                      <div class="text-left flex space-x-2  items-center" v-show="activation.id != null">
+                        <Button label="Contact List" icon="pi pi-id-card" class="p-button-success p-button-sm" iconPos="left" :disabled="activation.id == null" />
+                        <Button label="History " icon="pi pi-history" class="p-button-sm p-button-help" iconPos="left" :disabled="activation.id == null" />
+                        <Button label="Company Detail" icon="pi pi-list" class="p-button-secondary p-button-sm" iconPos="left" :disabled="activation.id == null" />
+                      </div>
                     </div>
                     <div class="flex space-x-2">
-                      <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" />
+                      <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" @click="addRowActivatonLine" />
                     </div>
                   </div>
                 </template>
@@ -100,26 +102,59 @@
                   </template>
                 </Column>
                 <!-- <Column selectionMode="multiple" headerStyle="width: 3rem" style="flex-grow: 0; flex-basis: 50px;"></Column> -->
-                <Column field="" header="Product" style="flex-grow: 1; flex-basis: 150px;"></Column>
-                <Column field="" header="User No." style="flex-grow: 1; flex-basis: 200px;"></Column>
-                <Column field="" header=" Term" style="flex-grow: 1; flex-basis: 200px;"></Column>
-                <Column field="" header=" Period" style="flex-grow: 1; flex-basis: 200px;"></Column>
-                <Column field="" header="Activated Date" style="flex-grow: 1; flex-basis: 250px;"></Column>
-                <Column field="" header="Expired Date" style="flex-grow: 1; flex-basis: 250px;"></Column>
+                <Column field="product_id" header="Product" style="flex-grow: 1; flex-basis: 300px;">
+                  <template #body="{ data, field }">
+                    <Dropdown v-model="data[field]" :options="products" optionLabel="name" optionValue="id" placeholder="Product" class="w-full" autofocus />
 
+                  </template>
+                </Column>
+                <Column field="user_no" header="User No." style="flex-grow: 0; flex-basis: 220px;">
+                  <template #body="{ data, field }">
+                    <div class="p-inputgroup">
+                      <span class="p-inputgroup-addon p-button-sm">
+                        <i class="pi pi-user"></i>
+                      </span>
+                      <InputText v-model="data[field]" autofocus class="w-full" />
+                    </div>
+                  </template>
+                </Column>
+                <Column field="term_id" header=" Term" style="flex-grow: 1; flex-basis: 250px;">
+                  <template #body="slot">
+                    <Dropdown v-model="slot.data.term_id" :options="term" @change="changeTerm(slot.index, slot.data.term_id)" optionLabel="name" optionValue="code" placeholder="Term" class="w-full" autofocus />
+                  </template>
+                </Column>
+                <Column field="period" header=" Period" style="flex-grow: 1; flex-basis: 200px;">
+                  <template #body="slot">
+                    <InputText v-model="slot.data.period" autofocus class="w-full" :disabled="slot.data.term_id < 5" />
+                  </template>
+                </Column>
+                <Column field="activated_date" header="Activated Date" style="flex-grow: 1; flex-basis: 250px;">
+                  <template #body="{ data, field }">
+                    <Calendar inputId="icon" v-model="data[field]" :showIcon="false" autofocus class="w-full" />
+                  </template>
+                </Column>
+                <Column field="expired_date" header="Expired Date" style="flex-grow: 1; flex-basis: 250px;">
+                  <template #body="{ data, field }">
+                    <Calendar inputId="icon" v-model="data[field]" :showIcon="false" autofocus class="w-full" />
+                  </template>
+                </Column>
                 <Column field="Status" header="Is active" style="flex-grow: 0; flex-basis: 100px;">
                   <template #body="slot">
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-2 w-full">
                       <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" v-if="slot.data.is_active == '0'">Inactive</span>
                       <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-green-200 text-green-700 rounded-full" v-if="slot.data.is_active == '1'">Active</span>
                     </div>
                   </template>
                 </Column>
-                <Column field="" header="Is Free" style="flex-grow: 1; flex-basis: 100px;"></Column>
+                <Column field="is_free" header="Is Free" style="flex-grow: 1; flex-basis: 100px;">
+                  <template #body="{ data, field }">
+                    <Checkbox v-model="data[field]" :binary="true" falseValue="0" trueValue="1" />
+                  </template>
+                </Column>
                 <Column header="Actions" style="flex-grow: 0; flex-basis: 80px;" alignFrozen="right" :frozen="true">
                   <template #body="slot">
                     <div class="flex space-x-2 items-center justify-center w-full">
-                      <Button icon="pi pi-ellipsis-v" class="p-button-sm p-button-secondary p-button-outlined" />
+                      <Button icon="pi pi-ellipsis-v" class="p-button-rounded p-button-secondary p-button-text" @click="optionAction(slot.index)" />
                     </div>
                   </template>
                 </Column>
@@ -127,14 +162,14 @@
             </div>
             <div class="grid grid-cols-3 gap-4">
               <div class="col-span-2">
-                <Panel header="Attachment File" :toggleable="true">
+                <Panel header="Attachment File" :toggleable="true" :collapsed="activation.id == null" :disabled="activation.id == null">
                   <template #icons>
                     <Menu id="config_menu" ref="menu" :model="items" :popup="true" />
                   </template>
                   <ScrollPanel style="width: 100%; height: 250px">
                     <div class="grid grid-cols-3 w-full h-full gap-4">
                       <div class="w-full">
-                        <Textarea class="w-full" rows="10" placeholder="Notes" />
+                        <Textarea class="w-full" rows="10" placeholder="Notes" v-model="activation.details" />
                       </div>
                       <div class="col-span-2">
                         <div class=" px-2">
@@ -156,7 +191,7 @@
                 </Panel>
               </div>
               <div class="">
-                <Panel header="Subscription notes " :toggleable="true">
+                <Panel header="Subscription notes " :toggleable="true" :collapsed="activation.id == null" :disabled="activation.id == null">
                   <template #icons>
                     <Menu id="config_menu" ref="menu" :model="items" :popup="true" />
                   </template>
@@ -228,18 +263,30 @@ export default {
         { name: 'Active.', code: '1' },
         { name: 'Inactive.', code: '0' },
       ],
+      term: [
+        { name: 'Monthly.', code: '1' },
+        { name: 'Quarterly.', code: '2' },
+        { name: 'Semester.', code: '3' },
+        { name: 'Yearly.', code: '4' },
+        { name: 'Custom.', code: '5' },
+      ],
       dataCompany: [],
     }
   },
   computed: {
     ...mapGetters({
       activations: 'activation/activations',
-      activation: 'activation/activation'
+      activation: 'activation/activation',
+      activationLine: 'activation/activationLine',
+      customers: 'customer/customers',
+      products: 'product/products',
 
     })
   },
   mounted() {
-    this.$store.dispatch('activation/GET_ACTIVATION')
+    this.$store.dispatch('activation/GET_ACTIVATION');
+    this.$store.dispatch('customer/GET_CUSTOMER');
+    this.$store.dispatch('product/GET_PRODUCT');
   },
   methods: {
     doubleClick() {
@@ -274,17 +321,14 @@ export default {
       });
 
     },
-    openDialog() {
-      this.showDialog = true;
-      this.$store.commit('contact/ADD_ACTIVATION')
-    },
+
     cancel() {
       this.showDialog = false;
       this.$store.commit('contact/ADD_ACTIVATION')
     },
     createORupdateProduct() {
       // UPDATED
-      if (this.contact.id != null)
+      if (this.activation.id != null)
         this.$store.dispatch('contact/UPDATE_ACTIVATION').then(respnse => {
           if (respnse) {
             this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Updated successfully', life: 3000 });
@@ -295,7 +339,7 @@ export default {
         })
       // CREATED
       else
-        this.$store.dispatch('contact/CREATE_ACTIVATION').then(respnse => {
+        this.$store.dispatch('activation/CREATE_ACTIVATION').then(respnse => {
           if (respnse) {
             this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Created successfully', life: 3000 });
             this.showDialog = false
@@ -303,11 +347,47 @@ export default {
         }).catch(error => {
           this.$toast.add({ severity: 'error', summary: 'Error Message', detail: error, life: 3000 });
         })
-
     },
-
     exportCSV() {
       this.$refs.dt.exportCSV();
+    },
+    // CREATE NEW
+    openDialog() {
+      this.showDialog = true;
+      this.$store.commit('activation/ADD_ACTIVATION')
+    },
+    // CHANGE TERM CONDITION
+    changeTerm(index, term_id) {
+      this.activation.activation_line.forEach((data, i) => {
+        // CHECK IS ROW ACTIVATIONLINE
+        if (index == i) {
+          switch (term_id) {
+            case "1":
+              data.period = 1;
+              break;
+            case "2":
+              data.period = 3;
+              break;
+            case "3":
+              data.period = 6;
+              break;
+            case "4":
+              data.period = 12;
+              break;
+            default:
+              console.log(5);
+              // Custom
+              break;
+          }
+        }
+      });
+    },
+    // ADD NEW ROW LINE
+    addRowActivatonLine() {
+      this.$store.commit('activation/ADD_ACTIVATION_LINE')
+    },
+    optionAction() {
+      alert("hi")
     }
   }
 }
