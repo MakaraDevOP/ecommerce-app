@@ -10,7 +10,7 @@ export const customer = {
       is_active: "1",
       phone: "",
       email: "",
-      parent_company_id:"2"
+      parent_company_id:""
     },
     //DEFAULT
     defaultCustomer: {
@@ -20,7 +20,7 @@ export const customer = {
       is_active: "1",
       phone: "",
       email: "",
-      parent_company_id:"2"
+      parent_company_id:""
     }
   },
   getters: {

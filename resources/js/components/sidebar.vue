@@ -33,7 +33,7 @@
             <router-link to="/customer" class="px-2 flex space-x-2"><span class="pi pi-shield " v-tooltip.right="'Customer'"></span> <span v-show="dataSibar">Customer</span></router-link>
           </div>
           <div class="  py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi  pi-check-circle " v-tooltip.right="'Activation'"></span> <span v-show="dataSibar">Activation</span></div>
+            <router-link to="/activation" class="px-2 flex space-x-2"><span class="pi  pi-check-circle " v-tooltip.right="'Activation'"></span> <span v-show="dataSibar">Activation</span></router-link>
           </div>
           <div class="  py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
             <div class="px-2 flex space-x-2"><span class="pi pi-slack" v-tooltip.right="'Setting'"></span> <span v-show="dataSibar">Setting</span></div>
@@ -41,7 +41,7 @@
         </div>
         <div class="menu-man text-left px-2 justify-self-end whitespace-nowrap">
           <div class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">
-            <div class="px-2 flex space-x-2"><span class="pi pi-question" v-tooltip.right="'About Me'"></span> <span v-show="dataSibar">About Me</span></div>
+            <a href="https://website-nuxt-front.vercel.app/" target="_blank" class="px-2 flex space-x-2"><span class="pi pi-question" v-tooltip.right="'About Me'"></span> <span v-show="dataSibar">About Me</span></a>
           </div>
         </div>
       </div>

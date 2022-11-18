@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Activation;
+use App\Models\VActivation;
+use App\Models\ActivationLine;
+use Illuminate\Support\Facades\DB;
+use App\Models\Note;
 
 class ActivationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
          $activation = Activation::all();
@@ -21,51 +21,66 @@ class ActivationController extends Controller
         ];
         return  response($response, 200);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $fields = $request->validate([
             'customer_id' =>'required|exists:customers,id',
         ]);
-        $activation=  Activation::create([
-        'customer_id' =>$fields['customer_id'],
-        'details' => $request->details,  
-        'is_active' => $request->is_active
-       ]);
+        //TRANSACTION 
+        DB::transaction(function () use ($request , $fields) {
+            //ACTIVATION
+            $activation=Activation::create([
+                'customer_id' =>$fields['customer_id'],
+                'details' => $request->details,  
+                'is_active' => $request->is_active
+            ]);
+            //ACTIVATION LINE
+            if($request->activation_line){
+                if(count($request->activation_line)>0){
+                    collect($request->activation_line)->each(function (array $items) use ($request,$activation) {
+                        $activationLine = ActivationLine::create(
+                            [ 
+                                'activation_id' =>$activation->id,
+                                'product_id' =>$items['product_id'],
+                                'term_id' =>$items['term_id'],
+                                'user_no' =>$items['user_no'],
+                                'period' =>$items['period'],
+                                'note' => $items["note"], 
+                                'activated_date' =>$items["activated_date"],  
+                                'expired_date' => $items["expired_date"],  
+                                'status' =>$items["status"], 
+                                'is_free' =>$items["is_free"], 
+                                'is_notify_email' =>$items["is_notify_email"],  
+                                'order_by' =>$items["order_by"], 
+                                'is_active' => $items["is_active"]]
+                        );
+                    });
+                }
+            }
+            return $activation;
+        });
         $response = [ 
-            'activation' => $activation , 
+             'message' => 'successfully' , 
         ];
         return  response($response, 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    
     public function show($id)
     {
         $activation=  Activation::where('id', $id)->first();
+        $activationLine = ActivationLine::where('activation_id' ,$id)->get();
+        $data = array([
+           "customer_id" =>$activation->customer_id,
+           "details"  =>$activation->details,
+           "is_active" =>$activation->is_active,
+           "activation_line" =>$activationLine
+        ]);
         $response = [ 
-            'activation' => $activation , 
+            'activation' => $data , 
         ];
         return  response($response, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
@@ -82,12 +97,6 @@ class ActivationController extends Controller
         return  response($response, 201);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         Activation::where('id', $id)->delete();
@@ -95,5 +104,12 @@ class ActivationController extends Controller
             'message' => 'successfully' , 
         ];
         return  response($response, 200);
+    }
+    public function getActivationLine(){
+        $activation = VActivation::all();
+        $response = [
+            'activation' =>$activation
+        ];
+        return response($response , 200);
     }
 }

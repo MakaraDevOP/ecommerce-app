@@ -20,10 +20,14 @@ return new class extends Migration
                 contacts.id,
                 contacts.title,
                 contacts.full_name,
-                contacts.phone,
-                contacts.email,
+                contacts.phone AS 'contact_phone',
+                contacts.email AS 'contact_email',
+                contacts.description,
+                contacts.is_active,
                 customers.company_name,
-                customers.detail_address
+                customers.detail_address,
+                customers.phone AS 'company_phone',
+                customers.email AS 'company_email'
             FROM
                 contacts
             LEFT JOIN customers ON contacts.company_id = customers.id

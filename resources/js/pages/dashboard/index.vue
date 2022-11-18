@@ -11,7 +11,7 @@
     </div>
     <div class="border rounded shadow bg-gray-50">
       <div class="w-full h-auto p-5">
-        <Chart type="doughnut" :data="chartData" :options="lightOptions" />
+        <Chart type="pie" :data="chartData" :options="lightOptions" />
       </div>
     </div>
   </div>
@@ -30,7 +30,7 @@ export default {
         labels: [],
         datasets: [
           {
-            data: [300, 50, 100, 2, 40, 50],
+            data: [],
             backgroundColor: [
               "rgb(28,100,147)",
               "rgb(12,38,128)",
@@ -255,18 +255,50 @@ export default {
     ...mapGetters({
       products: 'product/products',
       product: 'product/product',
-      chartProduct: 'product/chartProduct'
+      chartProduct: 'product/chartProduct',
+      activationLines: 'activation/activationLines'
     })
   },
   watch: {
     chartProduct() {
       this.chartData.labels = this.chartProduct
+    },
+    activationLines() {
+      var obj = [];
+
+      for (var p of this.products) {
+        var i = 0;
+        for (var s of this.activationLines) {
+          if (p.id == s.product_id) {
+            i++;
+          }
+        }
+        obj = [...obj, i];
+      }
+      this.chartData.datasets[0].data = obj;
+      console.log(obj);
     }
   },
   mounted() {
     this.$store.dispatch('product/GET_PRODUCT').then(response => {
-      if (response)
+      if (response) {
         this.chartData.labels = this.chartProduct
+      }
+    })
+    this.$store.dispatch('activation/GET_ACTIVATION_LINE').then(response => {
+      if (response) {
+        var obj = [];
+        for (var p of this.products) {
+          var i = 0;
+          for (var s of this.activationLines) {
+            if (p.id == s.product_id) {
+              i++;
+            }
+          }
+          obj = [...obj, i];
+        }
+        this.chartData.datasets[0].data = obj;
+      }
     })
 
   },
