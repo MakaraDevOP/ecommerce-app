@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('date_of_birth')->nullable();
             $table->text('place_of_birth')->nullable();
             $table->string('phone');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

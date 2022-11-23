@@ -2,6 +2,7 @@ export const product = {
   namespaced: true,
   state: {
     products: [],
+    productType:[],
     // MODEL
     product: {
       name:"",
@@ -19,7 +20,8 @@ export const product = {
   },
   getters: {
     products: state => state.products,
-    product:state=>state.product,
+    product: state => state.product,
+    productType:state =>state.productType,
     chartProduct(state) {
       var obj = [];
       for (var data of state.products) {
@@ -31,6 +33,9 @@ export const product = {
   mutations: {
     SET_PRODUCT(state , data) {
       state.products =data
+    },
+    SET_TYPE(state , data) {
+      state.productType =data
     },
     SET_EDIT_PRODUCT(state, data) {
       state.product = Object.assign({}, data);
@@ -49,10 +54,18 @@ export const product = {
         })
       return response;
     },
-    async GET_PRODUCT({ commit }) {
+    async GET_PRODUCT({ commit ,dispatch}) {
       await axios.get('/product/get').then((response) => {
         // SET STATE AND LOCAL STORE
-        commit('SET_PRODUCT', response.data.Product)
+        commit('SET_PRODUCT', response.data.Product);
+        dispatch('GET_TYPE');
+        return response;
+      })
+    },
+    async GET_TYPE({ commit }) {
+      await axios.get('/type/get').then((response) => {
+        // SET STATE AND LOCAL STORE
+        commit('SET_TYPE', response.data.type)
         return response;
       })
     },

@@ -5,7 +5,7 @@
         <Siade :dataSibar="isOpen"></Siade>
         <div class="w-full border">
           <Header :toggleSideBar="clickToggle"></Header>
-          <div class="bg-slate-100 h-full overflow-y-auto p-2" style="height: calc(100vh - 3rem)">
+          <div class="bg-slate-100 h-full overflow-y-auto px-2 pt-2" style="height: calc(100vh - 3rem)">
             <router-view />
           </div>
         </div>

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('customer_id');
             $table->string('details')->nullable();
             $table->integer('is_active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

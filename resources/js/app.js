@@ -33,6 +33,7 @@ import Sidebar from 'primevue/sidebar';
 import Panel from 'primevue/panel';
 import ScrollPanel from 'primevue/scrollpanel';
 import Calendar from 'primevue/calendar';
+import InputNumber from 'primevue/inputnumber';
 
 // vue validation
 import { Form, Field, ErrorMessage } from "vee-validate";
@@ -57,7 +58,9 @@ app.component('Badge', Badge)
 app.component('Sidebar', Sidebar)
 app.component('Panel', Panel)
 app.component('ScrollPanel', ScrollPanel)
-app.component('Calendar',Calendar)
+app.component('Calendar', Calendar)
+app.component('InputNumber',InputNumber)
+
 
 // vue validation
 app.component('Form', Form)

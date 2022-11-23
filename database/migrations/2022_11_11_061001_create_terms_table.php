@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('term');
             $table->string('description')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

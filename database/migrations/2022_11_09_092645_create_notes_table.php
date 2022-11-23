@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('activation_line_id');
             $table->string('title')->nullable();
             $table->integer('user_id');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

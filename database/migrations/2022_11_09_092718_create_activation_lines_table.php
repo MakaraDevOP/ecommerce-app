@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('is_active');
             $table->integer('is_notify_email');
             $table->integer('is_free');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

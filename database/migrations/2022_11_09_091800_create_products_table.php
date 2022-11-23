@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('type');
             $table->string('description')->nullable();
             $table->integer('is_active');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

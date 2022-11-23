@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->integer('is_active');
             $table->integer('company_id');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

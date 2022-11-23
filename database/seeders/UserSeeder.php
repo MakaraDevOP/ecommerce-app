@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-         User::factory()->create([
+         User::create([
             'name' => 'Admin', 
             'email' => 'admin@gmail.com',
             'password' => bcrypt('dev123')
@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
                 $user->assignRole('super-admin');
             }
         );
-        User::factory()->create([
+        User::create([
             'name' => 'Editor', 
             'email' => 'edit@gmail.com',
             'password' => bcrypt('dev123')
@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
                 $user->assignRole('role-editor');
             }
         );
-        User::factory()->create([
+        User::create([
             'name' => 'Viewer', 
             'email' => 'viewer@gmail.com',
             'password' => bcrypt('dev123')

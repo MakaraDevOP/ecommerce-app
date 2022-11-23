@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('size');
             $table->string('type');
             $table->integer('activation_id');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

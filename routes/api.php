@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TermContoller;
+use App\Http\Controllers\TypeController;
 use App\Http\Controllers\ActivationController;
 use App\Http\Controllers\ActivationLineController;
 use App\Http\Controllers\PreferanceController;
@@ -64,6 +65,10 @@ Route::prefix('v1')->group(function(){
       Route::get('/{id}/get' , [TermContoller::class, 'show']);
       Route::put('/{id}/update' , [TermContoller::class, 'update']);
       Route::delete('/{id}/destroy' , [TermContoller::class, 'destroy']);
+    });
+         // Type
+    Route::prefix('type')->group(function () {
+      Route::get('/get' , [TypeController::class, 'index']);
     });
      // Activation
     Route::prefix('activation')->group(function () {

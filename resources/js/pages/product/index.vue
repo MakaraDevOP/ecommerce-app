@@ -69,17 +69,14 @@ export default {
     return {
       showDialog: false,
       selectProduct: {},
-      productType: [
-        { name: 'Software', code: '1' },
-        { name: 'Service', code: 'RM' },
-      ]
     }
   },
   computed: {
     ...mapGetters({
       products: 'product/products',
       product: 'product/product',
-      chartProduct: 'product/chartProduct'
+      chartProduct: 'product/chartProduct',
+      productType: 'product/productType'
     })
   },
   mounted() {

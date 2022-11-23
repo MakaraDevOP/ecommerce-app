@@ -1,8 +1,10 @@
+import * as moment from "moment";
 export const activation = {
   namespaced: true,
   state: {
     activations: [],
     activationLines: [],
+    terms:[],
     // MODEL
     activation: {
       customer_id: "",
@@ -70,10 +72,10 @@ export const activation = {
       product_id: "",
       term_id: "5",
       user_no: "",
-      period: "1",
-      note: "test",
-      activated_date: "2021-12-10",
-      expired_date: "2022-12 -10",
+      period: "",
+      note: "",
+      activated_date: "",
+      expired_date: "",
       status: "1",
       is_free: "0",
       is_notify_email: "0",
@@ -84,6 +86,7 @@ export const activation = {
   getters: {
     activations: state => state.activations,
     activationLines: state => state.activationLines,
+    terms: state => state.terms,
     // Data
     activation: state => state.activation,
     activationLine: state => state.activationLine
@@ -92,7 +95,14 @@ export const activation = {
     SET_ACTIVATION(state, data) {
       state.activations = data
     },
+    SET_TERM(state, data) {
+      data.forEach(d => {
+        d.id =d.id.toString()
+      })
+      state.terms =data
+    },
     SET_ACTIVATION_LINE(state, data) {
+
       state.activationLines = data
     },
     SET_EDIT_ACTIVATION(state, data) {
@@ -109,26 +119,45 @@ export const activation = {
 
     },
     ADD_ACTIVATION(state) {
-      state.activation = Object.assign({}, state.defaultActivation);
-      state.activationLine = Object.assign({}, state.defaultActivationLine);
+      const objClone = { ...state.defaultActivation };
+      state.activation = JSON.parse(JSON.stringify(objClone)) 
     },
     ADD_ACTIVATION_LINE(state) {
       state.activation.activation_line = [...state.activation.activation_line,state.defaultActivationLine[0]]
+    },
+    SET_DATE_ACTIVATION(state) {
+      state.activation?.activation_line.forEach(element => {
+        var ex = new Date(element.expired_date);
+        var ac = new Date(element.activated_date);
+        element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
+        element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
+      });
+
     }
+
   },
   actions: {
     async GET_ID_ACTIVATION({ commit }, id) {
       const response = await axios.get(`/activation/${id}/get`).then((response) => {
         // SET STATE
         commit('SET_EDIT_ACTIVATION', response.data?.activation[0]);
+        console.log(response.data?.activation[0])
         return response;
       })
       return response;
     },
-    async GET_ACTIVATION({ commit }) {
+    async GET_ACTIVATION({ commit ,dispatch}) {
       await axios.get('/activation/get-all').then((response) => {
         // SET STATE AND LOCAL STORE
-        commit('SET_ACTIVATION', response.data.activation)
+        commit('SET_ACTIVATION', response.data.activation);
+        dispatch('GET_TERM');
+        return response;
+      })
+    },
+    async GET_TERM({ commit }) {
+      await axios.get('/term/get').then((response) => {
+        // SET STATE AND LOCAL STORE
+        commit('SET_TERM', response.data.term)
         return response;
       })
     },
@@ -139,16 +168,19 @@ export const activation = {
         return response;
       })
     },
-    async CREATE_ACTIVATION({ dispatch, state }) {
+    async CREATE_ACTIVATION({ dispatch, commit,state }) {
+      commit('SET_DATE_ACTIVATION');
       const response = await axios.post('/activation/create', state.activation).then((response) => {
         // RE LOAD DATA
         dispatch('GET_ACTIVATION');
+        commit('ADD_ACTIVATION');
         return response;
       })
       return response;
     },
-    async UPDATE_ACTIVATION({ dispatch, state }) {
-      const response = await axios.put(`/contact/${state.contact.id}/update`, state.contact).then((response) => {
+    async UPDATE_ACTIVATION({ dispatch,commit, state }) {
+            commit('SET_DATE_ACTIVATION');
+      const response = await axios.put(`/activation/${state.activation.id}/update`, state.activation).then((response) => {
         // RE LOAD DATA
         dispatch('GET_ACTIVATION');
         return response;

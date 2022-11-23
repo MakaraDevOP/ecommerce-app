@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
       \DB::statement("
-            CREATE VIEW vactivation
+            CREATE OR REPLACE VIEW vactivation
             AS
             SELECT
 		        activations.id,
@@ -41,6 +41,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('v_activations');
+        Schema::dropIfExists('vactivation');
     }
 };
