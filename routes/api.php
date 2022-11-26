@@ -57,6 +57,13 @@ Route::prefix('v1')->group(function(){
       Route::get('/{id}/get' , [NoteController::class, 'show']);
       Route::put('/{id}/update' , [NoteController::class, 'update']);
       Route::delete('/{id}/destroy' , [NoteController::class, 'destroy']);
+  // Related Note activation
+      Route::get('/get/activation/all' , [NoteController::class, 'getVNote']);
+      Route::get('/get/activation/{id}' , [NoteController::class, 'getVNoteByActivation']);
+      Route::get('/get/activation/{id}/activation-line/{lineId}' , [NoteController::class, 'getNotebyActivationLine']);
+
+
+
     });
      // Term
     Route::prefix('term')->group(function () {

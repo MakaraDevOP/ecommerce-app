@@ -6,6 +6,8 @@ import { user } from './user.module'
 import { product } from './product.module'
 import { contact } from './contact.module'
 import { activation } from './activation.module'
+import { note } from './note.module'
+
 
 const store = createStore({
     modules: {
@@ -15,7 +17,8 @@ const store = createStore({
         auth,
         user,
         contact,
-        activation
+        activation,
+        note
     },
 });
 export default store;

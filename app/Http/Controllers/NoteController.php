@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Note;
+use App\Models\Vnote;
 
 class NoteController extends Controller
 {
@@ -102,5 +103,28 @@ class NoteController extends Controller
             'message' => 'successfully' , 
         ];
         return  response($response, 200);
+    }
+    // Get note by activate line
+     public function getNotebyActivationLine(Request $request , $activation, $activationLineID)
+    {
+       $note =  Vnote::where('activation_id', $activation)->where('activation_line_id', $activationLineID)->get();
+        $response = [ 
+            'note' => $note , 
+        ];
+        return  response($response, 200);
+    }
+    public function getVNote(){
+       $note  = Vnote::all();
+       $response = [
+        'note' => $note,
+       ];
+       return response($response, 200);
+    }
+    public function getVNoteByActivation($id){
+        $note = Vnote::where('activation_id',$id)->get();
+        $response = [
+        'note' => $note,
+       ];
+       return response($response, 200);
     }
 }

@@ -132,8 +132,14 @@ export const activation = {
         element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
         element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
       });
-
-    }
+    },
+    REMOVE_ACTIVATION_LINE(state, payload) {
+      state.activation.activation_line.forEach((element, i) => {
+        if (payload == i) {
+          state.activation.activation_line.splice(i, 1);
+        }
+      })
+    } 
 
   },
   actions: {

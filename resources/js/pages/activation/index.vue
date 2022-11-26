@@ -41,7 +41,7 @@
           </Column> -->
         </DataTable>
       </div>
-      <!-- DIALOG SIDEBAR ----------------------------------------------------------------------------------------------------------- -->
+      <!-- DIALOG SIDEBAR ------------------------------------------------------------------------------------------------------------->
       <Sidebar v-model:visible="showDialog" position="full">
         <ScrollPanel style="width: 100%;" class="h-[calc(100vh-6rem)] custom ">
           <div class="px-2">
@@ -134,7 +134,13 @@
                     <Column header="Actions" style="flex-grow: 0; flex-basis: 80px;" alignFrozen="right" :frozen="true">
                       <template #body="slot">
                         <div class="flex space-x-2 items-center justify-center w-full">
-                          <Button icon="pi pi-ellipsis-v" class="p-button-rounded p-button-secondary p-button-text" @click="optionAction(slot.index)" />
+                          <div @click="setActlineId(slot.data.id)" v-if="slot.data.id">
+                            <Button icon="pi pi-ellipsis-v" class="p-button-rounded p-button-secondary p-button-text" @click="clickTogle" />
+                            <Menu ref="menu_action" :model="itemsAction" :popup="true" class="text-xs" />
+                          </div>
+                          <div v-else>
+                            <Button icon="pi pi-trash" class="p-button-sm p-button-danger" @click="destroyLine(slot.index)" />
+                          </div>
                         </div>
                       </template>
                     </Column>
@@ -234,7 +240,72 @@
           </div>
         </ScrollPanel>
       </Sidebar>
-      <!-- DIALOG SIDEBAR ----------------------------------------------------------------------------------------------------------- -->
+      <!-- DIALOG SIDEBAR ------------------------------------------------------------------------------------------------------------->
+
+      <!-- DIALOG CHAT ----------------------------------------------------------------------------------------------------------------->
+      <Dialog header="Line Note" v-model:visible="noteChateDialog" :breakpoints="{ '960px': '75vw', '640px': '90vw' }" :style="{ width: '60vw' }" :modal="true">
+        <div class="p-editor-container">
+          <ScrollPanel style="width: 100%;" class="h-[360px]  p-2">
+            <div class="p-editor-content ql-container ql-snow" style="border:0 !important">
+              <div class="ql-editor">
+                <div>
+                  <div class="w-ful flex justify-center items-center" v-if="noteLine.length == 0">
+                    <div class="shadow rounded-2xl w-42 p-5 bg-white dark:bg-gray-800">
+                      <div class="flex items-center justify-center pb-2">
+                        <span class="">
+                          <i class="pi-eraser pi" style="font-size:30px"></i>
+                        </span>
+                      </div>
+                      <div class="flex flex-col justify-start">
+                        <p class="text-gray-600 text-md text-left dark:text-white font-bold my-4">
+                          No note !
+                        </p>
+                        <div class="relative w-28 h-2 bg-gray-200 rounded">
+                          <div class="absolute top-0 h-2  left-0 rounded bg-green-500 w-2/3">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="noteLine.length > 0">
+                    <div class="w-auto flex flex-col " v-for="data in noteLine" :key="data">
+                      <div class="flex justify-sart mb-2">
+                        <div class="block  w-auto">
+                          <div class="  text-gray-800 w-auto" role="alert">
+                            <div class="flex border border-gray-400 rounded-md shadow  px-4 py-3" :class="data.user_id == userID ? 'bg-teal-50' : 'bg-gray-50'">
+                              <div class="py-1 grow-0 "><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                  <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                                </svg></div>
+                              <div class="grow w-auto ">
+                                <p class="font-bold text-teal-900 font-bo5szld">#{{ companyName[0].company_name }}</p>
+                                <div class="py-2">
+                                  <div v-html="data.body"></div>
+                                </div>
+                                <div class="font-light text-xs border-dashed border-t border-gray-400 flex items-center py-1 flex justify-start items-center space-x-2">
+                                  <span class=""><i class="pi pi-user"></i> By: {{ data.user_name }} </span> <span class="px-1 flex justify-center items-center"> <i class="pi pi-clock"></i> {{ formatDate(data.note_create_at) }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollPanel>
+        </div>
+        <div class="py-4">
+          <Editor v-model="note.body" editorStyle="height: 220px" />
+        </div>
+        <template #footer>
+          <Button label="Close" icon="pi pi-times" @click="closeModal" class="p-button-text p-button-secondary" />
+          <Button label="Post" icon="pi pi-send" @click="postNote" class="p-button p-button-info text-left" />
+        </template>
+      </Dialog>
+      <!-- DIALOG CHAT ----------------------------------------------------------------------------------------------------------------->
+
     </div>
   </div>
 </template>
@@ -245,11 +316,68 @@ export default {
   components: { mapGetters, moment },
   data() {
     return {
+      dataedit: {},
       showDialog: false,
+      noteChateDialog: false,
+      actID: "",
+      acLineID: "",
+      userID: "",
       selectActive: {},
+      companyName: "",
       status: [
         { name: 'Active.', code: '1' },
         { name: 'Inactive.', code: '0' },
+      ],
+      itemsAction: [
+        {
+          label: 'Options',
+          items: [{
+            label: 'Renewal',
+            icon: 'pi pi-sync',
+            command: () => {
+              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
+            }
+          },
+          {
+            label: 'Change Plan',
+            icon: 'pi pi-wrench',
+            command: () => {
+              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+            }
+          },
+          {
+            label: 'Inactive',
+            icon: 'pi pi-ban',
+            command: () => {
+              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+            }
+          },
+          {
+            separator: true
+          },
+          {
+            label: 'More Detail',
+            icon: 'pi pi-list',
+            command: () => {
+              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+            }
+          },
+          {
+            label: 'Note',
+            icon: 'pi pi-envelope',
+            command: () => {
+              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+              this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+                this.noteChateDialog = true;
+              })
+
+            }
+          }
+          ]
+        },
       ],
       dataCompany: [],
     }
@@ -260,8 +388,12 @@ export default {
       activation: 'activation/activation',
       activationLine: 'activation/activationLine',
       customers: 'customer/customers',
+      customer: 'customer/customer',
       products: 'product/products',
-      terms: 'activation/terms'
+      terms: 'activation/terms',
+      note: 'note/model_note',
+      noteLine: 'note/noteLine',
+      user: 'auth/user'
     })
   },
   mounted() {
@@ -341,6 +473,7 @@ export default {
       this.showDialog = true;
       this.$store.commit('activation/ADD_ACTIVATION')
     },
+    // ------------------------------Line--------------------------------------------------
     // FUNCTION CHANGE 
     changeDate(index, term_id, type, period) {
       this.activation.activation_line.forEach((data, i) => {
@@ -465,9 +598,31 @@ export default {
     addRowActivatonLine() {
       this.$store.commit('activation/ADD_ACTIVATION_LINE')
     },
-    optionAction() {
-      alert("hi")
+    setActlineId(id) {
+      this.acLineID = id;
+      this.actID = this.activation.id;
+      this.userID = this.user.id;
+      this.companyName = this.customers.filter((data) => (data.id == this.activation.customer_id))
+      const data = {
+        user_id: this.userID,
+        activation_id: this.actID,
+        activation_line_id: this.acLineID,
+      }
+      this.$store.commit('note/SET_DATAID', data);
     },
+    clickTogle(event) {
+      this.$refs.menu_action.toggle(event);
+    },
+    destroyLine(index) {
+      this.$store.commit('activation/REMOVE_ACTIVATION_LINE', index)
+    },
+    // CAHET 
+    postNote() {
+      this.$store.dispatch('note/CREATE_NOTE')
+    },
+    formatDate(date) {
+      return moment(date).format("DD-MMM-YYYY hh:mm A z");
+    }
   }
 }
 </script>

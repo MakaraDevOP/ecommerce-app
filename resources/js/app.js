@@ -34,6 +34,8 @@ import Panel from 'primevue/panel';
 import ScrollPanel from 'primevue/scrollpanel';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
+import Editor from 'primevue/editor';
+import  'quill';
 
 // vue validation
 import { Form, Field, ErrorMessage } from "vee-validate";
@@ -59,14 +61,13 @@ app.component('Sidebar', Sidebar)
 app.component('Panel', Panel)
 app.component('ScrollPanel', ScrollPanel)
 app.component('Calendar', Calendar)
-app.component('InputNumber',InputNumber)
-
+app.component('InputNumber', InputNumber)
+app.component('Editor',Editor)
 
 // vue validation
 app.component('Form', Form)
 app.component('Field', Field)
 app.component('ErrorMessage', ErrorMessage)
-
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
 app.component('ConfirmPopup',ConfirmPopup)
