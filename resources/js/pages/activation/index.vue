@@ -100,7 +100,7 @@
                     </Column>
                     <Column field="term_id" header=" Term" style="flex-grow: 1; flex-basis: 250px;">
                       <template #body="slot">
-                        <Dropdown v-model="slot.data.term_id" :options="terms" @change="changeDate(slot.index, slot.data.term_id, 'activated', false)" optionLabel="name" optionValue="id" placeholder="Term" class="w-full" autofocus />
+                        <Dropdown v-model="slot.data.term_id" :options="terms" @change="changeDate(slot.index, slot.data.term_id, 'term', false)" optionLabel="name" optionValue="id" placeholder="Term" class="w-full" autofocus />
                       </template>
                     </Column>
                     <Column field="period" header=" Period" style="flex-grow: 1; flex-basis: 200px;">
@@ -146,9 +146,9 @@
                     </Column>
                   </DataTable>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                   <!-- NOTE ATTACHMENT FILE ----------------------------------------------------------------------------------------- -->
-                  <div class="col-span-2">
+                  <div class="">
                     <Panel header="Attachment File" :toggleable="true" :collapsed="activation.id == null" :disabled="activation.id == null">
                       <template #icons>
                         <Menu id="config_menu" ref="menu" :model="items" :popup="true" />
@@ -160,15 +160,23 @@
                           </div>
                           <div class="col-span-2">
                             <div class=" px-2">
-                              <div class="w-full ">
-                                <div class="relative border-dotted h-48 rounded-lg border-dashed border-2 border-gray-400 bg-gray-100 flex justify-center items-center">
-                                  <div class="absolute">
-                                    <div class="flex flex-col items-center">
-                                      <i class="pi-folder-open pi  text-gray-500" style="font-size: 2rem"></i>
-                                      <span class="block text-gray-400 font-normal">Attach you files here</span>
+                              <div class="w-full">
+                                <div class="relative border-dotted h-16 rounded-lg border-dashed border-2 border-gray-400 bg-gray-100 flex justify-center items-center">
+                                  <form name="form" id="file-upload" class="flex justify-center items-center">
+                                    <div class="absolute">
+                                      <div class="flex flex-col items-center">
+                                        <i class="pi-folder-open pi  text-gray-500" style="font-size:1.5rem"></i>
+                                        <span class="block text-gray-400 font-normal">Attach you files here</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                  <input type="file" class="h-full w-full opacity-0" name="">
+                                    <input type="text" class="h-full w-full opacity-0" name="activation_id" v-model="activation.id">
+                                    <input type="file" class="h-full w-full opacity-0" ref="files" name="files" @change="uploadFile">
+                                  </form>
+                                </div>
+                              </div>
+                              <div class="flex flex-col space-y-2 py-2">
+                                <div class=" flex space-x-2 text-blue-400" v-for="data in upload_file" :key="data">
+                                  <a @click="prewViewDoc(data.file_path)"><i class="pi-folder-open pi  text-blue-400  text-gray-500"></i> <span class="text-blue-400 font-lg">{{ data.name }}</span></a>
                                 </div>
                               </div>
                             </div>
@@ -184,49 +192,58 @@
                       <template #icons>
                         <Menu id="config_menu" ref="menu" :model="items" :popup="true" />
                       </template>
-                      <ScrollPanel style="width: 100%;height: 280px; ">
-                        <div class=" p-2">
-                          <div class="bg-teal-50 rounded-b text-teal-900 px-4 py-3 shadow" role="alert">
-                            <div class="flex">
-                              <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                  <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
-                                </svg></div>
+                      <div class="p-editor-container">
+                        <ScrollPanel style="width: 100%; height: 280px">
+                          <div class="p-editor-content ql-container ql-snow" style="border:0 !important">
+                            <div class="ql-editor">
                               <div>
-                                <p class="font-bold">Our privacy policy has changed</p>
-                                <p class="text-sm">Make sure you know how these changes affect you.</p>
+                                <div class="w-ful flex justify-center items-center" v-if="noteActivation.length == 0">
+                                  <div class="shadow rounded-2xl w-42 p-5 bg-white dark:bg-gray-800">
+                                    <div class="flex items-center justify-center pb-2">
+                                      <span class="">
+                                        <i class="pi-eraser pi" style="font-size:30px"></i>
+                                      </span>
+                                    </div>
+                                    <div class="flex flex-col justify-start">
+                                      <p class="text-gray-600 text-md text-left dark:text-white font-bold my-4">
+                                        No note !
+                                      </p>
+                                      <div class="relative w-28 h-2 bg-gray-200 rounded">
+                                        <div class="absolute top-0 h-2  left-0 rounded bg-green-500 w-2/3">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div v-if="noteActivation.length > 0">
+                                  <div class="w-auto flex flex-col " v-for="data in noteActivation" :key="data">
+                                    <div class="flex justify-sart mb-2">
+                                      <div class="block  w-auto">
+                                        <div class="  text-gray-800 w-auto" role="alert">
+                                          <div class="flex border  rounded-md shadow  px-4 py-3" :class="data.user_id == userID ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-400'">
+                                            <div class="py-1 grow-0 "><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                                              </svg></div>
+                                            <div class="grow w-auto ">
+                                              <p class="font-bold text-teal-900 font-bo5szld">#{{ companyName[0].company_name }}</p>
+                                              <div class="py-2">
+                                                <div v-html="data.body"></div>
+                                              </div>
+                                              <div class="font-light text-xs border-dashed border-t border-gray-400 flex items-center py-1 flex justify-start items-center space-x-2">
+                                                <span class=""><i class="pi pi-user"></i> By: {{ data.user_name }} </span> <span class="px-1 flex justify-center items-center"> <i class="pi pi-clock"></i> {{ formatDate(data.note_create_at) }}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        <div class=" p-2">
-                          <div class="bg-teal-50 rounded-b text-teal-900 px-4 py-3 shadow" role="alert">
-                            <div class="flex">
-                              <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                  <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <p class="font-bold">Our privacy policy has changed</p>
-                                <p class="text-sm">Make sure you know how these changes affect you.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class=" p-2">
-                          <div class="bg-teal-50 rounded-b text-teal-900 px-4 py-3 shadow" role="alert">
-                            <div class="flex">
-                              <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                  <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <p class="font-bold">Our privacy policy has changed</p>
-                                <p class="text-sm">Make sure you know how these changes affect you.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </ScrollPanel>
+                        </ScrollPanel>
+                      </div>
                     </Panel>
                   </div>
                   <!-- CHAT NOTES ------------------------------------------------------------------------------------------------------ -->
@@ -272,7 +289,7 @@
                       <div class="flex justify-sart mb-2">
                         <div class="block  w-auto">
                           <div class="  text-gray-800 w-auto" role="alert">
-                            <div class="flex border border-gray-400 rounded-md shadow  px-4 py-3" :class="data.user_id == userID ? 'bg-teal-50' : 'bg-gray-50'">
+                            <div class="flex border  rounded-md shadow  px-4 py-3" :class="data.user_id == userID ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-400'">
                               <div class="py-1 grow-0 "><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                   <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
                                 </svg></div>
@@ -369,7 +386,6 @@ export default {
             label: 'Note',
             icon: 'pi pi-envelope',
             command: () => {
-              this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
               this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
                 this.noteChateDialog = true;
               })
@@ -393,7 +409,9 @@ export default {
       terms: 'activation/terms',
       note: 'note/model_note',
       noteLine: 'note/noteLine',
-      user: 'auth/user'
+      noteActivation: 'note/noteActivation',
+      user: 'auth/user',
+      upload_file: 'upload/upload_file'
     })
   },
   mounted() {
@@ -402,9 +420,15 @@ export default {
     this.$store.dispatch('product/GET_PRODUCT');
   },
   methods: {
+    // ===================== ACTIVATION  ==================
+
     //DOUBLE CLICK 
     doubleClick() {
       this.$store.dispatch('activation/GET_ID_ACTIVATION', this.selectActive.id).then(respnse => {
+        this.userID = this.user.id;
+        this.companyName = this.customers.filter((data) => (data.id == this.activation.customer_id))
+        this.$store.dispatch('note/GET_NOTEBY_ACTIVATIONID', this.selectActive.id);
+        this.$store.dispatch('upload/GET_UPLOAD_ACTIVATIONID', this.selectActive.id);
         if (respnse) {
           this.showDialog = true
         }
@@ -473,7 +497,11 @@ export default {
       this.showDialog = true;
       this.$store.commit('activation/ADD_ACTIVATION')
     },
-    // ------------------------------Line--------------------------------------------------
+
+    // ===================== ACTIVATION  ==================
+
+    // ===================== ACTIVATION LINE ==================
+
     // FUNCTION CHANGE 
     changeDate(index, term_id, type, period) {
       this.activation.activation_line.forEach((data, i) => {
@@ -574,11 +602,32 @@ export default {
                   // Custom
                   break;
               }
+            } else {
+              switch (term_id) {
+                case "1":
+                  data.period = 1;
+                  break;
+                case "2":
+                  // 3 Months
+                  data.period = 3;
+                  break;
+                case "3":
+                  // 6 Months
+                  data.period = 6;
+                  break;
+                case "4":
+                  // Year
+                  data.period = 12;
+                  break;
+                default:
+                  // Custom
+                  break;
+              }
             }
             //IF PERIOD == TRUE
           } else {
             data.term_id = "5";
-            var per = data.period
+            var per = data.period;
             var ac = data.activated_date;
             var ex = data.expired_date;
             if (per != '' && per != null) {
@@ -616,13 +665,42 @@ export default {
     destroyLine(index) {
       this.$store.commit('activation/REMOVE_ACTIVATION_LINE', index)
     },
+    // ===================== ACTIVATION LINE ==================
+
+
+    // =====================NOTE ------- ==================
     // CAHET 
     postNote() {
-      this.$store.dispatch('note/CREATE_NOTE')
+      this.$store.dispatch('note/CREATE_NOTE').then(resp => {
+        this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+          this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Successfully', life: 3000 });
+          this.$store.dispatch('note/GET_NOTEBY_ACTIVATIONID', this.actID);
+
+        })
+      })
     },
     formatDate(date) {
-      return moment(date).format("DD-MMM-YYYY hh:mm A z");
+      return moment.utc(date).local().format("DD-MMM-YYYY hh:mm A z");
+    },
+    // =====================NOTE ------- ==================
+
+    // =====================UPLOAD FILE ==================
+    uploadFile() {
+      var data = new FormData()
+      var file = this.$refs.files.files[0]
+      data.append('files', file);
+      data.append('activation_id', this.activation.id),
+        this.$store.dispatch('upload/UPLOAD_FILE', { id: this.activation.id, data: data }).then((respnse) => {
+          this.$toast.add({ severity: 'success', summary: 'Uploaded', detail: 'Data Uploaded', life: 3000 });
+          this.$store.dispatch('upload/GET_UPLOAD_ACTIVATIONID', this.selectActive.id);
+
+        })
+    },
+    prewViewDoc(name) {
+      this.$store.dispatch('upload/PREVIEW_DOC', name);
     }
+    // =====================UPLOAD FILE ==================
+
   }
 }
 </script>

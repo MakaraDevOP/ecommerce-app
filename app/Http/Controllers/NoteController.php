@@ -31,9 +31,9 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'activation_id' =>'required|string',
-            'activation_line_id' =>'required|string',
-            'user_id' =>'required|string'
+            'activation_id' =>'required',
+            'activation_line_id' =>'required',
+            'user_id' =>'required'
         ]);
         $note =  Note::create([
         'activation_id' =>$fields['activation_id'],

@@ -116,14 +116,15 @@ export const activation = {
         element.is_free = element.is_free?.toString();
         element.status = element.status?.toString();
       });
-
     },
     ADD_ACTIVATION(state) {
       const objClone = { ...state.defaultActivation };
       state.activation = JSON.parse(JSON.stringify(objClone)) 
     },
     ADD_ACTIVATION_LINE(state) {
-      state.activation.activation_line = [...state.activation.activation_line,state.defaultActivationLine[0]]
+      // state.activation.activation_line = [...state.activation.activation_line, state.defaultActivationLine[0]]
+      const objClone = { ...state.defaultActivationLine[0] };
+      state.activation.activation_line = [...state.activation.activation_line, JSON.parse(JSON.stringify(objClone)) ]
     },
     SET_DATE_ACTIVATION(state) {
       state.activation?.activation_line.forEach(element => {

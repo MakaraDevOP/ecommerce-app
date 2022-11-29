@@ -14,7 +14,7 @@
               <img src="https://avatars.githubusercontent.com/u/97021587?v=4" class="p-1 w-24 h-24 rounded-full ring-2 ring-gray-300 dark:ring-gray-500 mb-4" alt="Avatar" />
 
               <h5 class="text-xl font-medium leading-tight mb-2">{{ user.name }}</h5>
-              <p class="text-gray-500">{{ user.roles[0].name }}</p>
+              <p class="text-gray-500">{{ user.email }}</p>
             </div>
           </div>
           <div class="   py-3 rounded-sm cursor-pointer text-gray-300 hover:text-white" :class="dataSibar == true ? 'px-2' : ''">

@@ -2,6 +2,7 @@ export const note = {
   namespaced: true,
   state: {
     notes: [],
+    noteActivation:[],
     noteLine:[],
     // MODEL
     note: {
@@ -24,7 +25,9 @@ export const note = {
     notes: state => state.notes,
     note_line: state => state.note_line,
     model_note: state => state.note,
-    noteLine:state =>state.noteLine
+    noteLine: state => state.noteLine,
+    noteActivation:state=>state.noteActivation
+    
   },
   mutations: {
     SET_DATAID(state, data) {
@@ -43,6 +46,9 @@ export const note = {
     },
     SET_NOTELINE(state, data) {
       state.noteLine =data
+    },
+    SET_NOTEACTIVATION(state, data) {
+      state.noteActivation = data
     }
   },
   actions: {
@@ -60,6 +66,13 @@ export const note = {
       })
       return response;
     },
+    async GET_NOTEBY_ACTIVATIONID({commit}, payload) {
+      const response = await axios.get(`note/get/activation/${payload}`).then((response) => {
+        // SET STATE
+        commit('SET_NOTEACTIVATION', response.data.note);
+        return response;
+      })
+    },
     async GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID({commit},payload) {
       const response = await axios.get(`note/get/activation/${payload.activation_id}/activation-line/${payload.activation_line_id}`).then((response) => {
               // SET STATE
@@ -68,7 +81,7 @@ export const note = {
       })
      
     },
-    async CREATE_NOTE({commit}, state) {
+    async CREATE_NOTE({commit,state} ) {
          const response = await axios.post(`note/create`,state.note ).then((response) => {
         // SET STATE
         commit('POST_NOTE');

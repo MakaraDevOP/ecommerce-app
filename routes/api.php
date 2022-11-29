@@ -61,9 +61,6 @@ Route::prefix('v1')->group(function(){
       Route::get('/get/activation/all' , [NoteController::class, 'getVNote']);
       Route::get('/get/activation/{id}' , [NoteController::class, 'getVNoteByActivation']);
       Route::get('/get/activation/{id}/activation-line/{lineId}' , [NoteController::class, 'getNotebyActivationLine']);
-
-
-
     });
      // Term
     Route::prefix('term')->group(function () {
@@ -94,7 +91,6 @@ Route::prefix('v1')->group(function(){
       Route::put('/{id}/update' , [ActivationLineController::class, 'update']);
       Route::delete('/{id}/destroy' , [ActivationLineController::class, 'destroy']);
     });
-    
     // Users  
     Route::prefix('user')->group(function () {
       Route::get('/get' , [UserController::class, 'index']);
@@ -104,6 +100,29 @@ Route::prefix('v1')->group(function(){
       Route::get('/{id}/edit' , [UserController::class, 'edit']);
       Route::put('/{id}/update' , [UserController::class, 'update']);
       Route::delete('/{id}/destroy' , [UserController::class, 'destroy']);
+    });
+        // Files  
+    Route::prefix('files')->group(function () {
+      Route::get('/get' , [UploadFileController::class, 'index']);
+      Route::post('/create/upload/{id}' , [UploadFileController::class, 'store']);
+      // Route::post('/create' , [UploadFileController::class, 'store']);
+      Route::get('/get/upload/{id}' ,[UploadFileController::class, 'getUploadFileByActivation']);
+      // Preview File
+      Route::get('storage/{filename}', function ($filename)
+      {
+        $name = "app\public\images\ $filename";
+        $string = preg_replace('/\s+/', '',$name);
+        $path = storage_path($string);
+          if (!File::exists($path)) {
+              abort(404);
+          }
+          $file = File::get($path);
+          $type = File::mimeType($path);
+          $response = Response::make($file, 200);
+          $response->header("Content-Type", $type);
+          return  $response;
+      });
+
     });
   });
 });

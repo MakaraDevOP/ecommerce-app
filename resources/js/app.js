@@ -4,8 +4,7 @@ import App from './App.vue'
 
 // SET HEADER WITH TOKEN 
 axios.defaults.headers.common["Authorization"] = "Bearer " + JSON.parse(localStorage.getItem("token")) ?? '';
-axios.defaults.headers.common["content-type"] = "application/json";
-axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.headers.common["Accept"] = "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://subscription.test/api/v1' : '';
 //__________________________________________________AXIOS_________________________________________________________________//
 
@@ -35,8 +34,9 @@ import ScrollPanel from 'primevue/scrollpanel';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import Editor from 'primevue/editor';
+import Chart from 'primevue/chart';
 import  'quill';
-
+import 'chart.js';
 // vue validation
 import { Form, Field, ErrorMessage } from "vee-validate";
 import ToastService from 'primevue/toastservice';
@@ -54,6 +54,8 @@ app.component('Button', Button)
 app.component('Checkbox', CheckBox)
 app.component('Dialog', Dialog)
 app.component('Textarea', Textarea)
+app.component('Chart', Chart)
+
 
 app.component('Dropdown',Dropdown)
 app.component('Badge', Badge)

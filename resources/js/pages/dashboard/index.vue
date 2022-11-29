@@ -10,20 +10,18 @@
       </div>
     </div>
     <div class="border rounded shadow bg-gray-50">
-      <div class="w-full h-auto p-5">
-        <Chart type="pie" :data="chartData" :options="lightOptions" />
+      <div class="w-full h-full  p-5">
+        <Chart type="pie" :data="chartData" :options="lightOptions" style="width: 600px; height: 550px;" />
       </div>
     </div>
   </div>
 </template>
 <script>
-import Chart from 'primevue/chart';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
+
 import { mapGetters } from "vuex"
 
 export default {
-  components: { Chart, DataTable, Column, mapGetters },
+  components: { mapGetters },
   data() {
     return {
       chartData: {
@@ -34,7 +32,6 @@ export default {
             backgroundColor: [
               "rgb(28,100,147)",
               "rgb(12,38,128)",
-              "rgb(0,95,144)",
               "rgb(40,244,180)",
               "rgb(242,226,185)",
               "rgb(13,8,16)",
@@ -137,7 +134,6 @@ export default {
             hoverBackgroundColor: [
               "rgb(28,100,147)",
               "rgb(12,38,128)",
-              "rgb(0,95,144)",
               "rgb(40,244,180)",
               "rgb(242,226,185)",
               "rgb(13,8,16)",
