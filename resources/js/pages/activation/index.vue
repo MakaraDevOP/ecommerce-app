@@ -121,8 +121,10 @@
                     <Column field="Status" header="Status" style="flex-grow: 0; flex-basis: 100px;">
                       <template #body="slot">
                         <div class="flex space-x-2 w-full">
-                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" v-if="slot.data.is_active == '0'">Inactive</span>
-                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-green-200 text-green-700 rounded-full" v-if="slot.data.is_active == '1'">Active</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" v-if="slot.data.status == '0'">New</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-green-200 text-green-700 rounded-full" v-if="slot.data.status == '1'">Active</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-orange-200 text-orange-700 rounded-full" v-if="slot.data.status == '2'">Not Activated</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-red-200 text-red-700 rounded-full" v-if="slot.data.status == '3'">Expired</span>
                         </div>
                       </template>
                     </Column>

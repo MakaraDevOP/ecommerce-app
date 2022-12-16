@@ -12,11 +12,10 @@ import DialogProfile from './profile.vue'
                     <template #header>
                         <div class="flex justify-between">
                             <div class="">
-                                <Button label="Addnew" class="p-button-sm" />
+                                <!-- <Button label="Addnew" class="p-button-sm" /> -->
                             </div>
                             <div class="">
-                                <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right"
-                                    class="p-button-sm " />
+                                <Button @click="opentCreateNewDialog" label="Addnew" icon="pi pi-plus" iconPos="right" class="p-button-sm " />
                             </div>
                         </div>
                     </template>
@@ -45,19 +44,17 @@ import DialogProfile from './profile.vue'
                         </template>
                     </Column>
                 </DataTable>
+                <!-- Dialog create prop param -->
 
-                <Dialog header="Create User" v-model:visible="dialogCreate.display" :modal="true"
-                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                <Dialog header="Create User" v-model:visible="dialogCreate.display" :modal="true" :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
                     <DialogCreate :params="dialogCreate" @callback="dialogCallback" />
                 </Dialog>
 
-                <Dialog header="Update User" v-model:visible="dialogUpdate.display" :modal="true"
-                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                <Dialog header="Update User" v-model:visible="dialogUpdate.display" :modal="true" :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
                     <DialogUpdate :params="dialogUpdate" @callback="dialogCallback" />
                 </Dialog>
 
-                <Dialog header="Profile" v-model:visible="dialogProfile.display" :modal="true"
-                    :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
+                <Dialog header="Profile" v-model:visible="dialogProfile.display" :modal="true" :breakpoints="{ '960px': '75vw', '640px': '100vw' }" :style="{ width: '50vw' }">
                     <DialogProfile :params="dialogProfile" @callback="dialogCallback" />
                 </Dialog>
             </div>
@@ -112,7 +109,7 @@ export default {
 
     methods: {
         name: 'user-layout',
-        
+
         initialData() {
             try {
                 this.$store.dispatch("user/fetchUsers");

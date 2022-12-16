@@ -12,7 +12,8 @@
                 </div>
               </div>
               <div class="flex space-x-2">
-                <Button label="Export" icon="pi pi-file-excel" class="p-button-secondary p-button-sm" iconPos="left" @click="exportCSV($event)" />
+                <!-- Button Export -->
+                <Button label="Export" icon="pi pi-file-excel" class="p-button-secondary p-button-sm" iconPos="left" />
                 <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" @click="openDialog" />
               </div>
             </div>
@@ -64,7 +65,7 @@
 <script>
 import { mapGetters } from "vuex"
 export default {
-  components: { mapGetters },
+  components: { mapGetters, exportJSONtoExcel },
   data() {
     return {
       showDialog: false,
@@ -147,9 +148,6 @@ export default {
 
     },
 
-    exportCSV() {
-      this.$refs.dt.exportCSV();
-    }
   }
 }
 </script>

@@ -38,7 +38,7 @@ import Chart from 'primevue/chart';
 import  'quill';
 import 'chart.js';
 // vue validation
-import { Form, Field, ErrorMessage } from "vee-validate";
+
 import ToastService from 'primevue/toastservice';
 import Toast from 'primevue/toast';
 import ConfirmationService from 'primevue/confirmationservice';
@@ -67,9 +67,7 @@ app.component('InputNumber', InputNumber)
 app.component('Editor',Editor)
 
 // vue validation
-app.component('Form', Form)
-app.component('Field', Field)
-app.component('ErrorMessage', ErrorMessage)
+
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
 app.component('ConfirmPopup',ConfirmPopup)

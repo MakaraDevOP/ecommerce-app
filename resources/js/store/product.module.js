@@ -55,12 +55,13 @@ export const product = {
       return response;
     },
     async GET_PRODUCT({ commit ,dispatch}) {
-      await axios.get('/product/get').then((response) => {
+      const respone = await axios.get('/product/get').then((response) => {
         // SET STATE AND LOCAL STORE
         commit('SET_PRODUCT', response.data.Product);
         dispatch('GET_TYPE');
         return response;
       })
+      return respone;
     },
     async GET_TYPE({ commit }) {
       await axios.get('/type/get').then((response) => {

@@ -16,9 +16,7 @@ class ProductController extends Controller
     public function index()
     {
         $product= Product::all();
-        $response = [ 
-            'Product' => $product , 
-        ];
+        $response = [  'Product' => $product , ];
         return  response($response, 200);
     }
 
