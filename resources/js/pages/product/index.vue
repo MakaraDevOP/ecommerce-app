@@ -13,7 +13,7 @@
               </div>
               <div class="flex space-x-2">
                 <!-- Button Export -->
-                <Button label="Export" icon="pi pi-file-excel" class="p-button-secondary p-button-sm" iconPos="left" />
+                <Button label="Export" icon="pi pi-file-excel" class="p-button-secondary p-button-sm" iconPos="left" @click="exportExcel" />
                 <Button label="Add" icon="pi pi-plus" class="p-button-sm p-button-info" iconPos="left" @click="openDialog" />
               </div>
             </div>
@@ -65,7 +65,7 @@
 <script>
 import { mapGetters } from "vuex"
 export default {
-  components: { mapGetters, exportJSONtoExcel },
+  components: { mapGetters },
   data() {
     return {
       showDialog: false,
@@ -147,7 +147,36 @@ export default {
         })
 
     },
-
+    exportExcel() {
+      import("../../plugins/Export2Excel").then((excel) => {
+        // API get Data
+        this.$store.dispatch('product/GET_PRODUCT').then(respone => {
+          console.log(respone.data.Product)
+          // data json
+          const OBJ = respone.data.Product;
+          // header in Excel
+          const Header = ["Type", "Name", "Description", "IS Active"];
+          // Field for map with ob data json
+          const Field = ["type", "name", "description", "is_active"];
+          // data mapped field and obj data
+          const Data = this.FormatJSon(Field, OBJ);
+          excel.export_json_to_excel({
+            header: Header,
+            data: Data,
+            sheetName: "Name Of Sheets ",
+            filename: "Product",
+            autoWidth: true,
+            bookType: "xlsx",
+          })
+        })
+      })
+    },
+    // Funtion Format OBJ 
+    FormatJSon(FilterData, JsonData) {
+      return JsonData.map((v) => FilterData.map((j => {
+        return v[j];
+      })))
+    }
   }
 }
 </script>

@@ -5,7 +5,7 @@ import App from './App.vue'
 // SET HEADER WITH TOKEN 
 axios.defaults.headers.common["Authorization"] = "Bearer " + JSON.parse(localStorage.getItem("token")) ?? '';
 axios.defaults.headers.common["Accept"] = "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://subscription.test/api/v1' : '';
+axios.defaults.baseURL = (process.env.API_PATH !== 'production') ? 'http://127.0.0.1:8000/api/v1' : '';
 //__________________________________________________AXIOS_________________________________________________________________//
 
 //IMPORT STYLE
@@ -35,7 +35,7 @@ import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import Editor from 'primevue/editor';
 import Chart from 'primevue/chart';
-import  'quill';
+import 'quill';
 import 'chart.js';
 // vue validation
 
@@ -57,20 +57,20 @@ app.component('Textarea', Textarea)
 app.component('Chart', Chart)
 
 
-app.component('Dropdown',Dropdown)
+app.component('Dropdown', Dropdown)
 app.component('Badge', Badge)
 app.component('Sidebar', Sidebar)
 app.component('Panel', Panel)
 app.component('ScrollPanel', ScrollPanel)
 app.component('Calendar', Calendar)
 app.component('InputNumber', InputNumber)
-app.component('Editor',Editor)
+app.component('Editor', Editor)
 
 // vue validation
 
 app.component('Dropdown', Dropdown)
 app.component('Toast', Toast)
-app.component('ConfirmPopup',ConfirmPopup)
+app.component('ConfirmPopup', ConfirmPopup)
 
 app.directive('tooltip', Tooltip);
 app.use(ToastService);

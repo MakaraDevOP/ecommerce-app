@@ -34,7 +34,7 @@ export default [
 
                 name: "Activation",
                 component: import('./../pages/activation'),
-                path: "/activation",
+                path: "/sales",
             }
         ]
     },

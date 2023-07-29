@@ -105,25 +105,25 @@
                     </Column>
                     <Column field="period" header=" Period" style="flex-grow: 1; flex-basis: 200px;">
                       <template #body="slot">
-                        <InputText v-model="slot.data.period" autofocus @keyup="changeDate(slot.index, slot.data.term_id, '', true)" @change="changeDate(slot.index, slot.data.term_id, '', true)" class="w-full" type="number" :disabled="slot.data.term_id < 5" />
+                        <InputText v-model="slot.data.period" autofocus @keyup="changeDate(slot.index, slot.data.term_id, '', true)" @change="changeDate(slot.index, slot.data.term_id, '', true)" class="w-full" type="number" :readonly="slot.data.term_id < 5" />
                       </template>
                     </Column>
                     <Column field="activated_date" header="Activated Date" style="flex-grow: 1; flex-basis: 250px;">
                       <template #body="slot">
-                        <Calendar inputId="icon" v-model="slot.data.activated_date" @date-select="changeDate(slot.index, slot.data.term_id, 'activated', false)" :showIcon="false" autofocus class="w-full" dateFormat="dd-M-yy" />
+                        <Calendar inputId="icon" v-model="slot.data.activated_date" @date-select="changeDate(slot.index, slot.data.term_id, 'activated', false)" :showIcon="false" autofocus class="w-full" dateFormat="dd-mm-yy" />
                       </template>
                     </Column>
                     <Column field="expired_date" header="Expired Date" style="flex-grow: 1; flex-basis: 250px;">
                       <template #body="slot">
-                        <Calendar inputId="icon" v-model="slot.data.expired_date" :showIcon="false" @date-select="changeDate(slot.index, slot.data.term_id, 'expired', false)" autofocus class="w-full" dateFormat="dd-M-yy" />
+                        <Calendar inputId="icon" v-model="slot.data.expired_date" :showIcon="false" @date-select="changeDate(slot.index, slot.data.term_id, 'expired', false)" autofocus class="w-full" dateFormat="dd-mm-yy" />
                       </template>
                     </Column>
-                    <Column field="Status" header="Status" style="flex-grow: 0; flex-basis: 100px;">
+                    <Column field="Status" header="Status" style="flex-grow: 0; flex-basis: 150px;">
                       <template #body="slot">
                         <div class="flex space-x-2 w-full">
-                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" v-if="slot.data.status == '0'">New</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" v-if="slot.data.status == '2'"><span v-if="slot.data.id">Not Activated</span><span v-else>New</span> </span>
                           <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-green-200 text-green-700 rounded-full" v-if="slot.data.status == '1'">Active</span>
-                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-orange-200 text-orange-700 rounded-full" v-if="slot.data.status == '2'">Not Activated</span>
+                          <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-orange-200 text-orange-700 rounded-full" v-if="slot.data.status == '0'">Inactive</span>
                           <span class="text-[11px] inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-red-200 text-red-700 rounded-full" v-if="slot.data.status == '3'">Expired</span>
                         </div>
                       </template>
@@ -136,7 +136,7 @@
                     <Column header="Actions" style="flex-grow: 0; flex-basis: 80px;" alignFrozen="right" :frozen="true">
                       <template #body="slot">
                         <div class="flex space-x-2 items-center justify-center w-full">
-                          <div @click="setActlineId(slot.data.id)" v-if="slot.data.id">
+                          <div @click="setActlineId(slot.data.id, slot.data.status)" v-if="slot.data.id">
                             <Button icon="pi pi-ellipsis-v" class="p-button-rounded p-button-secondary p-button-text" @click="clickTogle" />
                             <Menu ref="menu_action" :model="itemsAction" :popup="true" class="text-xs" />
                           </div>
@@ -252,7 +252,7 @@
                 </div>
               </div>
             </div>
-            <div class="w-full flex justify-end bottom-[10px] right-[10px] fixed ">
+            <div class="w-full flex justify-end bottom-[10px] right-[10px] fixed space-x-2">
               <Button label="Cancel" icon="pi pi-times" @click="cancel" class="p-button-text p-button-secondary" />
               <Button label="Save" icon="pi pi-check" @click="createORupdateProduct" autofocus class="p-button-info" />
             </div>
@@ -335,6 +335,7 @@ export default {
   components: { mapGetters, moment },
   data() {
     return {
+      actStatus: null,
       dataedit: {},
       showDialog: false,
       noteChateDialog: false,
@@ -370,7 +371,6 @@ export default {
             icon: 'pi pi-ban',
             command: () => {
               this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
-
             }
           },
           {
@@ -519,25 +519,25 @@ export default {
                   case "1":
                     data.period = 1;
                     var ac = data.activated_date;
-                    data.expired_date = moment(ac).add(1, "month").format("DD-MMM-YYYY");
+                    data.expired_date = moment(ac).add(1, "month").format("DD-MM-YYYY");
                     break;
                   case "2":
                     // 3 Months
                     data.period = 3;
                     var ac = data.activated_date;
-                    data.expired_date = moment(ac).add(3, "month").format("DD-MMM-YYYY");
+                    data.expired_date = moment(ac).add(3, "month").format("DD-MM-YYYY");
                     break;
                   case "3":
                     // 6 Months
                     data.period = 6;
                     var ac = data.activated_date;
-                    data.expired_date = moment(ac).add(6, "month").format("DD-MMM-YYYY");
+                    data.expired_date = moment(ac).add(6, "month").format("DD-MM-YYYY");
                     break;
                   case "4":
                     // Year
                     data.period = 12;
                     var ac = data.activated_date;
-                    data.expired_date = moment(ac).add(1, "year").format("DD-MMM-YYYY");
+                    data.expired_date = moment(ac).add(1, "year").format("DD-MM-YYYY");
                     break;
                   default:
                     // Custom
@@ -549,25 +549,25 @@ export default {
                   case "1":
                     data.period = 1;
                     var ex = data.expired_date;
-                    data.activated_date = moment(ex).subtract(1, "month").format("DD-MMM-YYYY");
+                    data.activated_date = moment(ex).subtract(1, "month").format("DD-MM-YYYY");
                     break;
                   case "2":
                     // 3 Months
                     data.period = 3;
                     var ex = data.expired_date;
-                    data.activated_date = moment(ex).subtract(3, "month").format("DD-MMM-YYYY");
+                    data.activated_date = moment(ex).subtract(3, "month").format("DD-MM-YYYY");
                     break;
                   case "3":
                     // 6 Months
                     data.period = 6;
                     var ex = data.expired_date;
-                    data.activated_date = moment(ex).subtract(6, "month").format("DD-MMM-YYYY");
+                    data.activated_date = moment(ex).subtract(6, "month").format("DD-MM-YYYY");
                     break;
                   case "4":
                     // Year
                     data.period = 12;
                     var ex = data.expired_date;
-                    data.activated_date = moment(ex).subtract(1, "year").format("DD-MMM-YYYY");
+                    data.activated_date = moment(ex).subtract(1, "year").format("DD-MM-YYYY");
                     break;
                   default:
                     // Custom
@@ -580,25 +580,25 @@ export default {
                 case "1":
                   data.period = 1;
                   var ex = data.expired_date;
-                  data.activated_date = moment(ex).subtract(1, "month").format("DD-MMM-YYYY");
+                  data.activated_date = moment(ex).subtract(1, "month").format("DD-MM-YYYY");
                   break;
                 case "2":
                   // 3 Months
                   data.period = 3;
                   var ex = data.expired_date;
-                  data.activated_date = moment(ex).subtract(3, "month").format("DD-MMM-YYYY");
+                  data.activated_date = moment(ex).subtract(3, "month").format("DD-MM-YYYY");
                   break;
                 case "3":
                   // 6 Months
                   data.period = 6;
                   var ex = data.expired_date;
-                  data.activated_date = moment(ex).subtract(6, "month").format("DD-MMM-YYYY");
+                  data.activated_date = moment(ex).subtract(6, "month").format("DD-MM-YYYY");
                   break;
                 case "4":
                   // Year
                   data.period = 12;
                   var ex = data.expired_date;
-                  data.activated_date = moment(ex).subtract(1, "year").format("DD-MMM-YYYY");
+                  data.activated_date = moment(ex).subtract(1, "year").format("DD-MM-YYYY");
                   break;
                 default:
                   // Custom
@@ -634,10 +634,10 @@ export default {
             var ex = data.expired_date;
             if (per != '' && per != null) {
               if (ac != '' && ac != null) {
-                data.expired_date = moment(ac).add(per, "month").format("DD-MMM-YYYY");
+                data.expired_date = moment(ac).add(per, "month").format("DD-MM-YYYY");
               } else {
                 if (ex != '' && ex != null) {
-                  data.activated_date = moment(ex).subtract(per, "month").format("DD-MMM-YYYY");
+                  data.activated_date = moment(ex).subtract(per, "month").format("DD-MM-YYYY");
                 }
               }
             }
@@ -649,7 +649,146 @@ export default {
     addRowActivatonLine() {
       this.$store.commit('activation/ADD_ACTIVATION_LINE')
     },
-    setActlineId(id) {
+    setActlineId(id, status) {
+      switch (status) {
+        case '1':
+          this.itemsAction = [
+            {
+              label: 'Options',
+              items: [{
+                label: 'Renewal',
+                icon: 'pi pi-sync',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
+                }
+              },
+              {
+                label: 'Change Plan',
+                icon: 'pi pi-wrench',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+                }
+              },
+              {
+                label: 'Inactive',
+                icon: 'pi pi-ban',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+                }
+              },
+              {
+                separator: true
+              },
+              {
+                label: 'More Detail',
+                icon: 'pi pi-list',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+                }
+              },
+              {
+                label: 'Note',
+                icon: 'pi pi-envelope',
+                command: () => {
+                  this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+                    this.noteChateDialog = true;
+                  })
+
+                }
+              }
+              ]
+            },
+          ]
+          break;
+        case '2':
+          this.itemsAction = [
+            {
+              label: 'Options',
+              items: [{
+                label: 'Activate',
+                icon: 'pi pi-sync',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
+                }
+              },
+              {
+                separator: true
+              },
+              {
+                label: 'More Detail',
+                icon: 'pi pi-list',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+                }
+              },
+              {
+                label: 'Note',
+                icon: 'pi pi-envelope',
+                command: () => {
+                  this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+                    this.noteChateDialog = true;
+                  })
+
+                }
+              }
+              ]
+            },
+          ]
+          break;
+        case '3':
+          this.itemsAction = [
+            {
+              label: 'Options',
+              items: [{
+                label: 'Renewal',
+                icon: 'pi pi-sync',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
+                }
+              },
+              {
+                label: 'Change Plan',
+                icon: 'pi pi-wrench',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+                }
+              },
+              {
+                label: 'Inactive',
+                icon: 'pi pi-ban',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+                }
+              },
+              {
+                separator: true
+              },
+              {
+                label: 'More Detail',
+                icon: 'pi pi-list',
+                command: () => {
+                  this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+
+                }
+              },
+              {
+                label: 'Note',
+                icon: 'pi pi-envelope',
+                command: () => {
+                  this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+                    this.noteChateDialog = true;
+                  })
+
+                }
+              }
+              ]
+            },
+          ]
+          break
+      }
       this.acLineID = id;
       this.actID = this.activation.id;
       this.userID = this.user.id;
@@ -682,7 +821,7 @@ export default {
       })
     },
     formatDate(date) {
-      return moment.utc(date).local().format("DD-MMM-YYYY hh:mm A z");
+      return moment.utc(date).local().format("DD-MM-YYYY hh:mm A z");
     },
     // =====================NOTE ------- ==================
 

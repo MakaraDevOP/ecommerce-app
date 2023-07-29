@@ -20,7 +20,7 @@ export const activation = {
           note: "",
           activated_date: "",
           expired_date: "",
-          status: "1",
+          status: "2",
           is_free: "0",
           is_notify_email: "0",
           order_by: "0",
@@ -38,7 +38,7 @@ export const activation = {
         note: "test",
         activated_date: "",
         expired_date: "",
-        status: "1",
+        status: "2",
         is_free: "0",
         is_notify_email: "0",
         order_by: "1",
@@ -59,7 +59,7 @@ export const activation = {
           note: "",
           activated_date: "",
           expired_date: "",
-          status: "1",
+          status: "2",
           is_free: "0",
           is_notify_email: "0",
           order_by: "0",
@@ -76,7 +76,7 @@ export const activation = {
       note: "",
       activated_date: "",
       expired_date: "",
-      status: "1",
+      status: "2",
       is_free: "0",
       is_notify_email: "0",
       order_by: "1",
@@ -130,8 +130,8 @@ export const activation = {
       state.activation?.activation_line.forEach(element => {
         var ex = new Date(element.expired_date);
         var ac = new Date(element.activated_date);
-        element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
-        element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MMM-YYYY"); 
+        element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MM-YYYY"); 
+        element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MM-YYYY"); 
       });
     },
     REMOVE_ACTIVATION_LINE(state, payload) {

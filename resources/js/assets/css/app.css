@@ -1,5 +1,12 @@
 @tailwind base;
 @tailwind components;
+
+  .router-link-exact-active{
+    background: #334155!important ;
+    color: #fff !important;
+    border-radius: 4px;
+  }
+
 .select2-dropdown {
   @apply rounded-b-lg shadow-md;
 }

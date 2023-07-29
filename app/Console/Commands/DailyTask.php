@@ -7,6 +7,10 @@ use App\Models\ActivationLine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+// use Mail;
+use App\Mail\SendMailable;
+
 
 class DailyTask extends Command
 {
@@ -32,12 +36,18 @@ class DailyTask extends Command
     public function handle()
     {
         $nowTimeDate = Carbon::now();
-        $date = Carbon::parse($nowTimeDate)->format('d-mm-Y');
-    //    $data =   ActivationLine::where('expired_date' < NOW())->update(['status'=>3]);
-       $data = DB::table('activation_lines')->whereDate('expired_date', '<', $date)
-            ->update(['status'=>3]);   
-        Log::info($data);
-        Log::info($date);
+        $date = Carbon::parse($nowTimeDate)->format('d-m-Y');
+        $activation =  DB::table('activation_lines')->where('expired_date', '<=', $date)->get();
 
+         if(!empty($activation)){
+            foreach ($activation as $item) {
+                $data = array('data' => $item);
+                if($item->is_notify_email != 1 && $item->status == 1) {
+                    Mail::to('makara@dev.com.kh')->send(new SendMailable());
+                    DB::table('activation_lines')->where('id', $item->activation_id)->update(['status' => 3, 'is_notify_email' => 1]);
+                } 
+                sleep(5);
+            }
+        }
     }
 }
