@@ -15,8 +15,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::all();
-        $response = [  'Product' => $product , ];
+        $product = Product::with('category')->get();
+        $response = ['Product' => $product,];
         return  response($response, 200);
     }
 
@@ -29,17 +29,19 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'name' => 'required|string',
+            'type' => 'required'
         ]);
         $product =  Product::create([
-        'name' =>$fields['name'],
-        'type' =>$fields['type'],
-        'description' => $request->description,  
-        'is_active' => $request->is_active
-       ]);
-        $response = [ 
-            'product' => $product , 
+            'name' => $fields['name'],
+            'type' => $fields['type'],
+            'price' => $request->price,
+            'stock' => $request->stock,
+            'description' => $request->description,
+            'is_active' => $request->is_active
+        ]);
+        $response = [
+            'product' => $product,
         ];
         return  response($response, 201);
     }
@@ -52,9 +54,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product =  Product::where('id',$id)->first();
-        $response = [ 
-            'product' => $product , 
+        $product =  Product::where('id', $id)->first();
+        $response = [
+            'product' => $product,
         ];
         return  response($response, 200);
     }
@@ -69,17 +71,19 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
-            'name' =>'required|string',
-            'type' =>'required|string'
+            'name' => 'required|string',
+            'type' => 'required'
         ]);
         $product =  Product::where('id', $id)->update([
-            'name' =>$fields['name'],
-            'type' =>$fields['type'],
-            'description' => $request->description,  
+            'name' => $fields['name'],
+            'type' => $fields['type'],
+            'price' => $request->price,
+            'stock' => $request->stock,
+            'description' => $request->description,
             'is_active' => $request->is_active
         ]);
-        $response = [ 
-            'product' => $product , 
+        $response = [
+            'product' => $product,
         ];
         return  response($response, 201);
     }
@@ -92,9 +96,9 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        Product::where('id',$id)->delete();
-        $response = [ 
-            'message' => 'Successfully' , 
+        Product::where('id', $id)->delete();
+        $response = [
+            'message' => 'Successfully',
         ];
         return  response($response, 201);
     }

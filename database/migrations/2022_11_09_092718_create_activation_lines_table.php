@@ -19,10 +19,12 @@ return new class extends Migration
             $table->integer('product_id');
             $table->integer('term_id');
             $table->integer('period');
-            $table->integer('user_no');
+            $table->integer('qty');
+            $table->decimal('amount');
+            $table->decimal('price');
             $table->string('note')->nullable();
-            $table->string('activated_date');
-            $table->string('expired_date');
+            $table->string('activated_date')->nullable();
+            $table->string('expired_date')->nullable();
             $table->integer('status');
             $table->integer('order_by');
             $table->integer('is_active');

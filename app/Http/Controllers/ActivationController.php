@@ -15,43 +15,44 @@ class ActivationController extends Controller
 
     public function index()
     {
-         $activation = Activation::all();
-        $response = [ 
-            'activation' => $activation , 
+        $activation = Activation::all();
+        $response = [
+            'activation' => $activation,
         ];
         return  response($response, 200);
     }
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'customer_id' =>'required|exists:customers,id',
+            'customer_id' => 'required|exists:customers,id',
         ]);
         //TRANSACTION 
-        DB::transaction(function () use ($request , $fields) {
+        DB::transaction(function () use ($request, $fields) {
             //ACTIVATION
-            $activation=Activation::create([
-                'customer_id' =>$fields['customer_id'],
-                'details' => $request->details,  
+            $activation = Activation::create([
+                'customer_id' => $fields['customer_id'],
+                'details' => $request->details,
                 'is_active' => $request->is_active
             ]);
             //ACTIVATION LINE
-            if($request->activation_line){
-                if(count($request->activation_line)>0){
-                    collect($request->activation_line)->each(function (array $items) use ($request,$activation) {
-                        $activationLine = ActivationLine::create(
-                            [ 
-                                'activation_id' =>$activation->id,
-                                'product_id' =>$items['product_id'],
-                                'term_id' =>$items['term_id'],
-                                'user_no' =>$items['user_no'],
-                                'period' =>$items['period'],
-                                'note' => $items["note"], 
-                                'activated_date' =>$items["activated_date"],  
-                                'expired_date' => $items["expired_date"],  
-                                'status' =>$items["status"], 
-                                'is_free' =>$items["is_free"], 
-                                'is_notify_email' =>$items["is_notify_email"],  
-                                'order_by' =>$items["order_by"], 
+            if ($request->activation_line) {
+                if (count($request->activation_line) > 0) {
+                    collect($request->activation_line)->each(function (array $items) use ($request, $activation) {
+                        ActivationLine::create(
+                            [
+                                'activation_id' => $activation->id,
+                                'product_id' => $items['product_id'],
+                                'term_id' => $items['term_id'],
+                                'qty' => (float) $items['qty'],
+                                'amount' => (float) $items['amount'],
+                                'period' => !empty($items['period']) ? $items['period'] : 0,
+                                'note' => $items["note"],
+                                'activated_date' => $items["activated_date"],
+                                'expired_date' => $items["expired_date"],
+                                'status' => $items["status"],
+                                'is_free' => $items["is_free"],
+                                'is_notify_email' => $items["is_notify_email"],
+                                'order_by' => $items["order_by"],
                                 'is_active' => $items["is_active"]
                             ]
                         );
@@ -60,25 +61,25 @@ class ActivationController extends Controller
             }
             return $activation;
         });
-        $response = [ 
-             'message' => 'successfully' , 
+        $response = [
+            'message' => 'successfully',
         ];
         return  response($response, 201);
     }
-    
+
     public function show($id)
     {
-        $activation=  Activation::where('id', $id)->first();
-        $activationLine = ActivationLine::where('activation_id' ,$id)->get();
+        $activation =  Activation::where('id', $id)->first();
+        $activationLine = ActivationLine::where('activation_id', $id)->get();
         $data = array([
-           "id" =>$activation->id,
-           "customer_id" =>$activation->customer_id,
-           "details"  =>$activation->details,
-           "is_active" =>$activation->is_active,
-           "activation_line" =>$activationLine
+            "id" => $activation->id,
+            "customer_id" => $activation->customer_id,
+            "details"  => $activation->details,
+            "is_active" => $activation->is_active,
+            "activation_line" => $activationLine
         ]);
-        $response = [ 
-            'activation' => $data , 
+        $response = [
+            'activation' => $data,
         ];
         return  response($response, 200);
     }
@@ -86,58 +87,41 @@ class ActivationController extends Controller
     public function update(Request $request, $id)
     {
         $fields = $request->validate([
-            'customer_id' =>'required',
+            'customer_id' => 'required',
         ]);
-        $activation=  Activation::where('id', $id)->update([
-            "customer_id" =>$request->customer_id,
-           "details"  =>$request->details,
-           "is_active" =>$request->is_active,
+        $activation =  Activation::where('id', $id)->update([
+            "customer_id" => $request->customer_id,
+            "details"  => $request->details,
+            "is_active" => $request->is_active,
         ]);
-        if(count($request->activation_line)>0){
-            collect($request->activation_line)->each(function (array $items) use ($request , $id) {
+        if (count($request->activation_line) > 0) {
+            collect($request->activation_line)->each(function (array $items) use ($request, $id) {
                 //Update 
-                if( isset($items['id']) ){
-                    ActivationLine::where('id', $items['id'])->update(
-                            [ 
-                                'activation_id' =>$id,
-                                'product_id' =>$items['product_id'],
-                                'term_id' =>$items['term_id'],
-                                'user_no' =>$items['user_no'],
-                                'period' =>$items['period'],
-                                'note' => $items["note"], 
-                                'activated_date' =>$items["activated_date"],  
-                                'expired_date' => $items["expired_date"],  
-                                'status' =>$items["status"], 
-                                'is_free' =>$items["is_free"], 
-                                'is_notify_email' =>$items["is_notify_email"],  
-                                'order_by' =>$items["order_by"], 
-                                'is_active' => $items["is_active"]
-                            ]
-                        );
-                }else{
-                         ActivationLine::create(
-                            [ 
-                                'activation_id' => $id,
-                                'product_id' =>$items['product_id'],
-                                'term_id' =>$items['term_id'],
-                                'user_no' =>$items['user_no'],
-                                'period' =>$items['period'],
-                                'note' => $items["note"], 
-                                'activated_date' =>$items["activated_date"],  
-                                'expired_date' => $items["expired_date"],  
-                                'status' =>$items["status"], 
-                                'is_free' =>$items["is_free"], 
-                                'is_notify_email' =>$items["is_notify_email"],  
-                                'order_by' =>$items["order_by"], 
-                                'is_active' => $items["is_active"]
-                            ]
-                        );
-
+                if (isset($id)) {
+                    ActivationLine::where('activation_id', $id)->delete();
+                    ActivationLine::create(
+                        [
+                            'activation_id' => $id,
+                            'product_id' => $items['product_id'],
+                            'term_id' => $items['term_id'],
+                            'qty' => (float) $items['qty'],
+                            'amount' => (float) $items['amount'],
+                            'period' => !empty($items['period']) ? $items['period'] : 0,
+                            'note' => $items["note"],
+                            'activated_date' => $items["activated_date"],
+                            'expired_date' => $items["expired_date"],
+                            'status' => $items["status"],
+                            'is_free' => $items["is_free"],
+                            'is_notify_email' => $items["is_notify_email"],
+                            'order_by' => $items["order_by"],
+                            'is_active' => $items["is_active"]
+                        ]
+                    );
                 }
-             });
-         }
-        $response = [ 
-            'message' => 'successfully' , 
+            });
+        }
+        $response = [
+            'message' => 'successfully',
         ];
         return  response($response, 201);
     }
@@ -145,16 +129,17 @@ class ActivationController extends Controller
     public function destroy($id)
     {
         Activation::where('id', $id)->delete();
-        $response = [ 
-            'message' => 'successfully' , 
+        $response = [
+            'message' => 'successfully',
         ];
         return  response($response, 200);
     }
-    public function getActivationLine(){
+    public function getActivationLine()
+    {
         $activation = VActivation::all();
         $response = [
-            'activation' =>$activation
+            'activation' => $activation
         ];
-        return response($response , 200);
+        return response($response, 200);
     }
 }

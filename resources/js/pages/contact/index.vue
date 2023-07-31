@@ -108,6 +108,9 @@
 							</div>
 						</template>
 					</Column>
+					<template #empty>
+						<div class="w-full text-center"> No items found. 😋</div>
+					</template>
 				</DataTable>
 			</div>
 			<Dialog

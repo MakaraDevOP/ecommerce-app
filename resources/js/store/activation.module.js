@@ -4,7 +4,7 @@ export const activation = {
   state: {
     activations: [],
     activationLines: [],
-    terms:[],
+    terms: [],
     // MODEL
     activation: {
       customer_id: "",
@@ -15,7 +15,8 @@ export const activation = {
           activation_id: "",
           product_id: "",
           term_id: "5",
-          user_no: "",
+          qty: "",
+          amount: "",
           period: "",
           note: "",
           activated_date: "",
@@ -33,7 +34,8 @@ export const activation = {
         activation_id: "",
         product_id: "",
         term_id: "5",
-        user_no: "",
+        qty: "",
+        amount: "",
         period: "1",
         note: "test",
         activated_date: "",
@@ -54,7 +56,8 @@ export const activation = {
           activation_id: "",
           product_id: "",
           term_id: "5",
-          user_no: "",
+          qty: "",
+          amount: "",
           period: "",
           note: "",
           activated_date: "",
@@ -71,7 +74,8 @@ export const activation = {
       activation_id: "",
       product_id: "",
       term_id: "5",
-      user_no: "",
+      qty: "",
+      amount: "",
       period: "",
       note: "",
       activated_date: "",
@@ -97,9 +101,9 @@ export const activation = {
     },
     SET_TERM(state, data) {
       data.forEach(d => {
-        d.id =d.id.toString()
+        d.id = d.id.toString()
       })
-      state.terms =data
+      state.terms = data
     },
     SET_ACTIVATION_LINE(state, data) {
 
@@ -119,19 +123,19 @@ export const activation = {
     },
     ADD_ACTIVATION(state) {
       const objClone = { ...state.defaultActivation };
-      state.activation = JSON.parse(JSON.stringify(objClone)) 
+      state.activation = JSON.parse(JSON.stringify(objClone))
     },
     ADD_ACTIVATION_LINE(state) {
       // state.activation.activation_line = [...state.activation.activation_line, state.defaultActivationLine[0]]
       const objClone = { ...state.defaultActivationLine[0] };
-      state.activation.activation_line = [...state.activation.activation_line, JSON.parse(JSON.stringify(objClone)) ]
+      state.activation.activation_line = [...state.activation.activation_line, JSON.parse(JSON.stringify(objClone))]
     },
     SET_DATE_ACTIVATION(state) {
       state.activation?.activation_line.forEach(element => {
         var ex = new Date(element.expired_date);
         var ac = new Date(element.activated_date);
-        element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MM-YYYY"); 
-        element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MM-YYYY"); 
+        element.expired_date = moment(ex.toLocaleDateString("en-US")).format("DD-MM-YYYY");
+        element.activated_date = moment(ac.toLocaleDateString("en-US")).format("DD-MM-YYYY");
       });
     },
     REMOVE_ACTIVATION_LINE(state, payload) {
@@ -140,7 +144,7 @@ export const activation = {
           state.activation.activation_line.splice(i, 1);
         }
       })
-    } 
+    }
 
   },
   actions: {
@@ -153,7 +157,7 @@ export const activation = {
       })
       return response;
     },
-    async GET_ACTIVATION({ commit ,dispatch}) {
+    async GET_ACTIVATION({ commit, dispatch }) {
       await axios.get('/activation/get-all').then((response) => {
         // SET STATE AND LOCAL STORE
         commit('SET_ACTIVATION', response.data.activation);
@@ -175,7 +179,7 @@ export const activation = {
         return response;
       })
     },
-    async CREATE_ACTIVATION({ dispatch, commit,state }) {
+    async CREATE_ACTIVATION({ dispatch, commit, state }) {
       commit('SET_DATE_ACTIVATION');
       const response = await axios.post('/activation/create', state.activation).then((response) => {
         // RE LOAD DATA
@@ -185,8 +189,8 @@ export const activation = {
       })
       return response;
     },
-    async UPDATE_ACTIVATION({ dispatch,commit, state }) {
-            commit('SET_DATE_ACTIVATION');
+    async UPDATE_ACTIVATION({ dispatch, commit, state }) {
+      commit('SET_DATE_ACTIVATION');
       const response = await axios.put(`/activation/${state.activation.id}/update`, state.activation).then((response) => {
         // RE LOAD DATA
         dispatch('GET_ACTIVATION');
