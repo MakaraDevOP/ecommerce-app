@@ -127,6 +127,18 @@
 						class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white"
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
+					<router-link
+							to="/products"
+							class="py-2 px-2 flex space-x-2 items-center"
+						><span
+								class="pi  pi-external-link "
+								v-tooltip.right="'Go to Website'"
+							></span> <span v-show="dataSibar">Website</span></router-link>
+					</div>
+					<div
+						class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white"
+						:class="dataSibar == true ? 'px-2' : ''"
+					>
 						<a
 							href="https://website-nuxt-front.vercel.app/"
 							target="_blank"
@@ -136,6 +148,7 @@
 								v-tooltip.right="'About Me'"
 							></span> <span v-show="dataSibar">About Me</span></a>
 					</div>
+					
 				</div>
 			</div>
 		</div>

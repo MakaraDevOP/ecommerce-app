@@ -15,7 +15,7 @@ mix.js('resources/js/app.js', 'public/js')
     .vue()
     .disableNotifications()
     .postCss('resources/css/app.css', 'public/css', [
-        //
+        require("tailwindcss"),
     ]);
 
     

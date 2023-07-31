@@ -49,5 +49,17 @@ export default [
         component: import('./../pages/preview'),
         path: "/preview",
         props: true,
+    },
+    {
+        name: "Client",
+        component: import('./../pages/layout/client.vue'),
+        path: "/client",
+        children: [
+            {
+                name: "Products",
+                component: import('./../pages/products'),
+                path: "/products",
+            },
+        ]
     }
 ]
