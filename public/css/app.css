@@ -798,6 +798,15 @@ video {
 .w-full {
   width: 100%;
 }
+.w-\[200px\] {
+  width: 200px;
+}
+.w-\[300px\] {
+  width: 300px;
+}
+.w-\[50px\] {
+  width: 50px;
+}
 .min-w-\[300px\] {
   min-width: 300px;
 }
@@ -904,6 +913,9 @@ video {
 .gap-8 {
   gap: 2rem;
 }
+.gap-16 {
+  gap: 4rem;
+}
 .-space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
   margin-right: calc(-0.25rem * var(--tw-space-x-reverse));
@@ -948,6 +960,11 @@ video {
   --tw-space-y-reverse: 0;
   margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
+.space-x-\[5px\] > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(5px * var(--tw-space-x-reverse));
+  margin-left: calc(5px * calc(1 - var(--tw-space-x-reverse)));
 }
 .divide-y > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-y-reverse: 0;
@@ -1333,6 +1350,12 @@ video {
 .pt-\[80px\] {
   padding-top: 80px;
 }
+.pb-\[20px\] {
+  padding-bottom: 20px;
+}
+.pt-\[30px\] {
+  padding-top: 30px;
+}
 .text-left {
   text-align: left;
 }
@@ -1385,6 +1408,9 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+.text-\[25px\] {
+  font-size: 25px;
 }
 .font-bold {
   font-weight: 700;
@@ -1728,5 +1754,9 @@ video {
 
   .xl\:gap-8 {
     gap: 2rem;
+  }
+
+  .xl\:gap-16 {
+    gap: 4rem;
   }
 }

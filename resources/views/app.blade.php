@@ -15,7 +15,7 @@
             font-family: 'Roboto', sans-serif;
         }
     </style>
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    {{-- <link rel="stylesheet" href="{{ mix('css/app.css') }}"> --}}
 </head>
 
 <body class="antialiased">
