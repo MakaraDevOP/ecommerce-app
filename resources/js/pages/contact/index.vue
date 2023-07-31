@@ -189,6 +189,7 @@
 <script>
 import { mapGetters } from "vuex"
 export default {
+	layout: 'client',
 	components: { mapGetters },
 	data() {
 		return {
