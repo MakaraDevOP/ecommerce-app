@@ -15,8 +15,8 @@ class CustomerController extends Controller
     public function index()
     {
         $customer = Customer::all();
-        $response = [ 
-            'customer' => $customer , 
+        $response = [
+            'customer' => $customer,
         ];
         return  response($response, 200);
     }
@@ -30,19 +30,20 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'company_name' =>'required|string'
+            'company_name' => 'required|string'
         ]);
         $customer =  Customer::create([
-        'company_name' =>$fields['company_name'],
-        'province_city' => $request->province_city,  
-        'detail_address' => $request->detail_address,  
-        'phone' => $request->phone,  
-        'email' => $request->email,  
-        'parent_company_id' => $request->parent_company_id,  
-        'is_active' => $request->is_active
-       ]);
-        $response = [ 
-            'customer' => $customer , 
+            'company_name' => $fields['company_name'],
+            'province_city' => $request->province_city,
+            'detail_address' => $request->detail_address,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => $request->password,
+            'parent_company_id' => $request->parent_company_id,
+            'is_active' => $request->is_active
+        ]);
+        $response = [
+            'customer' => $customer,
         ];
         return  response($response, 201);
     }
@@ -56,8 +57,8 @@ class CustomerController extends Controller
     public function show($id)
     {
         $customer = Customer::where('id', $id)->first();
-        $response = [ 
-            'customer' => $customer , 
+        $response = [
+            'customer' => $customer,
         ];
         return  response($response, 200);
     }
@@ -71,20 +72,21 @@ class CustomerController extends Controller
      */
     public function update(Request $request, $id)
     {
-         $fields = $request->validate([
-            'company_name' =>'required|string'
+        $fields = $request->validate([
+            'company_name' => 'required|string'
         ]);
         $customer =  Customer::where('id', $id)->update([
-        'company_name' =>$fields['company_name'],
-        'province_city' => $request->province_city,  
-        'detail_address' => $request->detail_address,  
-        'phone' => $request->phone,  
-        'email' => $request->email,  
-        'parent_company_id' => $request->parent_company_id,  
-        'is_active' => $request->is_active
-       ]);
-        $response = [ 
-            'customer' => $customer , 
+            'company_name' => $fields['company_name'],
+            'province_city' => $request->province_city,
+            'detail_address' => $request->detail_address,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => $request->password,
+            'parent_company_id' => $request->parent_company_id,
+            'is_active' => $request->is_active
+        ]);
+        $response = [
+            'customer' => $customer,
         ];
         return  response($response, 201);
     }
@@ -98,8 +100,8 @@ class CustomerController extends Controller
     public function destroy($id)
     {
         Customer::where('id', $id)->delete();
-        $response = [ 
-            'message' => 'successfully' , 
+        $response = [
+            'message' => 'successfully',
         ];
         return  response($response, 200);
     }

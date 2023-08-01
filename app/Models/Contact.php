@@ -10,8 +10,8 @@ class Contact extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table ='contacts';
-    protected $dates = [ 'deleted_at' ];
+    protected $table = 'contacts';
+    protected $dates = ['deleted_at'];
     protected $fillable = [
         'company_id',
         'title',

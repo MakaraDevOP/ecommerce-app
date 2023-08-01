@@ -116,18 +116,75 @@
 			<Dialog
 				header="Category"
 				v-model:visible="showDialog"
-				:breakpoints="{ '960px': '75vw', '640px': '100vw' }"
-				:style="{ width: '50vw' }"
+				:breakpoints="{ '960px': '55vw', '640px': '50vw' }"
+				:style="{ width: '30vw' }"
 			>
-				<div class="py-2 grid grid-cols-2 gap-4">
+				<div class="py-2 ">
+					<div class="card mb-4">
+						<div> Photo</div>
+						<form id="filesUp">
+							<div class="large-12 medium-12 small-12 cell flex space-x-2">
+								<div>
+									<Image
+										:src="contact.img??'storage/images/07312023185610_err.png'"
+										alt="Image"
+										width="140"
+										height="140"
+										preview
+									/>
+								</div>
+								<div class="text-gray-800 text-sm h-14 object-cover  w-28 relative">
+									<div class="flex items-center justify-center w-full">
+										<label
+											for="dropzone-file"
+											class="flex flex-col items-center justify-center w-full h-20 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+										>
+											<div class="flex flex-col items-center justify-center pt-5 pb-5">
+												<svg
+													class="w-8 h-8 text-gray-500 dark:text-gray-400"
+													aria-hidden="true"
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 20 16"
+												>
+													<path
+														stroke="currentColor"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+													/>
+												</svg>
+
+											</div>
+											<input
+												id="dropzone-file"
+												type="file"
+												accept="image/*"
+												name="files"
+												ref="files"
+												@change="uploadFile"
+												class="hidden"
+											/>
+										</label>
+									</div>
+
+								</div>
+
+							</div>
+						</form>
+
+					</div>
 					<div class="flex flex-col space-y-4">
-						<!-- <InputText
-							v-model="contact.full_name"
-							placeholder="full name"
-						/> -->
 						<InputText
 							v-model="contact.name"
 							placeholder="name"
+						/>
+						<Textarea
+							v-model="contact.description"
+							placeholder="description"
+							rows="4"
+							class="w-full"
 						/>
 						<!-- <InputText
 							v-model="contact.email"
@@ -161,14 +218,7 @@
 							>is active</label>
 						</div> -->
 					</div>
-					<div>
-						<Textarea
-							v-model="contact.description"
-							placeholder="description"
-							rows="4"
-							class="w-full"
-						/>
-					</div>
+
 				</div>
 				<template #footer>
 					<Button
@@ -224,6 +274,15 @@ export default {
 		}
 	},
 	methods: {
+		uploadFile() {
+			var data = new FormData()
+			var file = this.$refs.files.files[0]
+			data.append('files', file);
+			this.$store.dispatch('upload/UPLOAD_FILE', { data: data }).then((respnse) => {
+				this.$toast.add({ severity: 'success', summary: 'Uploaded', detail: 'Data Uploaded', life: 3000 });
+				this.contact.img = 'storage/images/' + respnse.data.file.file_path
+			})
+		},
 		doubleClick() {
 			this.$store.dispatch('contact/GET_ID_CONTACT', this.selectContact.id).then(respnse => {
 				if (respnse) {

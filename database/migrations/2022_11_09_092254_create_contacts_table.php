@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone');
             $table->string('email');
+            $table->string('img');
             $table->string('description')->nullable();
             $table->integer('is_active');
             $table->integer('company_id');

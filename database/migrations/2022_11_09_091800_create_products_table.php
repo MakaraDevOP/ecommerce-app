@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('type');
+            $table->string('img');
             $table->integer('qty');
             $table->integer('stock');
             $table->decimal('price');

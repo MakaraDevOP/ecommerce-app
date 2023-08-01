@@ -25,6 +25,7 @@ class ContactController extends Controller
         ]);
         $contact =  Type::create([
             'name' => $request->name,
+            'img' => $request->img,
             'description' => $request->description,
         ]);
         $response = [
@@ -47,6 +48,7 @@ class ContactController extends Controller
         ]);
         $contact =  Type::where('id', $id)->update([
             'name' => $request->name,
+            'img' => $request->img,
             'description' => $request->description,
         ]);
         $response = [

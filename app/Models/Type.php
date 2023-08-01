@@ -11,10 +11,11 @@ class Type extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table ='types';
-    protected $dates = [ 'deleted_at' ];
+    protected $table = 'types';
+    protected $dates = ['deleted_at'];
     protected $fillable = [
         'name',
-        'description'
+        'description',
+        'img'
     ];
 }
