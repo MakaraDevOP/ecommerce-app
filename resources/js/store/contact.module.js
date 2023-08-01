@@ -9,6 +9,7 @@ export const contact = {
       full_name: "",
       phone: "",
       email: "",
+      img: "",
       description: "",
       is_active: "1"
     },
@@ -19,6 +20,7 @@ export const contact = {
       full_name: "",
       phone: "",
       email: "",
+      img: "",
       description: "",
       is_active: "1"
     }
@@ -54,6 +56,8 @@ export const contact = {
         // SET STATE AND LOCAL STORE
         commit('SET_CONTACT', response.data.contact)
         return response;
+      }).catch((error) => {
+        commit('auth/CLEAR_TOKEN', null, { root: true });
       })
     },
     async CREATE_CONTACT({ dispatch, state }) {
@@ -72,11 +76,13 @@ export const contact = {
       })
       return response;
     },
-    async DESTROY_CONTACT({ dispatch }, id) {
+    async DESTROY_CONTACT({ commit, dispatch }, id) {
       const response = await axios.delete(`/contact/${id}/destroy`).then((response) => {
         // RE LOAD DATA
         dispatch('GET_CONTACT');
         return response;
+      }).catch((error) => {
+        commit('auth/CLEAR_TOKEN');
       })
       return response;
     }

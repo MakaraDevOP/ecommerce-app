@@ -146,12 +146,17 @@
 							v-model="customer.email"
 							placeholder="email"
 						/>
-						<Dropdown
+						<InputText
+							type="password"
+							v-model="customer.password"
+							placeholder="password"
+						/>
+						<!-- <Dropdown
 							v-model="customer.parent_company_id"
 							:options="parentCompany"
 							optionLabel="company_name"
 							optionValue="id"
-						/>
+						/> -->
 						<div class="field-checkbox">
 							<Checkbox
 								v-model="customer.is_active"

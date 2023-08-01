@@ -13,7 +13,9 @@ export const user = {
                 .then((resp) => {
                     commit("storeUsers", resp.data.users);
                     return resp;
-                });
+                }).catch((error) => {
+                    commit('auth/CLEAR_TOKEN', null, { root: true });
+                })
             return response;
         },
 
@@ -26,7 +28,7 @@ export const user = {
             return response;
         },
 
-        async store({commit}, formdate){
+        async store({ commit }, formdate) {
 
             const response = await axios
                 .post("/user/store", formdate)
@@ -36,7 +38,7 @@ export const user = {
             return response;
         },
 
-        async edit({commit}, id){
+        async edit({ commit }, id) {
             const response = await axios
                 .get(`/user/${id}/edit`)
                 .then((resp) => {
@@ -45,7 +47,7 @@ export const user = {
             return response;
         },
 
-        async update({commit}, formdate){
+        async update({ commit }, formdate) {
             var id = formdate?.id
 
             const response = await axios
@@ -56,7 +58,7 @@ export const user = {
             return response;
         },
 
-        async destroy({commit}, id){
+        async destroy({ commit }, id) {
             const response = await axios
                 .delete(`/user/${id}/destroy`)
                 .then((resp) => {
@@ -64,7 +66,7 @@ export const user = {
                 });
             return response;
         },
-        async viewProfile(){
+        async viewProfile() {
 
         }
     },

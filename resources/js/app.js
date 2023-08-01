@@ -36,6 +36,8 @@ import InputNumber from 'primevue/inputnumber';
 import FileUpload from 'primevue/fileupload';
 import Editor from 'primevue/editor';
 import Chart from 'primevue/chart';
+import Password from 'primevue/password';
+import Image from 'primevue/image';
 import 'quill';
 import 'chart.js';
 // vue validation
@@ -56,6 +58,7 @@ app.component('Checkbox', CheckBox)
 app.component('Dialog', Dialog)
 app.component('Textarea', Textarea)
 app.component('Chart', Chart)
+app.component('Image', Image)
 
 
 app.component('Dropdown', Dropdown)
@@ -67,6 +70,7 @@ app.component('Calendar', Calendar)
 app.component('InputNumber', InputNumber)
 app.component('Editor', Editor)
 app.component('FileUpload', FileUpload)
+app.component('Password', Password)
 
 // vue validation
 

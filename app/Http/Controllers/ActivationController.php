@@ -66,11 +66,40 @@ class ActivationController extends Controller
         ];
         return  response($response, 201);
     }
-
+    public function delivered($id)
+    {
+        $activationLine = ActivationLine::where('id', $id)->update([
+            'status' => 1
+        ]);
+        $response = [
+            'activation' => $activationLine,
+        ];
+        return  response($response, 200);
+    }
+    public function returned($id)
+    {
+        $activationLine = ActivationLine::where('id', $id)->update([
+            'status' => 3
+        ]);
+        $response = [
+            'activation' => $activationLine,
+        ];
+        return  response($response, 200);
+    }
+    public function inactived($id)
+    {
+        $activationLine = ActivationLine::where('id', $id)->update([
+            'status' => 0
+        ]);
+        $response = [
+            'activation' => $activationLine,
+        ];
+        return  response($response, 200);
+    }
     public function show($id)
     {
         $activation =  Activation::where('id', $id)->first();
-        $activationLine = ActivationLine::where('activation_id', $id)->get();
+        $activationLine = ActivationLine::where('activation_id', $id)->with('product')->get();
         $data = array([
             "id" => $activation->id,
             "customer_id" => $activation->customer_id,
@@ -97,8 +126,26 @@ class ActivationController extends Controller
         if (count($request->activation_line) > 0) {
             collect($request->activation_line)->each(function (array $items) use ($request, $id) {
                 //Update 
-                if (isset($id)) {
-                    ActivationLine::where('activation_id', $id)->delete();
+                if (isset($items['id'])) {
+                    ActivationLine::where('id', $items['id'])->update(
+                        [
+                            'activation_id' => $id,
+                            'product_id' => $items['product_id'],
+                            'term_id' => $items['term_id'],
+                            'qty' => (float) $items['qty'],
+                            'amount' => (float) $items['amount'],
+                            'period' => !empty($items['period']) ? $items['period'] : 0,
+                            'note' => $items["note"],
+                            'activated_date' => $items["activated_date"],
+                            'expired_date' => $items["expired_date"],
+                            'status' => $items["status"],
+                            'is_free' => $items["is_free"],
+                            'is_notify_email' => $items["is_notify_email"],
+                            'order_by' => $items["order_by"],
+                            'is_active' => $items["is_active"]
+                        ]
+                    );
+                } else {
                     ActivationLine::create(
                         [
                             'activation_id' => $id,
@@ -117,7 +164,7 @@ class ActivationController extends Controller
                             'is_active' => $items["is_active"]
                         ]
                     );
-                }
+                };
             });
         }
         $response = [

@@ -136,10 +136,66 @@
 				header="Product"
 				v-model:visible="showDialog"
 				:breakpoints="{ '960px': '75vw', '640px': '100vw' }"
-				:style="{ width: '50vw' }"
+				:style="{ width: '30vw' }"
 			>
-				<div class="py-2 grid grid-cols-2 gap-4">
+				<div class="py-2 ">
 					<div class="flex flex-col space-y-4">
+						<div class="card">
+							<div> Photo</div>
+							<form id="filesUp">
+								<div class="large-12 medium-12 small-12 cell flex space-x-2">
+									<div>
+										<Image
+											:src="product.img??'storage/images/07312023185610_err.png'"
+											alt="Image"
+											width="140"
+											height="140"
+											preview
+										/>
+									</div>
+									<div class="text-gray-800 text-sm h-14 object-cover  w-28 relative">
+										<div class="flex items-center justify-center w-full">
+											<label
+												for="dropzone-file"
+												class="flex flex-col items-center justify-center w-full h-20 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+											>
+												<div class="flex flex-col items-center justify-center pt-5 pb-5">
+													<svg
+														class="w-8 h-8 text-gray-500 dark:text-gray-400"
+														aria-hidden="true"
+														xmlns="http://www.w3.org/2000/svg"
+														fill="none"
+														viewBox="0 0 20 16"
+													>
+														<path
+															stroke="currentColor"
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+														/>
+													</svg>
+
+												</div>
+												<input
+													id="dropzone-file"
+													type="file"
+													accept="image/*"
+													name="files"
+													ref="files"
+													@change="uploadFile"
+													class="hidden"
+												/>
+											</label>
+										</div>
+
+									</div>
+
+								</div>
+							</form>
+
+						</div>
+
 						<InputText
 							v-model="product.name"
 							placeholder="product name"
@@ -171,27 +227,12 @@
 								class="px-2"
 							>is active</label>
 						</div>
-					</div>
-					<div>
 						<Textarea
 							v-model="product.description"
 							placeholder="description"
 							rows="4"
 							class="w-full"
 						/>
-						<div class="card">
-							<Toast />
-							<FileUpload
-								@upload="onAdvancedUpload($event)"
-								:multiple="false"
-								accept="image/*"
-								:maxFileSize="1000000"
-							>
-								<template #empty>
-									<p>Drag and drop files to here to upload.</p>
-								</template>
-							</FileUpload>
-						</div>
 					</div>
 				</div>
 				<template #footer>
@@ -221,6 +262,7 @@ export default {
 		return {
 			showDialog: false,
 			selectProduct: {},
+			preview: true
 		}
 	},
 	computed: {
@@ -235,6 +277,44 @@ export default {
 		this.$store.dispatch('product/GET_PRODUCT')
 	},
 	methods: {
+		viewPhoto() {
+			this.preview = true
+
+		},
+		uploadFile() {
+			var data = new FormData()
+			var file = this.$refs.files.files[0]
+			data.append('files', file);
+			this.$store.dispatch('upload/UPLOAD_FILE', { data: data }).then((respnse) => {
+				this.$toast.add({ severity: 'success', summary: 'Uploaded', detail: 'Data Uploaded', life: 3000 });
+				this.product.img = 'storage/images/' + respnse.data.file.file_path
+			})
+		},
+		onAdvancedUpload(file) {
+			const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
+			const isLt2M = file.size / 1024 / 1024 < 2;
+			if (!isJPG) {
+				this.$toast.add({ severity: 'error', summary: 'error Message', detail: 'Avatar picture must be JPG format!', life: 3000 });
+			}
+			if (!isLt2M) {
+
+				this.$toast.add({ severity: 'error', summary: 'error Message', detail: 'Avatar picture size can not exceed 2MB!', life: 3000 });
+			}
+			this.submitUplaod()
+		},
+		/*
+		*  Function upload image 
+		*/
+		async submitUplaod() {
+			const form = new FormData(document.getElementById('filesUp'));
+			const config = {
+				headers: { 'content-type': 'multipart/form-data' }
+			}
+			await axios.post('/files/create/upload', form, config).then(response => {
+				this.ruleForm.photo_id = response.data.file.id
+				this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Deleted successfully', life: 3000 });
+			})
+		},
 		doubleClick() {
 			this.$store.dispatch('product/GET_ID_PRODUCT', this.selectProduct.id).then(respnse => {
 				if (respnse) {

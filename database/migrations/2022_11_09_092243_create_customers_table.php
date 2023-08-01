@@ -21,11 +21,12 @@ return new class extends Migration
             $table->integer('parent_company_id')->nullable();
             $table->string('phone')->nullable();
             $table->string('email');
+            $table->string('password');
             $table->integer('is_active');
             $table->softDeletes();
             $table->timestamps();
         });
-    }                     
+    }
 
     /**
      * Reverse the migrations.

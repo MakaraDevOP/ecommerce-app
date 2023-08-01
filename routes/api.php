@@ -84,6 +84,9 @@ Route::prefix('v1')->group(function () {
       Route::post('/create', [ActivationController::class, 'store']);
       Route::get('/{id}/get', [ActivationController::class, 'show']);
       Route::put('/{id}/update', [ActivationController::class, 'update']);
+      Route::post('/{id}/delivered', [ActivationController::class, 'delivered']);
+      Route::post('/{id}/returned', [ActivationController::class, 'returned']);
+      Route::post('/{id}/inactived', [ActivationController::class, 'inactived']);
       Route::delete('/{id}/destroy', [ActivationController::class, 'destroy']);
       Route::get('/get-all', [ActivationController::class, 'getActivationLine']);
     });
@@ -108,9 +111,9 @@ Route::prefix('v1')->group(function () {
     // Files  
     Route::prefix('files')->group(function () {
       Route::get('/get', [UploadFileController::class, 'index']);
-      Route::post('/create/upload/{id}', [UploadFileController::class, 'store']);
+      Route::post('/create/upload', [UploadFileController::class, 'store']);
       // Route::post('/create' , [UploadFileController::class, 'store']);
-      Route::get('/get/upload/{id}', [UploadFileController::class, 'getUploadFileByActivation']);
+      Route::get('/get/upload', [UploadFileController::class, 'getUploadFileByActivation']);
       // Preview File
       Route::get('storage/{filename}', function ($filename) {
       });

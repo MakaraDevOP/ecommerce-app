@@ -36,6 +36,7 @@ class ProductController extends Controller
             'name' => $fields['name'],
             'type' => $fields['type'],
             'price' => $request->price,
+            'img' => $request->img,
             'stock' => $request->stock,
             'description' => $request->description,
             'is_active' => $request->is_active
@@ -79,6 +80,7 @@ class ProductController extends Controller
             'type' => $fields['type'],
             'price' => $request->price,
             'stock' => $request->stock,
+            'img' => $request->img,
             'description' => $request->description,
             'is_active' => $request->is_active
         ]);

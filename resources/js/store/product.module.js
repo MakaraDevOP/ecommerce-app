@@ -9,6 +9,7 @@ export const product = {
       type: "",
       price: "",
       stock: "",
+      img: "",
       description: "",
       is_active: "1"
     },
@@ -18,6 +19,7 @@ export const product = {
       type: "",
       price: "",
       stock: "",
+      img: "",
       description: "",
       is_active: "1"
     }
@@ -67,6 +69,8 @@ export const product = {
         commit('SET_PRODUCT', response.data.Product);
         dispatch('GET_TYPE');
         return response;
+      }).catch((error) => {
+        commit('auth/CLEAR_TOKEN', null, { root: true });
       })
       return respone;
     },

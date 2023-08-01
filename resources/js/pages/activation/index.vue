@@ -229,6 +229,19 @@
 												</div>
 											</template>
 										</Column>
+										<Column
+											header=" Photo"
+											style="flex-grow: 0; flex-basis: 100px;"
+										>
+											<template #body="slot">
+												<Image
+													:src="slot.data?.product?.img??'storage/images/07312023185610_err.png'"
+													alt="Image"
+													width="80"
+													preview
+												/>
+											</template>
+										</Column>
 										<!-- <Column selectionMode="multiple" headerStyle="width: 3rem" style="flex-grow: 0; flex-basis: 50px;"></Column> -->
 										<Column
 											field="product_id"
@@ -245,6 +258,7 @@
 													@change="changeQTY(data)"
 													class="w-full"
 													autofocus
+													:disabled="data.status != '2'"
 												/>
 
 											</template>
@@ -262,6 +276,7 @@
 														@change="changeQTY(data)"
 														autofocus
 														class="w-full"
+														:disabled="data.status != '2'"
 													/>
 												</div>
 											</template>
@@ -283,24 +298,7 @@
 												</div>
 											</template>
 										</Column>
-										<!-- <Column
-											field="term_id"
-											header=" Term"
-											style="flex-grow: 1; flex-basis: 250px;"
-										>
-											<template #body="slot">
-												<Dropdown
-													v-model="slot.data.term_id"
-													:options="terms"
-													@change="changeDate(slot.index, slot.data.term_id, 'term', false)"
-													optionLabel="name"
-													optionValue="id"
-													placeholder="Term"
-													class="w-full"
-													autofocus
-												/>
-											</template>
-										</Column> -->
+
 										<!-- <Column
 											field="period"
 											header=" Period"
@@ -837,6 +835,24 @@ export default {
 			const qty = data.qty ?? 0;
 			data.amount = Number(price) * Number(qty);
 		},
+		deliveredItem(id) {
+			this.$store.dispatch('activation/DELIVERED_ACTIVATION_LINE', id).then(respnse => {
+				this.doubleClick();
+
+			})
+		},
+		returnItem(id) {
+			this.$store.dispatch('activation/RETURN_ACTIVATION_LINE', id).then(respnse => {
+				this.doubleClick();
+
+			})
+		},
+		inactiveItem(id) {
+			this.$store.dispatch('activation/INACTIVE_ACTIVATION_LINE', id).then(respnse => {
+				this.doubleClick();
+
+			})
+		},
 		//DOUBLE CLICK 
 		doubleClick() {
 			this.$store.dispatch('activation/GET_ID_ACTIVATION', this.selectActive.id).then(respnse => {
@@ -886,7 +902,7 @@ export default {
 				this.$store.dispatch('activation/UPDATE_ACTIVATION').then(respnse => {
 					if (respnse) {
 						this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Updated successfully', life: 3000 });
-						this.showDialog = false
+						// this.showDialog = false
 					}
 				}).catch(error => {
 					this.$toast.add({ severity: 'error', summary: 'Error Message', detail: error, life: 3000 });
@@ -896,7 +912,7 @@ export default {
 				this.$store.dispatch('activation/CREATE_ACTIVATION').then(respnse => {
 					if (respnse) {
 						this.$toast.add({ severity: 'success', summary: 'Success Message', detail: 'Created successfully', life: 3000 });
-						this.showDialog = false
+						// this.showDialog = false
 					}
 				}).catch(error => {
 					this.$toast.add({ severity: 'error', summary: 'Error Message', detail: error, life: 3000 });
@@ -1073,14 +1089,15 @@ export default {
 									label: 'Return Back',
 									icon: 'pi pi-wrench',
 									command: () => {
-										this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+										this.returnItem(id)
 									}
 								},
 								{
 									label: 'Inactive',
 									icon: 'pi pi-ban',
 									command: () => {
-										this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+										this.inactiveItem(id)
+
 									}
 								},
 								{
@@ -1090,7 +1107,7 @@ export default {
 									label: 'More Detail',
 									icon: 'pi pi-list',
 									command: () => {
-										this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+										this.$toast.add({ severity: 'info', summary: 'On matainent', detail: 'Data Updated', life: 3000 });
 
 									}
 								},
@@ -1116,7 +1133,7 @@ export default {
 								label: 'Delivered',
 								icon: 'pi pi-sync',
 								command: () => {
-									this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
+									this.deliveredItem(id)
 								}
 							},
 							{
@@ -1140,49 +1157,44 @@ export default {
 					this.itemsAction = [
 						{
 							label: 'Options',
-							items: [{
-								label: 'Renewal',
-								icon: 'pi pi-sync',
-								command: () => {
-									this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated' + this.acLineID, life: 3000 });
-								}
-							},
-							{
-								label: 'Change Plan',
-								icon: 'pi pi-wrench',
-								command: () => {
-									this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+							items: [
+								{
+									label: 'Change Plan',
+									icon: 'pi pi-wrench',
+									command: () => {
+										this.deliveredItem(id)
 
-								}
-							},
-							{
-								label: 'Inactive',
-								icon: 'pi pi-ban',
-								command: () => {
-									this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
-								}
-							},
-							{
-								separator: true
-							},
-							{
-								label: 'More Detail',
-								icon: 'pi pi-list',
-								command: () => {
-									this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
+									}
+								},
+								{
+									label: 'Inactive',
+									icon: 'pi pi-ban',
+									command: () => {
+										this.inactiveItem(id)
+									}
+								},
+								{
+									separator: true
+								},
+								{
+									label: 'More Detail',
+									icon: 'pi pi-list',
+									command: () => {
+										this.$toast.add({ severity: 'info', summary: 'On matainent', detail: 'Data Updated', life: 3000 });
 
-								}
-							},
-							{
-								label: 'Note',
-								icon: 'pi pi-envelope',
-								command: () => {
-									this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
-										this.noteChateDialog = true;
-									})
 
+									}
+								},
+								{
+									label: 'Note',
+									icon: 'pi pi-envelope',
+									command: () => {
+										this.$store.dispatch('note/GET_NOTE_ACTIVATIONID_ACTIVATIONLINEID', { activation_id: this.actID, activation_line_id: this.acLineID }).then(respnse => {
+											this.noteChateDialog = true;
+										})
+
+									}
 								}
-							}
 							]
 						},
 					]

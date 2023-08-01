@@ -148,6 +148,27 @@ export const activation = {
 
   },
   actions: {
+    async DELIVERED_ACTIVATION_LINE({ commit }, id) {
+      const response = await axios.post(`/activation/${id}/delivered`, id).then((response) => {
+        // RE LOAD DATA
+        return response;
+      })
+      return response;
+    },
+    async RETURN_ACTIVATION_LINE({ commit }, id) {
+      const response = await axios.post(`/activation/${id}/returned`, id).then((response) => {
+        // RE LOAD DATA
+        return response;
+      })
+      return response;
+    },
+    async INACTIVE_ACTIVATION_LINE({ commit }, id) {
+      const response = await axios.post(`/activation/${id}/inactived`, id).then((response) => {
+        // RE LOAD DATA
+        return response;
+      })
+      return response;
+    },
     async GET_ID_ACTIVATION({ commit }, id) {
       const response = await axios.get(`/activation/${id}/get`).then((response) => {
         // SET STATE
@@ -163,6 +184,8 @@ export const activation = {
         commit('SET_ACTIVATION', response.data.activation);
         dispatch('GET_TERM');
         return response;
+      }).catch((error) => {
+        commit('auth/CLEAR_TOKEN', null, { root: true });
       })
     },
     async GET_TERM({ commit }) {
