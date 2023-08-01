@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div class="flex h-screen items-center justify-center  px-4 sm:px-6 lg:px-8">
-			<div class="w-full max-w-md space-y-8 border p-8">
+			<div class="w-full max-w-md space-y-8 border p-8 shadow">
 				<div>
 					<h1 class="text-4xl text-orange-600  font-bold "></h1>
 					<h2 class="mt-6 text-center text-2xl text-gray-800">Ecommerce Management</h2>
@@ -15,7 +15,7 @@
 						name="remember"
 						value="true"
 					/>
-					<div class="-space-y-px rounded-md shadow-sm">
+					<div class="space-y-2 rounded-md shadow-sm">
 						<div>
 							<label
 								for="email-address"

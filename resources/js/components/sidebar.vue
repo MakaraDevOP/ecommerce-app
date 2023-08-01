@@ -9,14 +9,14 @@
 				<span
 					class="font-semibold uppercase text-xl px-6 whitespace-nowrap"
 					v-if="dataSibar"
-				>App Dev</span>
+				>Tao Bao</span>
 				<div
 					class="text-center flex justify-center items-center h-full"
 					v-if="!dataSibar"
 				>
 					<img
-						src="https://avatars.githubusercontent.com/u/97021587?v=4"
-						class="p-[2px] w-8 h-8 rounded-full ring-1 ring-gray-300 dark:ring-gray-500 "
+						src="https://gw.alicdn.com/img.alicdn.com/tfs/TB1VlKFRpXXXXcNapXXXXXXXXXX-16-16.png"
+						class="p-[2px] w-8 h-8 "
 						alt="Avatar"
 					/>
 				</div>

@@ -26,25 +26,24 @@ class UploadFileController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'activation_id' =>'required',
+            'files' => 'required',
         ]);
         if ($request->hasFile('files')) {
             $name = $request->file('files')->getClientOriginalName();
             $size = $request->file('files')->getSize();
             $type = $request->file('files')->getClientOriginalExtension();
-            $path =  $request->file('files')->storeAs('public/images' , date('mdYHis') ."_". $name);
+            $path =  $request->file('files')->storeAs('public/images', date('mdYHis') . "_" . $name);
             $files =  UploadFile::create([
-               'activation_id' =>$fields['activation_id'],
-               'file_path' =>  date('mdYHis') ."_". $name,  
-               'name' => $name,
-               'size' =>  $size ,
-               'type' => $type
-              ]);
-              $response = [ 
-                  'file' => $files , 
-              ];
-              return  response($response, 201);
-         }
+                'file_path' =>  date('mdYHis') . "_" . $name,
+                'name' => $name,
+                'size' =>  $size,
+                'type' => $type
+            ]);
+            $response = [
+                'file' => $files,
+            ];
+            return  response($response, 201);
+        }
     }
 
     /**
@@ -80,13 +79,13 @@ class UploadFileController extends Controller
     {
         //
     }
-    public function getUploadFileByActivation(Request $request, $id){
+    public function getUploadFileByActivation(Request $request, $id)
+    {
 
         $files = UploadFile::where('activation_id', $id)->get();
-        $response = [ 
-            'file' => $files , 
+        $response = [
+            'file' => $files,
         ];
         return  response($response, 200);
-
     }
 }

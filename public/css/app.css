@@ -545,6 +545,9 @@ video {
 .col-span-2 {
   grid-column: span 2 / span 2;
 }
+.col-span-1 {
+  grid-column: span 1 / span 1;
+}
 .m-1 {
   margin: 0.25rem;
 }
@@ -783,6 +786,9 @@ video {
 .w-\[2rem\] {
   width: 2rem;
 }
+.w-\[300px\] {
+  width: 300px;
+}
 .w-\[3rem\] {
   width: 3rem;
 }
@@ -792,6 +798,9 @@ video {
 .w-\[500px\] {
   width: 500px;
 }
+.w-\[50px\] {
+  width: 50px;
+}
 .w-auto {
   width: auto;
 }
@@ -800,12 +809,6 @@ video {
 }
 .w-\[200px\] {
   width: 200px;
-}
-.w-\[300px\] {
-  width: 300px;
-}
-.w-\[50px\] {
-  width: 50px;
 }
 .min-w-\[300px\] {
   min-width: 300px;
@@ -828,6 +831,9 @@ video {
 .max-w-xl {
   max-width: 36rem;
 }
+.flex-1 {
+  flex: 1 1 0%;
+}
 .flex-grow {
   flex-grow: 1;
 }
@@ -836,6 +842,9 @@ video {
 }
 .grow-0 {
   flex-grow: 0;
+}
+.basis-1 {
+  flex-basis: 0.25rem;
 }
 .border-collapse {
   border-collapse: collapse;
@@ -850,6 +859,15 @@ video {
 }
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+@keyframes pulse {
+
+  50% {
+    opacity: .5;
+  }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 .cursor-pointer {
   cursor: pointer;
@@ -901,6 +919,9 @@ video {
 .justify-between {
   justify-content: space-between;
 }
+.gap-16 {
+  gap: 4rem;
+}
 .gap-2 {
   gap: 0.5rem;
 }
@@ -912,9 +933,6 @@ video {
 }
 .gap-8 {
   gap: 2rem;
-}
-.gap-16 {
-  gap: 4rem;
 }
 .-space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
@@ -941,6 +959,11 @@ video {
   margin-right: calc(1rem * var(--tw-space-x-reverse));
   margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
 }
+.space-x-\[5px\] > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(5px * var(--tw-space-x-reverse));
+  margin-left: calc(5px * calc(1 - var(--tw-space-x-reverse)));
+}
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
@@ -961,10 +984,10 @@ video {
   margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(2rem * var(--tw-space-y-reverse));
 }
-.space-x-\[5px\] > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-x-reverse: 0;
-  margin-right: calc(5px * var(--tw-space-x-reverse));
-  margin-left: calc(5px * calc(1 - var(--tw-space-x-reverse)));
+.space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
 }
 .divide-y > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-y-reverse: 0;
@@ -1326,6 +1349,9 @@ video {
 .pb-5 {
   padding-bottom: 1.25rem;
 }
+.pb-\[20px\] {
+  padding-bottom: 20px;
+}
 .pl-3 {
   padding-left: 0.75rem;
 }
@@ -1347,20 +1373,20 @@ video {
 .pt-\[20px\] {
   padding-top: 20px;
 }
-.pt-\[80px\] {
-  padding-top: 80px;
-}
-.pb-\[20px\] {
-  padding-bottom: 20px;
-}
 .pt-\[30px\] {
   padding-top: 30px;
+}
+.pt-\[80px\] {
+  padding-top: 80px;
 }
 .text-left {
   text-align: left;
 }
 .text-center {
   text-align: center;
+}
+.text-right {
+  text-align: right;
 }
 .text-end {
   text-align: end;
@@ -1408,9 +1434,6 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
-}
-.text-\[25px\] {
-  font-size: 25px;
 }
 .font-bold {
   font-weight: 700;
@@ -1525,6 +1548,10 @@ video {
   --tw-text-opacity: 1;
   color: rgb(79 70 229 / var(--tw-text-opacity));
 }
+.text-orange-500 {
+  --tw-text-opacity: 1;
+  color: rgb(249 115 22 / var(--tw-text-opacity));
+}
 .text-orange-600 {
   --tw-text-opacity: 1;
   color: rgb(234 88 12 / var(--tw-text-opacity));
@@ -1532,6 +1559,10 @@ video {
 .text-orange-700 {
   --tw-text-opacity: 1;
   color: rgb(194 65 12 / var(--tw-text-opacity));
+}
+.text-orange-800 {
+  --tw-text-opacity: 1;
+  color: rgb(154 52 18 / var(--tw-text-opacity));
 }
 .text-purple-500 {
   --tw-text-opacity: 1;
@@ -1751,10 +1782,6 @@ video {
   }
 }
 @media (min-width: 1280px) {
-
-  .xl\:gap-8 {
-    gap: 2rem;
-  }
 
   .xl\:gap-16 {
     gap: 4rem;

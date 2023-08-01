@@ -33,6 +33,7 @@ import Panel from 'primevue/panel';
 import ScrollPanel from 'primevue/scrollpanel';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
+import FileUpload from 'primevue/fileupload';
 import Editor from 'primevue/editor';
 import Chart from 'primevue/chart';
 import 'quill';
@@ -65,6 +66,7 @@ app.component('ScrollPanel', ScrollPanel)
 app.component('Calendar', Calendar)
 app.component('InputNumber', InputNumber)
 app.component('Editor', Editor)
+app.component('FileUpload', FileUpload)
 
 // vue validation
 

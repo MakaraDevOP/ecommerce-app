@@ -10,14 +10,15 @@ class ActivationLine extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table ='activation_lines';
-    protected $dates = [ 'deleted_at' ];
+    protected $table = 'activation_lines';
+    protected $dates = ['deleted_at'];
     protected $fillable = [
         'activation_id',
         'product_id',
         'term_id',
+        'qty',
+        'amount',
         'period',
-        'user_no',
         'activated_date',
         'expired_date',
         'status',
