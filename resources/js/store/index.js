@@ -8,6 +8,7 @@ import { contact } from './contact.module'
 import { activation } from './activation.module'
 import { note } from './note.module'
 import { upload } from './upload.module'
+import { client } from './client.module'
 
 
 
@@ -21,7 +22,8 @@ const store = createStore({
         contact,
         activation,
         note,
-        upload
+        upload,
+        client
     },
 });
 export default store;

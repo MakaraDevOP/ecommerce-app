@@ -280,7 +280,7 @@ export default {
 			data.append('files', file);
 			this.$store.dispatch('upload/UPLOAD_FILE', { data: data }).then((respnse) => {
 				this.$toast.add({ severity: 'success', summary: 'Uploaded', detail: 'Data Uploaded', life: 3000 });
-				this.contact.img = 'storage/images/' + respnse.data.file.file_path
+				this.contact.img = 'http://127.0.0.1:8000/storage/images/' + respnse.data.file.file_path
 			})
 		},
 		doubleClick() {

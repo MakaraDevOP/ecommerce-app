@@ -21,6 +21,9 @@ Route::prefix('v1')->group(function () {
   //Product
   Route::get('/product', [ClientController::class, 'index']);
   Route::get('/product/show/{id}', [ClientController::class, 'show']);
+
+  Route::get('/client-get', [ActivationController::class, 'index']);
+  Route::post('/client-create', [ActivationController::class, 'store']);
   // User 
   Route::post('/register', [AuthController::class, 'register']);
   Route::post('/login', [AuthController::class, 'login']);

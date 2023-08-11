@@ -45,7 +45,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/dashboard"
+							to="/backend/dashboard"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi pi-microsoft"
@@ -57,7 +57,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/user"
+							to="/backend/user"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi pi-user "
@@ -69,7 +69,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/product"
+							to="/backend/product"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi pi-cart-plus "
@@ -81,7 +81,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/contact"
+							to="/backend/contact"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi pi-whatsapp  "
@@ -93,7 +93,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/customer"
+							to="/backend/customer"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi pi-shield "
@@ -105,7 +105,7 @@
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
 						<router-link
-							to="/sales"
+							to="/backend/sales"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi  pi-check-circle "
@@ -127,8 +127,8 @@
 						class="   py-3 rounded-md cursor-pointer text-gray-300 hover:text-white"
 						:class="dataSibar == true ? 'px-2' : ''"
 					>
-					<router-link
-							to="/products"
+						<router-link
+							to="/store"
 							class="py-2 px-2 flex space-x-2 items-center"
 						><span
 								class="pi  pi-external-link "
@@ -148,7 +148,7 @@
 								v-tooltip.right="'About Me'"
 							></span> <span v-show="dataSibar">About Me</span></a>
 					</div>
-					
+
 				</div>
 			</div>
 		</div>
